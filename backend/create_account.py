@@ -1,5 +1,5 @@
 """
-ChainReporter — admin CLI for account management. Not exposed over HTTP.
+RZWire — admin CLI for account management. Not exposed over HTTP.
 
 Run from the backend/ directory:
   Create a user:      python create_account.py
@@ -14,7 +14,7 @@ import database
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Create or reset a ChainReporter account')
+    parser = argparse.ArgumentParser(description='Create or reset an RZWire account')
     parser.add_argument('--reset', metavar='USERNAME_OR_EMAIL')
     args = parser.parse_args()
     database.init_db()

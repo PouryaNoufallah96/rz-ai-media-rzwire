@@ -1,5 +1,5 @@
 /**
- * ChainReporter — Google Apps Script
+ * RZWire — Google Apps Script template
  *
  * SETUP INSTRUCTIONS:
  * 1. Go to https://script.google.com → New Project
@@ -14,7 +14,7 @@
 // ── One-time setup: creates the spreadsheet tabs ──────────────────────────────
 function setup() {
   const ss   = SpreadsheetApp.getActiveSpreadsheet();
-  const tabs = ['RZ Prime', 'Coin Hall', 'ChainReporter', 'Meta Coin Guard'];
+  const tabs = ['MGC Coin', 'Ranking Platform', 'Oasis Coin', 'Jewelry Coin'];
   const headers = [
     'ID', 'Timestamp', 'Title', 'Source', 'Source URL',
     'Media Brand', 'Platform', 'Generated Copy', 'Hashtags',
@@ -134,7 +134,7 @@ function handleUpdate(data) {
 
 // ── Image Upload: save base64 image to Drive ─────────────────────────────────
 function handleImageUpload(data) {
-  const folderName = 'ChainReporter Images';
+  const folderName = 'RZWire Images';
   const folders = DriveApp.getFoldersByName(folderName);
   const folder  = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
 

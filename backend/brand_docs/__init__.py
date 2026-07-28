@@ -1,86 +1,154 @@
-"""
-Brand document loader — reads the full brand bibles (.docx) once at import time
-and serves them from memory for promo content generation.
+"""Load authoritative brand documents for promo generation and chat retrieval.
 
-Files live next to this module:
-    backend/brand_docs/RZ Prime.docx
-    backend/brand_docs/Coin Hall.docx
-    backend/brand_docs/Meta Coin Guard.docx
-
-If a file is missing or unreadable, that brand falls back to the legacy short
-BRAND_PROMO_PITCH blurb (passed in via get_brand_doc's fallback arg), so the
-server never crashes on a bad doc. Every load outcome is logged to stderr.
+Supported source formats are Markdown, DOCX, and PDF. Each brand may have one
+or more sources. Sources are loaded once at import time and cached in memory. A
+missing or unreadable document never prevents the server from starting; callers
+can provide a short fallback pitch instead.
 """
+
 import sys
 import threading
 from pathlib import Path
 
 try:
-    from docx import Document  # python-docx
+    from docx import Document
+
     _DOCX_AVAILABLE = True
 except ImportError:
     _DOCX_AVAILABLE = False
 
+try:
+    from pypdf import PdfReader
+
+    _PDF_AVAILABLE = True
+except ImportError:
+    _PDF_AVAILABLE = False
+
+
 _HERE = Path(__file__).parent
 
-# Brand display-name -> filename stem (matches the .docx filenames written by _convert.py)
+# Brand display name -> authoritative source filenames, in precedence order.
 _BRAND_FILES = {
-    'RZ Prime':        'RZ Prime.docx',
-    'Coin Hall':       'Coin Hall.docx',
-    'Meta Coin Guard': 'Meta Coin Guard.docx',
+    'MGC Coin': ('MGC Coin.pdf', 'MGC Social Channels.md'),
+    'Ranking Platform': ('Ranking Platform.md', 'Ranking Social Channels.md'),
+    'Oasis Coin': ('OASIS Token.pdf', 'OASIS Website.md', 'Oasis Social Channels.md'),
+    'Jewelry Coin': ('Jewelry Coin.md', 'Jewelry Social Channels.md'),
 }
 
 _cache: dict[str, str] = {}
+_source_cache: dict[str, tuple[tuple[str, str], ...]] = {}
 _loaded = False
 _lock = threading.Lock()
 
 
 def _read_docx(path: Path) -> str:
-    """Extract plain text from a .docx, one paragraph per line (preserves blank-line spacing)."""
+    """Extract plain text from a DOCX, preserving paragraph boundaries."""
     doc = Document(str(path))
-    return '\n'.join(p.text for p in doc.paragraphs)
+    return '\n'.join(paragraph.text for paragraph in doc.paragraphs)
+
+
+def _read_pdf(path: Path) -> str:
+    """Extract searchable PDF text while preserving page boundaries."""
+    reader = PdfReader(str(path))
+    pages = []
+    for page_number, page in enumerate(reader.pages, start=1):
+        text = (page.extract_text() or '').replace('\ufffd', '-').strip()
+        if text:
+            pages.append(f'[Page {page_number}]\n{text}')
+    return '\n\n'.join(pages)
+
+
+def _read_brand_file(path: Path) -> str:
+    suffix = path.suffix.lower()
+    if suffix == '.md':
+        return path.read_text(encoding='utf-8')
+    if suffix == '.docx':
+        if not _DOCX_AVAILABLE:
+            raise RuntimeError('python-docx is not installed')
+        return _read_docx(path)
+    if suffix == '.pdf':
+        if not _PDF_AVAILABLE:
+            raise RuntimeError('pypdf is not installed')
+        return _read_pdf(path)
+    raise ValueError(f'unsupported brand-document format: {suffix}')
+
+
+def _combine_sources(sources: tuple[tuple[str, str], ...]) -> str:
+    if len(sources) == 1:
+        return sources[0][1]
+    return '\n\n'.join(
+        f'===== AUTHORITATIVE SOURCE: {filename} =====\n{text}'
+        for filename, text in sources
+    )
 
 
 def _load_all() -> None:
-    """Populate _cache once. Safe to call from multiple threads."""
+    """Populate the caches once. Safe to call from multiple threads."""
     global _loaded
     if _loaded:
         return
     with _lock:
         if _loaded:
             return
-        if not _DOCX_AVAILABLE:
-            print('[brand_docs] python-docx not installed — promo will use short pitch fallbacks',
-                  file=sys.stderr)
-            _loaded = True
-            return
-        for brand, fname in _BRAND_FILES.items():
-            path = _HERE / fname
-            try:
-                text = _read_docx(path)
-                if text and text.strip():
-                    _cache[brand] = text.strip()
-                    print(f'[brand_docs] loaded brand doc: {brand} ({len(text)} chars)',
-                          file=sys.stderr)
-                else:
-                    print(f'[brand_docs] WARNING {fname} is empty — {brand} uses fallback',
-                          file=sys.stderr)
-            except Exception as e:  # noqa: BLE001 — never let a bad doc crash the server
-                print(f'[brand_docs] WARNING could not read {fname}: {e} — {brand} uses fallback',
-                      file=sys.stderr)
+        for brand, filenames in _BRAND_FILES.items():
+            loaded_sources = []
+            for filename in filenames:
+                path = _HERE / filename
+                try:
+                    text = _read_brand_file(path)
+                    if text and text.strip():
+                        loaded_sources.append((filename, text.strip()))
+                        print(
+                            f'[brand_docs] loaded source: {brand} / {filename} '
+                            f'({len(text)} chars)',
+                            file=sys.stderr,
+                        )
+                    else:
+                        print(
+                            f'[brand_docs] WARNING {filename} is empty - source skipped',
+                            file=sys.stderr,
+                        )
+                except Exception as exc:  # noqa: BLE001
+                    print(
+                        f'[brand_docs] WARNING could not read {filename}: {exc} - '
+                        'source skipped',
+                        file=sys.stderr,
+                    )
+            if loaded_sources:
+                sources = tuple(loaded_sources)
+                _source_cache[brand] = sources
+                _cache[brand] = _combine_sources(sources)
+            else:
+                print(
+                    f'[brand_docs] WARNING no source loaded for {brand} - uses fallback',
+                    file=sys.stderr,
+                )
         _loaded = True
 
 
 def get_brand_doc(brand: str, fallback: str = '') -> str:
-    """Return the full brand-bible text for a brand, or a short fallback if unavailable.
-
-    `fallback` is the legacy short pitch (e.g. BRAND_PROMO_PITCH[brand]) so callers can
-    always get *something* usable even if the .docx is missing.
-    """
+    """Return all authoritative sources for a brand, or a short fallback."""
     if not _loaded:
         _load_all()
     return _cache.get(brand) or fallback
 
 
-# Eagerly load at import so the startup log reflects doc availability immediately.
+def get_brand_documents(brand: str) -> tuple[tuple[str, str], ...]:
+    """Return individual ``(filename, text)`` sources for chat indexing."""
+    if not _loaded:
+        _load_all()
+    return _source_cache.get(brand, ())
+
+
+def available_brands() -> tuple[str, ...]:
+    """Return brands with configured authoritative sources."""
+    return tuple(_BRAND_FILES)
+
+
+def get_brand_source_path(brand: str) -> str:
+    """Return the primary configured source filename for compatibility."""
+    filenames = _BRAND_FILES.get(brand, ())
+    return filenames[0] if filenames else ''
+
+
 _load_all()

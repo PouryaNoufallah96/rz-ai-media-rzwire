@@ -1,9 +1,13 @@
 backend/.env
+backend/.venv/
+.venv/
+api-keys.txt
 backend/__pycache__/
 backend/data/
 *.pyc
 *.pkl
 node_modules/
+.pnpm-store/
 temporary screenshots/
 .DS_Store
 CLAUDE*.md
@@ -16,3 +20,6 @@ backend/*.pid
 
 # Local tooling
 .claude/
+.deploy_rzwire_vps_key
+.deploy_rzwire_vps_key.pub
+tmp/

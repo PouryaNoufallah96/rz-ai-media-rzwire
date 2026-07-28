@@ -1,0 +1,9 @@
+project_id=rzwire
+project_name=RZWire
+vps_ip=137.74.160.38
+vps_port=22
+remote_root=/var/www/rzwire
+backend_service=rzwire-backend
+frontend_service=nginx
+forbid_vps_ip=51.255.163.171
+forbid_remote_root=/var/www/rzecosystem

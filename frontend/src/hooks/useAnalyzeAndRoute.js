@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useMmStore, API_BASE, MM_SOURCES, SRC_COLORS, EDITORIAL_MODEL_META, mkey, anyPromoOn } from '../store/mmStore'
+import { useLanguageStore } from '../store/languageStore'
 import { fetchRSS, parseRSS, filterByRecency, timeAgo } from '../utils/rss'
 import { preScore } from '../utils/scoring'
 
@@ -32,9 +33,12 @@ export function useAnalyzeAndRoute() {
 
   const run = useCallback(async (topics) => {
     const { selectedSources, selectedMedia, selectedPlatforms, selectedModels,
-            recencyHours, filterMode, testMode, setProgress, setAnalyzing,
+            recencyHours, filterMode, testMode, enrichArticles, setProgress, setAnalyzing,
             setErrorMsg, setModelLanes, setPlatformLanes, setLastShortlist,
-            setEditorial, setMmReport, promoMode, promoPrompts } = useMmStore.getState()
+            setEditorial, setMmReport, promoMode, promoPrompts,
+            useTelegramSources, selectedTelegramSources, telegramSortMode, telegramTopN,
+            setTelegramLanes } = useMmStore.getState()
+    const language = useLanguageStore.getState().language
 
     // ── Promo-only rule ──
     // If ANY selected brand has Promo Copy ON, the whole run is promo-only:
@@ -55,8 +59,15 @@ export function useAnalyzeAndRoute() {
     }
 
     if (!editorialBrands.length && !promoBrands.length) { setErrorMsg('Select at least one media brand.'); return }
-    if (!promoActive && editorialBrands.length && !selectedSources.length) {
+    if (!promoActive && editorialBrands.length && !selectedSources.length && !useTelegramSources) {
       setErrorMsg('Select at least one source.'); return
+    }
+    if (!promoActive && useTelegramSources && !selectedTelegramSources.length) {
+      setErrorMsg('Select at least one Telegram source.'); return
+    }
+    if (!promoActive && useTelegramSources && telegramSortMode === 'keywords') {
+      const kwCount = (topics || '').split(',').map(s => s.trim()).filter(Boolean).length
+      if (kwCount < 2) { setErrorMsg('Add at least 2 keywords to use Telegram keyword matching.'); return }
     }
     if (!selectedMedia.length)   { setErrorMsg('Select at least one media brand.'); return }
 
@@ -74,7 +85,9 @@ export function useAnalyzeAndRoute() {
       const sourceCounts = {}
       let allArticles = [], tooOldCount = 0, recent = [], tooOldArticles = []
       let shortlistPayload = [], allTracked = [], preResult = null
+      let telegramRanked = [], telegramErrors = {}, telegramFetchedTotal = 0
       const editorial = {}
+      setTelegramLanes({})
 
       // ── Promo brands: generate ideas (no articles needed) ──
       if (promoBrands.length) {
@@ -85,7 +98,7 @@ export function useAnalyzeAndRoute() {
             try {
               const res = await fetch(`${API_BASE}/api/promo/generate-ideas`, {
                 method:'POST', headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({ brand, prompt:promoPrompts[brand], modelKey })
+                body:JSON.stringify({ brand, prompt:promoPrompts[brand], modelKey, language })
               })
               const data = await res.json().catch(()=>({}))
               if (!res.ok || data.error) {
@@ -120,6 +133,68 @@ export function useAnalyzeAndRoute() {
 
       // ── Editorial brands: full RSS → Filter → AI pipeline ──
       if (editorialBrands.length) {
+        if (useTelegramSources) {
+          setProgress(5, `Fetching Telegram news from ${selectedTelegramSources.length} source${selectedTelegramSources.length===1?'':'s'}...`)
+          const res = await fetch(`${API_BASE}/api/telegram/rank`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              channels:selectedTelegramSources,
+              hours:recencyHours,
+              sortMode:telegramSortMode,
+              topN:telegramTopN,
+              topics,
+            })
+          })
+          const data = await res.json().catch(()=>({}))
+          if (!res.ok || data.error) throw new Error(data.error || `Telegram ranking failed (${res.status})`)
+          telegramRanked = data.articles || []
+          telegramErrors = data.errors || {}
+          telegramFetchedTotal = data.fetchedTotal || telegramRanked.length
+          sourceCounts.Telegram = telegramRanked.length
+          if (!telegramRanked.length && !selectedSources.length) throw new Error(`No Telegram posts in the last ${recencyHours}h. Try a wider time range or more Telegram sources.`)
+          const telegramCopyModel = selectedModels[0] || 'gpt'
+          const telegramCopyModelMeta = EDITORIAL_MODEL_META[telegramCopyModel] || EDITORIAL_MODEL_META.gpt
+          const tgLanes = {}
+          editorialBrands.forEach(brand => {
+            tgLanes[brand] = telegramRanked.map((a, rank) => {
+              const srcCol = SRC_COLORS[a.source] || '#24a1de'
+              const init = (a.source || 'TG').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()
+              return {
+                id:`tg-${mkey(brand)}-${a.channel || 'source'}-${a.messageId || rank}`,
+                _modelKey:telegramCopyModel, _modelDisplay:telegramCopyModelMeta.display, _modelColor:telegramCopyModelMeta.color,
+                _isTelegramSource:true,
+                language,
+                media:brand, platform:'suggested', source:a.source || 'Telegram', initials:init, srcColor:srcCol,
+                headline:a.title || '', copy:a.desc || a.telegramText || '',
+                selectionReason:telegramSortMode === 'keywords'
+                  ? 'Matched selected keywords from Telegram source posts.'
+                  : telegramSortMode === 'views_per_source'
+                    ? 'Top-viewed post from each source first, then the next highest-viewed posts.'
+                    : telegramSortMode === 'latest_per_source'
+                      ? 'Newest post from each source first, then the next newest posts.'
+                  : telegramSortMode === 'latest'
+                    ? 'Ranked by Telegram publish date.'
+                    : 'Ranked by Telegram view count.',
+                mediaReason:'Telegram source discovery', platReason:'', hashtags:[],
+                suitability:Math.max(1, Math.min(10, Math.round(((a.keywordScore || 0.7) * 10)) || 7)),
+                impact:Math.max(1, Math.min(10, Math.round(((a.views || 0) / 1000)) || 6)),
+                virality:Math.max(1, Math.min(10, Math.round(((a.views || 0) / 1000)) || 6)),
+                sentiment:'Neutral',
+                link:a.link || '#', status:'ready',
+                timeAgo:a.pubDate ? timeAgo(a.pubDate) : 'Recent',
+                lowConfidence:false, lowConfidenceReason:'',
+                views:a.views || null, viewsLabel:a.viewsLabel || '',
+                matchedKeywords:a.matchedKeywords || [],
+              }
+            })
+          })
+          setTelegramLanes(tgLanes)
+        }
+
+        if (!selectedSources.length) {
+          allTracked = telegramRanked.map(a => ({ ...a, _pipelineStatus:'telegram_ranked', _scores:null, _keywords:a.matchedKeywords||null, _routing:null }))
+        } else {
         // Phase 1: RSS Fetch
         selectedSources.forEach(s => { sourceCounts[s] = 0 })
         let fetchedCount = 0
@@ -140,7 +215,7 @@ export function useAnalyzeAndRoute() {
           }
         }))
         allArticles = perSource.flatMap(r => r.status === 'fulfilled' ? r.value : [])
-        if (!allArticles.length) throw new Error('Could not load any feeds. Check your connection.')
+        if (!allArticles.length && !telegramRanked.length) throw new Error('Could not load any feeds. Check your connection.')
 
         tooOldCount = allArticles.length - allArticles.filter(a => {
           if (!a.pubDate) return true
@@ -149,12 +224,17 @@ export function useAnalyzeAndRoute() {
         }).length
 
         recent = filterByRecency(allArticles, recencyHours)
-        if (!recent.length) throw new Error(`No articles in the last ${recencyHours}h. Try a wider time range.`)
+        if (!recent.length && !telegramRanked.length) throw new Error(`No articles in the last ${recencyHours}h. Try a wider time range.`)
 
         tooOldArticles = allArticles
           .filter(a => a.pubDate && (() => { const t = Date.parse(a.pubDate); return !isNaN(t) && t < Date.now() - recencyHours*3600000 })())
           .map(a => ({ ...a, _pipelineStatus:'too_old', _scores:null, _keywords:null, _routing:null }))
 
+        if (!recent.length && telegramRanked.length) {
+          allTracked = telegramRanked.map(a => ({ ...a, _pipelineStatus:'telegram_ranked', _scores:null, _keywords:a.matchedKeywords||null, _routing:null }))
+        }
+
+        if (recent.length) {
         // Phase 2: Filter
         if (filterMode === 'openai_embedding') {
           setProgress(48, `Running OpenAI Embedding pipeline on ${recent.length} articles…`)
@@ -224,7 +304,9 @@ export function useAnalyzeAndRoute() {
         setProgress(62, `Sending ${shortlistPayload.length} articles to ${selectedModels.length} AI editor${selectedModels.length===1?'':'s'}…`)
 
         // Phase 3: Editorial AI (streamed)
-        const editRes = await postJSON(`${API_BASE}/api/ai/editorial-select`, { shortlist:shortlistPayload, selectedMedia:editorialBrands, selectedPlatforms, selectedModels, topics, testMode })
+        // Source cards stay in their original English form. Persian is applied on
+        // demand with the card's Translate button and is mandatory after routing.
+        const editRes = await postJSON(`${API_BASE}/api/ai/editorial-select`, { shortlist:shortlistPayload, selectedMedia:editorialBrands, selectedPlatforms, selectedModels, topics, testMode, enrichArticles, language:'en' })
         if (!editRes.ok) { const e = await editRes.json().catch(()=>({})); throw new Error(e?.error||`Editorial AI failed (${editRes.status})`) }
 
         const lastShortlist = useMmStore.getState().lastShortlist
@@ -249,6 +331,7 @@ export function useAnalyzeAndRoute() {
                 link:a.source_url||src.link||'#', status:'ready',
                 timeAgo:src.pubDate?timeAgo(src.pubDate):src.pub_date?timeAgo(src.pub_date):'Recent',
                 lowConfidence:false, lowConfidenceReason:'',
+                language,
               })
             })
           })
@@ -277,6 +360,8 @@ export function useAnalyzeAndRoute() {
           }
           if (done) break
         }
+        }
+        }
       }
 
       setEditorial(editorial)
@@ -297,13 +382,22 @@ export function useAnalyzeAndRoute() {
         perMedia[m] = (perMedia[m]||0) + n
         actualPromoTotal += n
       })
+      let actualTelegramTotal = 0
+      selectedMedia.forEach(m => {
+        const n = useMmStore.getState().telegramLanes[m]?.length || 0
+        perMedia[m] = (perMedia[m]||0) + n
+        actualTelegramTotal += n
+      })
       const shortlisted = preResult?.shortlisted || shortlistPayload
+      const trackedTelegram = telegramRanked.map(a => ({ ...a, _pipelineStatus:'telegram_ranked', _scores:null, _keywords:a.matchedKeywords||null, _routing:null }))
       setMmReport({
         runAt:Date.now(), selectedSources:[...selectedSources], selectedMedia:[...selectedMedia],
-        recencyHours, sourceCounts, fetchedTotal:allArticles.length, tooOld:tooOldCount,
+        telegramSources: useTelegramSources ? [...selectedTelegramSources] : [],
+        telegramSortMode, telegramErrors,
+        recencyHours, sourceCounts, fetchedTotal:allArticles.length + telegramFetchedTotal, tooOld:tooOldCount,
         afterRecency:recent.length, rejected:preResult?.rejected||{duplicate:0,noMediaFit:0,lowScore:0},
-        shortlistedCount:shortlistPayload.length + actualPromoTotal, perMedia, filterMode,
-        allArticles:[...tooOldArticles,...allTracked],
+        shortlistedCount:shortlistPayload.length + actualPromoTotal + actualTelegramTotal, perMedia, filterMode,
+        allArticles:[...tooOldArticles,...allTracked,...trackedTelegram],
       })
 
       setProgress(100, 'Done!')

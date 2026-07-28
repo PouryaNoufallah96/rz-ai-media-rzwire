@@ -30,7 +30,7 @@ function ModelLane({ modelKey, brand }) {
 }
 
 function PlatformLane({ brand, plat }) {
-  const { platformLanes, modelLanes, setPlatformLanes, updatePlatformCard, getCachedCopy, setCachedCopy, setActiveCard, promoMode } = useMmStore()
+  const { platformLanes, modelLanes, telegramLanes, setPlatformLanes, updatePlatformCard, getCachedCopy, setCachedCopy, setActiveCard, promoMode } = useMmStore()
   const col = PLAT_COLORS[plat] || '#7a8499'
   const cards = platformLanes[brand]?.[plat] || []
 
@@ -40,7 +40,7 @@ function PlatformLane({ brand, plat }) {
     if (!cardId) return
     e.currentTarget.classList.remove('drag-over')
     _dragCardId = null
-    routeCardToPlatform(cardId, plat, brand, { modelLanes, platformLanes, setPlatformLanes, updatePlatformCard, getCachedCopy, setCachedCopy, setActiveCard, promoMode })
+    routeCardToPlatform(cardId, plat, brand, { modelLanes, telegramLanes, platformLanes, setPlatformLanes, updatePlatformCard, getCachedCopy, setCachedCopy, setActiveCard, promoMode })
   }
 
   const PlatIcons = {
@@ -73,13 +73,34 @@ function PlatformLane({ brand, plat }) {
   )
 }
 
+function TelegramLane({ brand }) {
+  const { telegramLanes } = useMmStore()
+  const cards = telegramLanes[brand] || []
+  const color = '#24a1de'
+
+  return (
+    <div className="lane" style={{borderRight:`1px solid ${color}22`}} data-lane-type="telegram" data-brand={brand}>
+      <div className="lane-header" style={{background:color+'0e',borderBottom:`1px solid ${color}22`}}>
+        <div style={{width:20,height:20,borderRadius:5,background:color+'20',color,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:8,fontWeight:800}}>TG</div>
+        <span style={{fontSize:10.5,fontWeight:700,color:'#f0f2f8',flex:1}}>Telegram News</span>
+        <span style={{fontSize:9.5,fontWeight:700,padding:'1px 6px',borderRadius:4,background:color+'15',color}}>{cards.length}</span>
+      </div>
+      <div className="lane-cards">
+        {!cards.length && <div className="empty-lane"><p style={{fontSize:10,color:'#3a4258',textAlign:'center'}}>No Telegram posts</p></div>}
+        {cards.map(c => <EditorialCard key={c.id} card={c} onDragStart={id => { _dragCardId = id }} />)}
+      </div>
+    </div>
+  )
+}
+
 function BrandSection({ brand }) {
-  const { selectedModels, selectedPlatforms, modelLanes, platformLanes, editorial } = useMmStore()
+  const { selectedModels, selectedPlatforms, modelLanes, telegramLanes, platformLanes, editorial } = useMmStore()
   const hasEditorial = !!editorial
   const col = MEDIA_COLORS[brand] || '#7a8499'
-  const abbrs = {'RZ Prime':'RZ','Coin Hall':'CH','ChainReporter':'CR','Meta Coin Guard':'MCG'}
-  const tags  = {'RZ Prime':'Token Access · BNB Chain · Smart Contracts · Retail Investors','Coin Hall':'Luxury · Web3 Culture · High-End Experiences · Aspirational','ChainReporter':'Full Spectrum Crypto · Markets · Policy · Technology · Culture','Meta Coin Guard':'Security · DeFi Protection · Exploits · Wallet Safety · Risk Awareness'}
+  const abbrs = {'MGC Coin':'MGC','Ranking Platform':'RK','Oasis Coin':'OAS','Jewelry Coin':'JWL'}
+  const tags  = {'MGC Coin':'Gaming Utility · Rewards · BNB Smart Chain · RZ Ecosystem','Ranking Platform':'Competition · Profiles · Teams · Tournaments · Community','Oasis Coin':'Metaverse · Gaming · Digital Worlds · Future Utility','Jewelry Coin':'Digital Jewelry · NFTs · Marketplace · Physical Craft'}
   const totalCards = (hasEditorial ? selectedModels.reduce((s,k) => s+(modelLanes[k]?.[brand]?.length||0), 0) : 0)
+    + (telegramLanes[brand]?.length || 0)
     + selectedPlatforms.reduce((s,p) => s+(platformLanes[brand]?.[p]?.length||0), 0)
   const lanesRowRef = useRef(null)
 
@@ -108,19 +129,20 @@ function BrandSection({ brand }) {
       resizers.push(() => r.removeEventListener('mousedown', onDown))
     })
     return () => resizers.forEach(fn => fn())
-  }, [selectedModels.join(), selectedPlatforms.join()])
+  }, [selectedModels.join(), selectedPlatforms.join(), (telegramLanes[brand] || []).length])
 
   return (
     <div className="media-section fade-up" style={{borderTop:`2px solid ${col}55`}}>
       <div className="section-header">
         <div style={{width:28,height:28,borderRadius:7,background:col+'20',border:`1px solid ${col}40`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:7.5,fontWeight:800,color:col,letterSpacing:'.02em'}}>{abbrs[brand]||brand.slice(0,2)}</div>
-        <div style={{flex:1,minWidth:0}}>
-          <span style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:14,color:'#f0f2f8'}}>{brand}</span>
-          <span style={{fontSize:11,color:'#7a8499',marginLeft:8}}>{tags[brand]}</span>
+        <div className="brand-header-copy" style={{flex:1,minWidth:0,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+          <span style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:14,color:'#f0f2f8',whiteSpace:'nowrap'}}>{brand}</span>
+          <span style={{fontSize:11,color:'#7a8499',lineHeight:1.5}}>{tags[brand]}</span>
         </div>
         <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:5,background:col+'15',color:col,border:`1px solid ${col}35`}}>{totalCards} stories</span>
       </div>
       <div className="lanes-row" ref={lanesRowRef}>
+        {!!(telegramLanes[brand]?.length) && <TelegramLane brand={brand} />}
         {hasEditorial && selectedModels.map(key => <ModelLane key={key} modelKey={key} brand={brand} />)}
         {selectedPlatforms.map(p => <PlatformLane key={p} brand={brand} plat={p} />)}
       </div>

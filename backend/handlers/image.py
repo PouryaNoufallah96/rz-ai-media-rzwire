@@ -1,18 +1,31 @@
 """Image generation routes: promo post ideas + full Art-Director image pipeline."""
+import json
 import sys
 
-from config import BRAND_VISUAL_TONE, EDITORIAL_MODELS
+from config import BRAND_VISUAL_TONE, EDITORIAL_MODELS, OPENROUTER_IMAGE_MODELS
 from brand_profiles import BRAND_IMAGE_PROFILES
 from llm import openrouter_chat, openrouter_image
 from image_pipeline import (_RECENT_BRIEFS, _remember_brief, _article_mentions_brand,
-                            call_art_director, validate_brief, assemble_prompt)
+                            call_art_director, validate_brief, assemble_prompt, _fallback_brief)
 from _branddoc import _brand_doc
+
+
+_LOGO_MEDIA_KEYS = {'mgccoin', 'rankingplatform', 'oasiscoin', 'jewelrycoin'}
+_LOGO_SAFE_ZONE = (
+    ' Keep the immediate bottom-left corner uncluttered for an official logo added after generation, '
+    'but it must remain a seamless, natural continuation of the surrounding artwork. Do NOT create a '
+    'separate logo area, box, panel, tile, mask, dark or light block, changed background color, or '
+    'texture behind it. Do not place people, faces, objects, coins, devices, charts, data, text, borders, '
+    'frames, divider lines, corners, geometric accents, ornaments, or focal details in that corner. '
+    'Do not draw or invent any logo or watermark.'
+)
 
 
 def handle_promo_ideas(body):
     brand     = body.get('brand', '')
     prompt    = body.get('prompt', '').strip()
     model_key = body.get('modelKey', 'gpt')
+    language  = body.get('language', 'en')
     if not prompt:
         raise ValueError('prompt is required')
 
@@ -43,6 +56,9 @@ def handle_promo_ideas(body):
         "Respond with ONLY the JSON array, no other text."
     )
     user_msg = f"Create promotional posts about: {prompt}"
+    if language == 'fa':
+        sys_msg += ('\nWrite every title, description, and angle in fluent Persian with Persian digits. '
+                    'Keep crypto tickers, project and brand names, and URLs in English.')
     model_cfg = EDITORIAL_MODELS.get(model_key, EDITORIAL_MODELS['gpt'])
     model_id = model_cfg['id']
     msgs = [{'role': 'system', 'content': sys_msg}, {'role': 'user', 'content': user_msg}]
@@ -82,22 +98,35 @@ def handle_promo_ideas(body):
 def handle_generate_image(body):
     article   = body.get('article', {})
     platform  = body.get('platform', 'X')
-    media     = body.get('mediaBrand', 'ChainReporter')
+    media     = body.get('mediaBrand', 'MGC Coin')
     sentiment = body.get('sentiment', 'Neutral')
     model     = body.get('model', 'openai/gpt-5.4-image-2')
     copy_text = body.get('copy', '')
     image_direction = body.get('imageDirection', '').strip()
     ref_images = body.get('referenceImages', []) or []
+    language = body.get('language', 'en')
+    if model not in OPENROUTER_IMAGE_MODELS:
+        raise ValueError('Unsupported image generation model')
 
     profile = BRAND_IMAGE_PROFILES.get(media)
     brief = None
     if profile:
         recent     = _RECENT_BRIEFS.get(media, [])
         brand_mode = _article_mentions_brand(article, profile)
-        raw_brief  = call_art_director(article, copy_text, sentiment, platform, profile, recent, brand_mode=brand_mode)
-        brief      = validate_brief(raw_brief, article, profile, recent)
-        if not brand_mode and 'wolf' in brief:
-            brief['wolf'] = 'none'
+        # Art-Director LLM call (Stage 1). If it fails for ANY reason — empty
+        # content due to finish_reason=length, network blip, JSON repair failure,
+        # OpenRouter outage — fall back to the deterministic safe brief instead
+        # of surfacing an error. Image generation must never hard-fail here.
+        try:
+            raw_brief = call_art_director(article, copy_text, sentiment, platform, profile, recent, brand_mode=brand_mode)
+            brief = validate_brief(raw_brief, article, profile, recent)
+            if not brand_mode and 'wolf' in brief:
+                brief['wolf'] = 'none'
+        except Exception as exc:  # noqa: BLE001 — the show must go on
+            print(f'[image] Art Director failed, using fallback brief: {exc}', file=sys.stderr)
+            brief = _fallback_brief(article, profile)
+            if not brand_mode and 'wolf' in brief:
+                brief['wolf'] = 'none'
         prompt = assemble_prompt(brief, profile, brand_mode=brand_mode)
         _remember_brief(media, brief, profile)
     else:
@@ -115,11 +144,22 @@ def handle_generate_image(body):
 
     if image_direction:
         prompt = prompt + ' ' + image_direction
+    if language == 'fa':
+        prompt += (' Any visible headline, caption, or text in the image MUST be fluent Persian in a clear RTL layout '
+                   'with Persian digits. Keep only essential crypto tickers and project or brand names in English.')
+    if ''.join(str(media).lower().split()) in _LOGO_MEDIA_KEYS:
+        prompt += _LOGO_SAFE_ZONE
 
     print(f'[image] brief: {brief}', file=sys.stderr)
     print(f'[image] prompt: {prompt}', file=sys.stderr)
-    image_b64 = openrouter_image(prompt, model, ref_images=ref_images or None)
-    result = {'imageB64': image_b64, 'prompt': prompt, 'model': model}
+    image_b64, model_used = openrouter_image(prompt, model, ref_images=ref_images or None)
+    result = {
+        'imageB64': image_b64,
+        'prompt': prompt,
+        'model': model_used,
+        'requestedModel': model,
+        'usedFallback': model_used != model,
+    }
     if brief is not None:
         result['brief'] = brief
     return result

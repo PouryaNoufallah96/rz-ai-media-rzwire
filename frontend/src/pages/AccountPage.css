@@ -16,7 +16,7 @@
 }
 @media (max-width:900px){
   .account-grid{grid-template-columns:1fr;grid-template-areas:"left" "mid" "right";}
-  #saved-detail-panel,.acct-detail-empty{position:static;max-height:none;}
+  #saved-detail-panel,.acct-detail-empty{position:static;height:auto;max-height:none;}
 }
 
 /* ── Profile card ─────────────────────────────────────── */
@@ -97,7 +97,7 @@
 .acct-saved-meta{display:flex;gap:6px;flex-wrap:wrap;}
 
 /* ── Detail panel (column 3 — in-flow, reused via PreviewPanel mode="saved") ── */
-#saved-detail-panel,.acct-detail-empty{position:sticky;top:73px;width:100%;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(12,15,24,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 30px 60px -20px rgba(0,0,0,.6);max-height:calc(100vh - 89px);}
+#saved-detail-panel,.acct-detail-empty{position:static;width:100%;height:calc(100vh - 88px);max-height:calc(100vh - 88px);border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(12,15,24,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 30px 60px -20px rgba(0,0,0,.6);}
 #saved-detail-panel{display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;transform:none;transition:none;z-index:auto;}
 #saved-detail-panel.open{transform:none;}
 #saved-detail-panel::-webkit-scrollbar{width:8px}
@@ -127,3 +127,19 @@
 .btn-ghost:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.2);color:#f0f2f8}
 .btn-mint{background:linear-gradient(135deg,#00d4a0,#00a878);color:#07090e;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-family:'Inter',sans-serif;transition:opacity .18s,transform .18s}
 .btn-mint:hover{opacity:.88;transform:translateY(-1px)}
+html[dir='rtl'] .account-grid{direction:rtl;}
+html[dir='rtl'] .account-col-left{order:3;}
+html[dir='rtl'] .account-col-mid{order:2;}
+html[dir='rtl'] .account-col-right{order:1;}
+
+/* RZWire account theme */
+.account-page{background:radial-gradient(820px 520px at 12% 0,rgba(117,104,240,.13),transparent 62%),radial-gradient(720px 480px at 88% 100%,rgba(24,199,207,.08),transparent 66%),#080717}
+.account-glow{background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(24,199,207,.07),transparent 70%),radial-gradient(ellipse 50% 50% at 80% 80%,rgba(117,104,240,.09),transparent 70%),radial-gradient(ellipse 40% 30% at 20% 70%,rgba(255,210,26,.035),transparent 70%)}
+.glass,.acct-section,#saved-detail-panel,.acct-detail-empty{background:rgba(16,13,39,.84);border-color:rgba(117,104,240,.14)}
+.account-avatar{background:linear-gradient(135deg,#18c7cf,#7568f0);color:#070616}
+.acct-keyword-pill{background:rgba(24,199,207,.08);color:#18c7cf;border-color:rgba(24,199,207,.24)}
+.acct-saved-card.active{border-color:rgba(24,199,207,.42);background:rgba(24,199,207,.05)}
+.cr-input:focus{border-color:rgba(24,199,207,.5);box-shadow:0 0 0 3px rgba(24,199,207,.08)}
+.sb-ready{background:rgba(24,199,207,.1);color:#18c7cf;border-color:rgba(24,199,207,.25)}
+.sb-approved{background:rgba(117,104,240,.11);color:#a89cff;border-color:rgba(117,104,240,.28)}
+.btn-mint{background:linear-gradient(135deg,#18c7cf,#7568f0);color:#070616}

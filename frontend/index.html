@@ -3,22 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ChainReporter</title>
+    <link rel="icon" type="image/png" href="/rzwire-logo.png" />
+    <meta name="theme-color" content="#07131f" />
+    <meta name="description" content="RZWire private multi-brand publishing workspace for MGC Coin, Ranking Platform, Oasis Coin, and Jewelry Coin." />
+    <title>RZWire — Multi-Brand Publishing</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Tailwind CDN (same as original) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = {
-        theme: { extend: {
-          colors: { gold:'#f0a040', mint:'#00d4a0', violet:'#9b72f5',
-            'bg-base':'#07090e','bg-elevated':'#0c0f18','bg-float':'#141b26' },
-          fontFamily: { display:['Space Grotesk','sans-serif'], body:['Inter','sans-serif'] }
-        }}
-      }
+      tailwind.config = { theme: { extend: {
+        colors: { gold:'#ffd21a', mint:'#18c7cf', violet:'#7568f0', 'bg-base':'#080717','bg-elevated':'#100d27','bg-float':'#17133d' },
+        fontFamily: { display:['Space Grotesk','sans-serif'], body:['Inter','sans-serif'] }
+      } } }
     </script>
   </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+  <body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body>
 </html>

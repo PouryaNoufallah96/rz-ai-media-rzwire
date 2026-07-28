@@ -61,8 +61,12 @@ export function SavedCardDetail() {
     media: activeSavedCard.brand,
     srcColor: activeSavedCard.src_color,
     link: activeSavedCard.source_link,
+    _modelDisplay: activeSavedCard._modelDisplay || activeSavedCard.model_display,
+    _modelColor: activeSavedCard._modelColor || activeSavedCard.model_color,
+    _modelKey: activeSavedCard._modelKey || 'gpt',
     timeAgo: `Saved ${formatSavedDate(activeSavedCard.created_at)}`,
   }
 
-  return <PreviewPanel mode="saved" card={previewCard} onClose={() => setActiveSavedCard(null)} />
+  const previewSessionKey = `${previewCard.id || ''}|${previewCard.platform || ''}|${previewCard.headline || ''}`
+  return <PreviewPanel key={previewSessionKey} mode="saved" card={previewCard} onClose={() => setActiveSavedCard(null)} />
 }

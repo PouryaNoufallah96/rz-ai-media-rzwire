@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -109,3 +111,6 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+.app-fa{direction:rtl;font-family:'Vazirmatn',sans-serif;}
+.app-fa input,.app-fa textarea{font-family:'Vazirmatn',sans-serif;text-align:right;}
+.app-fa .nav-link,.app-fa .toggle-row,.app-fa .section-header,.app-fa .lane-header,.app-fa .mm-card,.app-fa .acct-section,.app-fa .auth-card{text-align:right;}

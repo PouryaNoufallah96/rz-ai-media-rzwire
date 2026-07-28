@@ -1,5 +1,5 @@
 """
-ChainReporter Backend — Python 3.11
+RZWire Backend — Python 3.11
 Runs on port 3001. Proxies all OpenRouter (AI) and Google Apps Script calls server-side.
 Start: python server.py
 
@@ -13,12 +13,16 @@ import gzip
 import sys
 import threading
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+from urllib.parse import parse_qs, urlparse
 
 import requests
 
 import auth
 import database
-from config import PORT, ORIGIN, COOKIE_SECURE, OPENROUTER_KEY, SCRIPT_URL
+from config import (
+    PORT, ORIGIN, COOKIE_SECURE, OPENROUTER_KEY, SCRIPT_URL,
+    PUBLISHING_ENABLED, SHEETS_ENABLED,
+)
 from server_utils import _json_default
 
 # Handler functions — one import per domain module.
@@ -28,12 +32,22 @@ from handlers.editorial import (handle_editorial_select, handle_filter_pipeline,
                                 handle_deepseek_filter)
 from handlers.account import (build_account_summary, handle_log_action,
                               handle_log_keywords, handle_brand_keywords,
-                              handle_saved_discard, handle_saved_confirm_schedule)
+                              handle_saved_discard, handle_saved_update,
+                              handle_saved_confirm_schedule)
 from handlers.schedule import (handle_schedule_create, handle_schedule_list,
                                handle_schedule_cancel, handle_schedule_reschedule,
                                run_scheduler_loop)
 from handlers.social import handle_telegram_post, handle_twitter_post
 from handlers.sheets import handle_sheets
+from handlers.chat import (
+    chat_health_status,
+    handle_chat,
+    handle_chat_history,
+    run_chat_cleanup_loop,
+    start_chat_indexer,
+)
+from handlers.translation import handle_translate_cards
+from telegram_public import DEFAULT_TELEGRAM_SOURCES, fetch_many_telegram_public_posts, rank_telegram_posts
 
 
 # ── HTTP Request Handler ───────────────────────────────────────────────────────
@@ -65,7 +79,12 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == '/api/health':
-            self._json({'ok': True})
+            self._json({'ok': True, 'chat': chat_health_status()})
+        elif self.path == '/api/integrations/status':
+            self._json({
+                'publishing': {'enabled': PUBLISHING_ENABLED},
+                'sheets': {'enabled': SHEETS_ENABLED},
+            })
         elif self.path == '/api/auth/me':
             user = auth.get_current_user(self)
             if user is None:
@@ -95,6 +114,11 @@ class Handler(BaseHTTPRequestHandler):
             if user is None:
                 return self._error(401, 'Not authenticated')
             self._json(handle_schedule_list(user['id']))
+        elif self.path.rstrip('/') == '/api/chat/history':
+            user = auth.get_current_user(self)
+            if user is None:
+                return self._error(401, 'Not authenticated')
+            self._json(handle_chat_history(user['id']))
         elif self.path.startswith('/api/rss'):
             from urllib.parse import urlparse, parse_qs, unquote
             params = parse_qs(urlparse(self.path).query)
@@ -103,7 +127,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._error(400, 'url parameter required')
             try:
                 r = requests.get(url, timeout=15,
-                                 headers={'User-Agent': 'Mozilla/5.0 (compatible; ChainReporter/1.0)'})
+                                 headers={'User-Agent': 'Mozilla/5.0 (compatible; RZWire/1.0)'})
                 r.raise_for_status()
                 body = r.content
                 self.send_response(200)
@@ -118,6 +142,31 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(body)
             except Exception as e:
                 self._error(502, f'RSS fetch failed: {e}')
+        elif self.path.startswith('/api/telegram/public-posts'):
+            from urllib.parse import urlparse, parse_qs
+            params = parse_qs(urlparse(self.path).query)
+            raw_channels = params.get('channels', [''])[0]
+            channels = [c.strip() for c in raw_channels.split(',') if c.strip()]
+            if not channels:
+                channels = list(DEFAULT_TELEGRAM_SOURCES.values())
+            try:
+                hours = int(params.get('hours', ['24'])[0])
+            except (TypeError, ValueError):
+                hours = 24
+            try:
+                limit = int(params.get('limit', ['20'])[0])
+            except (TypeError, ValueError):
+                limit = 20
+            try:
+                self._json(fetch_many_telegram_public_posts(
+                    channels,
+                    hours=hours,
+                    limit_per_channel=max(1, min(limit, 50)),
+                ))
+            except Exception as e:
+                self._error(502, f'Telegram fetch failed: {e}')
+        elif self.path == '/api/telegram/sources':
+            self._json({'sources': DEFAULT_TELEGRAM_SOURCES})
         else:
             self._error(404, 'Not found')
 
@@ -174,6 +223,11 @@ class Handler(BaseHTTPRequestHandler):
                 if user is None:
                     return self._error(401, 'Not authenticated')
                 self._json(handle_saved_discard(user['id'], body))
+            elif path == '/api/account/saved/update':
+                user = auth.get_current_user(self)
+                if user is None:
+                    return self._error(401, 'Not authenticated')
+                self._json(handle_saved_update(user['id'], body))
             elif path == '/api/account/saved/confirm-schedule':
                 user = auth.get_current_user(self)
                 if user is None:
@@ -230,6 +284,21 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(handle_deepseek_filter(body))
             elif path == '/api/telegram/post':
                 self._json(handle_telegram_post(body))
+            elif path == '/api/telegram/rank':
+                self._json(rank_telegram_posts(body))
+            elif path == '/api/translate/cards':
+                self._json(handle_translate_cards(body))
+            elif path == '/api/chat':
+                user = auth.get_current_user(self)
+                if user is None:
+                    return self._error(401, 'Not authenticated')
+                self._json(handle_chat(user['id'], body))
+            elif path == '/api/chat/clear':
+                user = auth.get_current_user(self)
+                if user is None:
+                    return self._error(401, 'Not authenticated')
+                database.clear_chat(user['id'])
+                self._json({'ok': True})
             else:
                 self._error(404, f'Unknown route: {path}')
         except ValueError as e:
@@ -285,14 +354,17 @@ if __name__ == '__main__':
     database.init_db()
     if not OPENROUTER_KEY:
         print('[WARN] OPENROUTER_API_KEY not set — AI routes will fail', file=sys.stderr)
-    if not SCRIPT_URL or SCRIPT_URL.startswith('PASTE_'):
+    if SHEETS_ENABLED and (not SCRIPT_URL or SCRIPT_URL.startswith('PASTE_')):
         print('[WARN] GOOGLE_APPS_SCRIPT_URL not set — Sheets routes will fail', file=sys.stderr)
 
-    threading.Thread(target=run_scheduler_loop, daemon=True).start()
+    if PUBLISHING_ENABLED:
+        threading.Thread(target=run_scheduler_loop, daemon=True).start()
+    threading.Thread(target=run_chat_cleanup_loop, daemon=True).start()
+    start_chat_indexer()
 
     server = ThreadingHTTPServer(('0.0.0.0', PORT), Handler)
     server.daemon_threads = True
-    print(f'ChainReporter backend running at http://localhost:{PORT}')
+    print(f'RZWire backend running at http://localhost:{PORT}')
     try:
         server.serve_forever()
     except KeyboardInterrupt:

@@ -90,6 +90,16 @@ def _build_art_director_system_prompt(profile, recent, brand_mode=True):
     )
 
     metaphor_lines = '\n'.join(f"- {k}: {v}" for k, v in profile['metaphors'].items())
+    approved_directions = profile.get('approved_directions', {})
+    approved_section = ''
+    if approved_directions:
+        approved_lines = '\n'.join(
+            f"- {key}: {description}" for key, description in approved_directions.items()
+        )
+        approved_section = (
+            "\n\nAPPROVED CAMPAIGN DIRECTIONS (creative anchors, not templates to copy):\n"
+            + approved_lines
+        )
 
     families_block = '\n'.join(
         f"- {key} ({fam['name']}): {fam['skeleton']} Text policy: {fam['text_policy']} "
@@ -143,7 +153,7 @@ def _build_art_director_system_prompt(profile, recent, brand_mode=True):
         "image. You never write final prompts or render images -- a deterministic system does "
         "that from your brief. Be creative and varied within the brand's frozen visual contract below.\n\n"
         f"FROZEN BRAND STYLE (do not restate this -- it is applied automatically):\n{style_block}\n\n"
-        f"VISUAL METAPHOR LIBRARY:\n{metaphor_lines}\n\n"
+        f"VISUAL METAPHOR LIBRARY:\n{metaphor_lines}{approved_section}\n\n"
         f"LAYOUT FAMILIES:\n{families_block}"
         f"{wolf_section}\n\n"
         f"VARIATION AXES (pick one value per axis from these lists):\n{axes_block}\n\n"
@@ -166,17 +176,27 @@ def call_art_director(article, copy_text, sentiment, platform, profile, recent, 
     )
     msgs = [{'role': 'system', 'content': sys_prompt},
             {'role': 'user',   'content': user_msg}]
-    return openrouter_chat(EDITORIAL_MODELS['gpt']['id'], msgs, ART_DIRECTOR_TEMPERATURE, ART_DIRECTOR_MAX_TOKENS)
+    # Keep GPT-5.5 for the Art Director brief. Tight 30s deadline bounds the
+    # retry chain so a stalled reasoning-model call can't hang the whole request
+    # long enough for the browser to give up with "Failed to fetch". If GPT-5.5
+    # doesn't return a usable brief within budget, the deterministic fallback
+    # brief in handlers/image.py takes over — image generation still completes.
+    return openrouter_chat(EDITORIAL_MODELS['gpt']['id'], msgs, ART_DIRECTOR_TEMPERATURE,
+                           ART_DIRECTOR_MAX_TOKENS, deadline_sec=30)
 
 
 # ── Stage 2a: brief validation + safe fallback ─────────────────────────────────
-_BANNED_SUBJECT_TERMS = ['text', 'label', 'logo', 'watermark', 'rz prime', 'chainreporter', 'coin hall', 'meta coin guard']
+_BANNED_SUBJECT_TERMS = [
+    'text', 'label', 'logo', 'watermark', 'rzwire', 'mgc coin', 'meta games coin',
+    'ranking platform', 'ranking.game', 'oasis coin', 'rzoasis', 'jewelry coin',
+    'jewelry token',
+]
 _WALLET_ADDRESS_RE = re.compile(r'0x[a-fA-F0-9]{6,}')
 
 def _article_mentions_brand(article, profile):
     keywords = profile.get('brand_keywords', [])
     if not keywords:
-        return True  # no keywords defined → always brand mode (Coin Hall, Meta Coin Guard, ChainReporter unaffected)
+        return True  # no keywords defined means the profile always uses brand mode
     text = (article.get('title', '') + ' ' + article.get('desc', '')).lower()
     return any(kw.lower() in text for kw in keywords)
 
@@ -236,13 +256,28 @@ def validate_brief(brief, article, profile, recent=()):
         data_elements = []
     clean_elements = []
     max_len = fam.get('data_value_max_len')
+    source_numbers = set()
+    if profile.get('data_numbers_must_appear_in_article'):
+        source_text = f"{article.get('title', '')} {article.get('desc', '')}".replace(',', '')
+        source_numbers = set(re.findall(r'\d+(?:\.\d+)?', source_text))
+        headline_numbers = set(re.findall(r'\d+(?:\.\d+)?', headline.replace(',', '')))
+        if headline_numbers and not headline_numbers.issubset(source_numbers):
+            return _fallback_brief(article, profile)
     for el in data_elements:
         if isinstance(el, dict) and el.get('value'):
             value = str(el['value'])[:max_len] if max_len else str(el['value'])
-            clean_elements.append({'value': value, 'label': str(el.get('label') or '')})
+            label = str(el.get('label') or '')
+            element_numbers = set(re.findall(
+                r'\d+(?:\.\d+)?', f'{value} {label}'.replace(',', '')
+            ))
+            if element_numbers and not element_numbers.issubset(source_numbers):
+                continue
+            clean_elements.append({'value': value, 'label': label})
     data_elements = clean_elements[:fam['data_budget']]
     if family == no_text_mode:
         data_elements = []
+    if family in profile.get('families_requiring_data', []) and not data_elements:
+        return _fallback_brief(article, profile)
 
     camera = brief.get(cam_axis)
     if camera not in axes[cam_axis]:
@@ -361,7 +396,7 @@ def assemble_prompt(brief, profile, brand_mode=True):
         tiles = '; '.join(_render_data_element(el, profile) for el in brief['data_elements'])
         parts.append(f"The scene also includes {tiles}.")
 
-    # 7.5. Extra axes injected after data elements (e.g. wolf seal for RZ Prime)
+    # 7.5. Extra axes injected after data elements when a brand profile needs them.
     for ax in profile.get('axis_inject_after_data', []):
         val = brief.get(ax)
         if val and val != 'none':

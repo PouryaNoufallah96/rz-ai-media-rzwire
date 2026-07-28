@@ -26,6 +26,12 @@ _anchor_vecs: Optional[dict]  = None   # brand_key → (n_phrases, 1536) array
 _embedder_lock    = threading.Lock()
 _anchor_vecs_lock = threading.Lock()
 
+# Topic-vector cache: user keyword string → (1, 1536) L2-normalised vector.
+# Lets user-entered keywords semantically influence the ranking. Cache is keyed
+# by the exact topic string so re-analyzing with the same keywords is instant.
+_topic_vecs: dict[str, np.ndarray] = {}
+_topic_vecs_lock = threading.Lock()
+
 
 def _get_embedder() -> Embedder:
     global _embedder
@@ -51,6 +57,28 @@ def _get_anchor_vecs() -> dict:
             vecs[key] = mat   # (n_phrases, 1536), already L2-normalised
         _anchor_vecs = vecs
     return _anchor_vecs
+
+
+def _get_topic_vec(topic: str) -> Optional[np.ndarray]:
+    """Embed the user's keyword string once and cache it by the exact string.
+
+    Returns a (1, 1536) L2-normalised vector, or None when the topic is empty
+    (no keywords entered → ranking falls back to the no-topic weighting).
+    Uses the same double-checked-locking pattern as _get_anchor_vecs.
+    """
+    topic = (topic or '').strip()
+    if not topic:
+        return None
+    if topic in _topic_vecs:
+        return _topic_vecs[topic]
+    with _topic_vecs_lock:
+        if topic in _topic_vecs:
+            return _topic_vecs[topic]
+        emb = _get_embedder()
+        mat, _, _ = emb.embed([topic])   # one phrase → (1, 1536), already L2-normalised
+        vec = mat[0:1]                   # keep 2D so vec @ vec.T works downstream
+        _topic_vecs[topic] = vec
+        return vec
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -156,14 +184,37 @@ def _score_topic_fit(title: str, desc: str, topics: str) -> float:
 # ── Stage 6 final score formula ───────────────────────────────────────────────
 
 def _final_score(media_fit: float, cluster_size: int, virality: float,
-                 freshness: float, authority: float, source_bias: bool) -> float:
+                 freshness: float, authority: float, source_bias: bool,
+                 topic_relevance: float = 0.0, has_topic: bool = False) -> float:
+    """Weighted ranking score. Weights always sum to 1.0 (excluding the bias bonus).
+
+    When the user entered keywords (has_topic=True), 15% of the weight goes to a
+    SEMANTIC topic_relevance term and media_fit is reduced 0.40→0.25 — so on-topic
+    articles can leapfrog higher-brand-fit ones. When no keywords are entered,
+    the 15% is redistributed proportionally across the other factors, keeping
+    their *relative* importance identical to the original formula (×1/0.85).
+    """
     cb = math.log1p(cluster_size) / math.log1p(12) * 100
-    s  = (media_fit   * 0.40
-          + cb        * 0.20
-          + virality  * 0.18
-          + freshness * 0.15
-          + authority * 0.07
-          + (3 if source_bias else 0))
+    if has_topic:
+        # Keywords present: 15% of the weight goes to topic_relevance, media_fit
+        # reduced 0.40→0.25 so an on-topic article can leapfrog a higher-fit one.
+        # (media_fit 0.25 + cluster 0.20 + vir 0.18 + fresh 0.15 + auth 0.07 + topic 0.15 = 1.0)
+        s = (media_fit   * 0.25
+             + cb        * 0.20
+             + virality  * 0.18
+             + freshness * 0.15
+             + authority * 0.07
+             + topic_relevance * 0.15)
+    else:
+        # No keywords: use the original weights unchanged. They already sum to
+        # 1.0 (0.40+0.20+0.18+0.15+0.07), so empty-topics behavior is identical
+        # to today — no dead weight, no rescaling needed.
+        s = (media_fit   * 0.40
+             + cb        * 0.20
+             + virality  * 0.18
+             + freshness * 0.15
+             + authority * 0.07)
+    s += (3 if source_bias else 0)
     return round(s, 2)
 
 
@@ -184,6 +235,10 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
     now       = datetime.now(timezone.utc)
     cutoff_dt = datetime.fromtimestamp(
         now.timestamp() - recency_hours * 3600, tz=timezone.utc)
+
+    # Resolve the user's keyword string to a single semantic vector once.
+    # None when no keywords entered — ranking then uses the no-topic weighting.
+    topic_vec = _get_topic_vec(topics)
 
     all_tracked: list[dict] = []
     stats = {
@@ -318,6 +373,11 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
     for art in stage4_pass:
         vec   = art['_vec']
         text  = (art.get('title') or '') + ' ' + (art.get('desc') or '')
+        # Semantic topic relevance: max cosine(article_vec, topic_vec) × 100.
+        # Same operation as media_fit, against the user-keyword vector instead
+        # of brand anchors. Stashed on the article so Stage 6 can read it once.
+        if topic_vec is not None:
+            art['_topic_rel'] = float(np.max(vec @ topic_vec.T)) * 100
         brand_scores: dict[str, float] = {}
 
         for key in selected_keys:
@@ -325,7 +385,7 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
             avecs      = anchor_vecs[key]
             media_fit  = float(np.max(vec @ avecs.T)) * 100
 
-            # Value gate for Coin Hall
+            # Optional value gate for profiles that require quantified evidence.
             if cfg['value_gate'] and not _has_value_signal(text):
                 brand_scores[key] = 0.0
                 continue
@@ -365,7 +425,10 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
             vir       = _score_virality(art.get('title', ''), art.get('desc', ''))
             bias      = art.get('source', '') in cfg['source_bias']
             cs        = art.get('_cluster_size', 1)
-            fscore    = _final_score(media_fit, cs, vir, fresh, auth, bias)
+            trel      = art.get('_topic_rel', 0.0)
+            fscore    = _final_score(media_fit, cs, vir, fresh, auth, bias,
+                                     topic_relevance=trel,
+                                     has_topic=(topic_vec is not None))
             scored.append((art, media_fit, fscore, vir, fresh, auth))
 
         scored.sort(key=lambda x: x[2], reverse=True)
@@ -379,12 +442,13 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
                 continue
             if art.get('title', '') not in selected_titles:
                 art.setdefault('_final_scores', {})[key] = {
-                    'media_fit':  round(media_fit, 1),
-                    'final':      fscore,
-                    'virality':   round(vir, 1),
-                    'freshness':  round(fresh, 1),
-                    'authority':  auth,
-                    'user_topic': round(_score_topic_fit(
+                    'media_fit':      round(media_fit, 1),
+                    'final':          fscore,
+                    'virality':       round(vir, 1),
+                    'freshness':      round(fresh, 1),
+                    'authority':      auth,
+                    'topic_relevance': round(art.get('_topic_rel', 0.0), 1),
+                    'user_topic':     round(_score_topic_fit(
                         art.get('title', ''), art.get('desc', ''), topics), 1),
                 }
                 selected_arts.append((art, key, media_fit, fscore, vir, fresh, auth))
@@ -410,12 +474,13 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
                 'desc':     (art.get('desc') or '')[:220],
                 'pub_date': art.get('pub_date', ''),
                 'scores': {
-                    'final':      round(fscore),
-                    'virality':   round(vir),
-                    'freshness':  round(fresh),
-                    'authority':  round(auth),
-                    'userTopic':  round(ut),
-                    'confidence': conf,
+                    'final':          round(fscore),
+                    'virality':       round(vir),
+                    'freshness':      round(fresh),
+                    'authority':      round(auth),
+                    'topicRelevance': round(art.get('_topic_rel', 0.0)),
+                    'userTopic':      round(ut),
+                    'confidence':     conf,
                 },
                 'routing': {
                     'primary_media':   primary_name,
@@ -439,7 +504,8 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
 
     # Strip internal non-JSON-serialisable fields (_vec, _dt, _brand_scores, etc.)
     _INTERNAL = {'_vec', '_brand_scores', '_primary_brand',
-                 '_secondary_brand', '_final_scores', '_urlSlug', '_entities'}
+                 '_secondary_brand', '_final_scores', '_urlSlug', '_entities',
+                 '_topic_rel'}
 
     def _clean(d: dict) -> dict:
         return {k: v for k, v in d.items() if k not in _INTERNAL}

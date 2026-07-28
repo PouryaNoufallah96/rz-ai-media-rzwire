@@ -1,973 +1,14 @@
-"""Per-brand Art-Director image profiles — the large brand-style contract dicts.
-Extracted verbatim from server.py so the rest of the codebase can stay small.
-"""
+from copy import deepcopy
 
-BRAND_IMAGE_PROFILES = {
-    'RZ Prime': {
-        'brand_name': 'RZ Prime',
-        'brand_tagline': (
-            'a premium crypto/Web3 reservation-protocol brand: clean product-visualization 3D, '
-            'glass UI panels on circuit-board platforms, educational comparisons, and two recurring '
-            'mascot characters (Blue Kid and Wolf)'
-        ),
-        'headline_max_words': 10,
-        'headline_uppercase': True,
-        'mood_accent_default': 'cyan',
-        'mood_accent_restricted': {
-            'cyan_vs_red':   {'families': ['versus', 'shatter', 'table']},
-            'cyan_vs_green': {'families': ['versus', 'product', 'table', 'data_tiles']},
-        },
-        'axis_optional':          {'wolf': True},
-        'axis_inject_after_data': ['wolf'],
-        'passthrough_fields':     ['read'],
-        'brief_prefix_schema':    {'read': 'CONTRAST | NUMBER | PROCESS | THREAT | LAUNCH | EDUCATION'},
-        'brand_keywords': ['rz prime', 'rzprime'],
-        'logo_line': (
-            "In the bottom-left corner of the frame, include the RZ Prime wordmark: "
-            "'RZ' in heavy bold above 'Prime' in light weight, both white and small. "
-            "A small green 'RZ' coin icon may appear beside it. "
-            "This is the ONLY brand logo permitted in the frame."
-        ),
-        'wolf_descriptions': {
-            'none':    'no mascot characters in the scene (default when the layout is already visually complex)',
-            'kid':     ('the Blue Kid mascot stands in the scene -- a round-faced child character with electric-blue '
-                        'hair, an orange-brown fuzzy beanie hat, an oversized fuzzy blue sweater, dark shorts, and '
-                        'bright green sneakers -- pointing at, touching, or presenting a glass UI panel'),
-            'wolfman': ('the Wolf mascot stands in the scene -- a low-poly faceted blue wolf at human height, wearing '
-                        'a tailored dark business suit with white shirt and tie -- gesturing toward or presenting '
-                        'information on a glass panel'),
-            'both':    ('both mascot characters appear together in the scene: the Blue Kid (round-faced child with '
-                        'blue hair, orange beanie, oversized fuzzy blue sweater, dark shorts, green sneakers) and '
-                        'the Wolf (low-poly faceted blue wolf in a dark suit with white shirt and tie) -- they flank '
-                        'or interact with glass UI panels, pointing and presenting'),
-        },
-        'data_element_template': 'a clear glass UI panel displaying the value "{value}"{label_part}',
-        'data_element_label_template': ' with the label "{label}"',
-        'legibility_line': "All in-scene text is large, bold, crisp and clearly legible, each rendered on its own clear glass panel or surface.",
-        'anti_repetition_rules': (
-            "Hard rules: do not pick the same family 3 times in a row; do not use the "
-            "'circuit_floor' environment more than 4 times in a row (it is the dominant default but still "
-            "needs occasional variation); vary the wolf/character value -- do not use the same value twice "
-            "in a row; use 'both' at most once every 4 posts; rotate camera and energy so consecutive "
-            "posts don't feel identical."
-        ),
-        'frozen_style': {
-            'format': "vertical 4:5 editorial poster, 1080x1350",
-            'palette': (
-                "near-black deep-navy base (#05080F-#0A1422) -- the background is genuinely dark in EVERY frame. "
-                "Electric cyan/teal is the primary neon accent (#1FE0C2-#2FF0E0). Bright emerald green (#2BE38A) "
-                "marks the positive/RZ Prime side (checkmarks, up-arrows, the Reserve action, the 'RZ Prime' label). "
-                "Alarm red (#FF3B3B) marks the negative/legacy side (X marks, down-arrows, broken systems). "
-                "Amber-orange (#FF8A3C) is reserved for caution cards and the Blue Kid's beanie hat. "
-                "Soft violet-purple (#7A5BFF) is a SECONDARY glow only (rim light, atmosphere) and never leads. "
-                "Typography is white, bold, UPPERCASE."
-            ),
-            'materials': (
-                "clear glass UI panels and app-mockup screens (NOT frosted glassmorphism) with glowing cyan edges; "
-                "circuit-board floor platform with illuminated trace lines; dark reflective surfaces; "
-                "semi-transparent glass cubes and structures with visible internals; holographic accents."
-            ),
-            'rendering': (
-                "clean product-visualization 3D, closer to a polished app-mockup render than a heavy octane-render "
-                "scene. Still cinematic with volumetric light rays, soft fog, and floating particles, but more "
-                "accessible and readable than hyper-detailed CG. Glow is the primary light source. No daylight. "
-                "Two recurring mascot characters may appear across any family: "
-                "(1) 'Blue Kid' -- a 3D character with a round face, simple features, electric-blue hair, an "
-                "orange-brown fuzzy beanie hat, an oversized fuzzy blue sweater, dark shorts, and bright green "
-                "sneakers; rendered with soft materials, NOT low-poly. "
-                "(2) 'Wolf' -- a low-poly faceted blue wolf at human height, wearing a tailored dark business suit "
-                "with a white shirt and tie; rendered in ice-blue and navy triangular planes. "
-                "They interact with UI panels -- pointing, presenting, standing beside displays."
-            ),
-            'background_vocab': (
-                "circuit-board floor with glowing cyan trace lines is THE dominant backdrop, appearing in the "
-                "majority of images. Server corridor with perspective lines is the secondary environment. "
-                "Network nodes and constellation-like connections fill deep backgrounds. Dark void with subtle "
-                "tech elements for minimal scenes."
-            ),
-            'headline_zone': (
-                "the top 25-35% of the frame is reserved for the headline; the headline is large, bold, "
-                "UPPERCASE, white sans-serif. One key word MAY be solid cyan or green. Headlines are often "
-                "conversational questions or provocative statements, 8-10 words."
-            ),
-            'never': (
-                "no photorealistic humans (only the Blue Kid and Wolf mascot characters described above); "
-                "no frosted or blurred glassmorphism (glass is always CLEAR); "
-                "no daylight or outdoor photography; no white, pastel, or light-blue backgrounds; "
-                "no stock-photo look; no flat 2D illustration; no real third-party logos or branded coins "
-                "(competitors appear only as abstract glass tokens); no wallet addresses (0x...); "
-                "no tiny labels or micro-text."
-            ),
-        },
-        'metaphors': {
-            "blockchain / smart contracts":   "clear glass cubes with glowing edges and visible circuit internals",
-            "UI / interface / data":          "glass app-mockup panels and screens on pedestals",
-            "security / verification":        "glowing green checkmarks, VERIFIED / AUDITED / ON-CHAIN badges on glass panels",
-            "legacy finance / old model":     "dim greyscale elements, crumbling structures, X marks in red, broken screens",
-            "tokens / capital / reserve":     "glass coins, the green RZ coin icon, streams of light",
-            "network / market":               "constellation-like nodes connected by glowing lines",
-            "risk / failure":                 "cracked glass with red glow and shattering fragments",
-            "comparison / choices":           "left/right split frame with red (bad) vs cyan-green (good) sides",
-            "process / flow":                 "connected glass panels with directional arrows between stages",
-            "countdown / expiry":             "digital countdown display on a glass panel, timer UI elements",
-        },
-        'families': {
-            'versus': {
-                'name': "VERSUS / SPLIT",
-                'skeleton': (
-                    "The frame is divided left/right. The negative side glows dim alarm red with X marks, "
-                    "down-arrows, broken or crumbling elements representing legacy finance, middlemen, or a "
-                    "flawed system -- optionally shown as a failing UI screen. The positive side is ordered, "
-                    "pristine, glowing cyan-green glass with checkmarks, up-arrows, and the RZ Prime answer. "
-                    "Glass UI panels on each side may carry comparison labels. The Blue Kid and/or Wolf mascots "
-                    "may stand on the positive side, presenting or gesturing toward the RZ panels."
-                ),
-                'text_policy': (
-                    "Headline plus up to 6 short labels or phrases across both sides (large, on glass surfaces). "
-                    "Each side may carry 2-3 labels identifying what it represents. Labels on the negative side "
-                    "may be struck-through or dimmed. Full short sentences on panels are permitted."
-                ),
-                'default_axes': {'environment': 'circuit_floor', 'camera': 'eye_level_symmetric', 'energy': 'dramatic_tension'},
-                'data_budget': 6,
-            },
-            'product': {
-                'name': "PRODUCT SHOWCASE",
-                'skeleton': (
-                    "A central glass UI panel or app-mockup screen sits on a circuit-board platform, showcasing "
-                    "the RZ Prime interface, a reserve mechanism, or a protocol concept. The panel looks like an "
-                    "actual app screen with fields, buttons, and status indicators rendered in glass. Supporting "
-                    "elements (smaller panels, glass cubes, coin icons) may orbit at the edges. The Blue Kid "
-                    "and/or Wolf may stand beside the central panel, presenting it."
-                ),
-                'text_policy': (
-                    "Headline plus up to 4 UI labels or values on the central panel (e.g. 'RESERVE $500', "
-                    "'RZUSD', 'AVAILABLE', status fields). These are part of the UI mockup, not floating labels. "
-                    "Keep each label to 1-4 words."
-                ),
-                'default_axes': {'environment': 'circuit_floor', 'camera': 'low_angle_hero', 'energy': 'calm_premium'},
-                'data_budget': 4,
-            },
-            'flow': {
-                'name': "FLOW / DECISION TREE",
-                'skeleton': (
-                    "A sequence of 3-5 connected glass panels or steps showing a process, decision tree, or "
-                    "user journey. Glowing arrows or light paths connect the stages. The flow may branch into "
-                    "two outcome panels at the bottom (e.g. 'Pay' vs 'Walk Away'). Panels sit on a circuit-board "
-                    "platform or float in a structured arrangement. The Blue Kid and/or Wolf may stand at the "
-                    "start or end of the flow, or beside a key decision point."
-                ),
-                'text_policy': (
-                    "Headline plus up to 5 short phrases (1-5 words each) written large on the connected panels. "
-                    "Each panel carries one step or outcome label. Weave the phrases directly into the scene "
-                    "description. Full short sentences are permitted on panels."
-                ),
-                'default_axes': {'environment': 'circuit_floor', 'camera': 'eye_level_symmetric', 'energy': 'calm_premium'},
-                'data_budget': 5,
-            },
-            'table': {
-                'name': "COMPARISON TABLE",
-                'skeleton': (
-                    "A glass comparison panel fills the center of the frame on a circuit-board platform: a "
-                    "feature column on the left, one or two comparison columns (e.g. 'OLD MODEL' dim/red, "
-                    "'RZ PRIME' glowing cyan-green). Each row is a clear glass shelf with crisp large text. "
-                    "Alternatively, a 'Myth vs Reality' format with two columns. The Blue Kid and/or Wolf "
-                    "may flank the table, gesturing toward key rows."
-                ),
-                'text_policy': (
-                    "Headline plus up to 8 row labels (1-4 words each) inside the table, plus column headers. "
-                    "Tables can be text-heavy -- this is intentional. Column headers and row labels count toward "
-                    "the budget. Each cell is large and legible on its own glass surface."
-                ),
-                'default_axes': {'environment': 'circuit_floor', 'camera': 'eye_level_symmetric', 'energy': 'calm_premium'},
-                'data_budget': 8,
-            },
-            'character': {
-                'name': "CHARACTER SCENE",
-                'skeleton': (
-                    "The Blue Kid and/or Wolf mascots are the heroes of the scene, prominently placed and "
-                    "interacting with glass UI panels, countdown timers, verification badges, or data displays. "
-                    "The characters may be pointing at panels, touching interfaces, looking at verification "
-                    "results, or standing together flanking a central display. Glass speech-bubble panels may "
-                    "float near them. The setting is a circuit-board platform with the characters at roughly "
-                    "center-frame."
-                ),
-                'text_policy': (
-                    "Headline plus up to 4 in-scene text elements: speech bubbles (5 words or fewer each), "
-                    "UI panel labels (1-4 words), or badge text (VERIFIED, ON-CHAIN, etc.). The characters and "
-                    "their interaction with the panels tell the story."
-                ),
-                'default_axes': {'environment': 'circuit_floor', 'camera': 'eye_level_symmetric', 'energy': 'calm_premium'},
-                'data_budget': 4,
-            },
-            'shatter': {
-                'name': "SHATTER / DISRUPT",
-                'skeleton': (
-                    "A pristine central RZ glass object (cube, shield, or smart-contract panel) stands intact "
-                    "and luminous, bearing VERIFIED / AUDITED / ON-CHAIN badges in green. At the edges of the "
-                    "frame, legacy elements labeled CUSTODY, MIDDLEMAN, BUREAUCRACY shatter outward in "
-                    "slow-motion fragments with red X marks, alarm-red cracks radiating from impact points. "
-                    "The circuit-board floor anchors the central object."
-                ),
-                'text_policy': (
-                    "Headline plus up to 5 labels: 2-3 on the central intact object (VERIFIED, AUDITED, "
-                    "ON-CHAIN, 1-2 words each, green-tinted) and 2-3 shattering labels at the edges "
-                    "(CUSTODY, MIDDLEMAN, etc., 1-2 words each, red-tinted with X marks)."
-                ),
-                'default_axes': {'environment': 'circuit_floor', 'camera': 'low_angle_hero', 'energy': 'explosive_dynamic'},
-                'data_budget': 5,
-            },
-            'data_tiles': {
-                'name': "DATA TILES / CARDS",
-                'skeleton': (
-                    "2-3 ascending glass tiles, cards, or phone-screen mockups sit on a circuit-board platform, "
-                    "each carrying ONE large value and ONE short label. They may be arranged as ascending stairs "
-                    "to convey growth, or as side-by-side comparison cards (e.g. 'Traditional Market' red vs "
-                    "'RZ Prime' cyan). A relevant hero element (coin icon, chart silhouette) may float above."
-                ),
-                'text_policy': (
-                    "Headline plus a maximum of 3 data elements. Each value is 1-5 characters (e.g. 3%, 6%, 9%), "
-                    "each label is 1-3 words. Values are rendered larger than labels. Cards may have a colored "
-                    "accent edge (red for negative comparison, cyan/green for RZ)."
-                ),
-                'default_axes': {'environment': 'circuit_floor', 'camera': 'low_angle_hero', 'energy': 'calm_premium'},
-                'data_budget': 3,
-            },
-            'blueprint': {
-                'name': "BLUEPRINT / ARCHITECTURE",
-                'skeleton': (
-                    "A technical architecture view: a glass desk or platform with floating holographic panels "
-                    "showing a system diagram, smart contract structure, or protocol architecture. Elements "
-                    "may include a Smart Contract file panel, a magnifying glass over code, an on-chain explorer "
-                    "window, blockchain cubes, or a schematic wall with connecting lines. The Wolf may stand "
-                    "inside a glass cube or beside the architecture. Legacy elements (dim, warm) may contrast "
-                    "with on-chain elements (bright, cyan) to show transformation."
-                ),
-                'text_policy': (
-                    "Headline plus up to 4 short labels on panels or elements (e.g. 'Smart Contract', "
-                    "'On-Chain Explorer', 'VERIFIED', 'Legacy Rails'). The architecture diagram itself "
-                    "may contain abstract connecting lines and icons."
-                ),
-                'default_axes': {'environment': 'circuit_floor', 'camera': 'eye_level_symmetric', 'energy': 'calm_premium'},
-                'data_budget': 4,
-            },
-        },
-        'axes': {
-            'environment': {
-                'circuit_floor':    ("The setting is a dark reflective circuit-board floor with glowing cyan trace "
-                                     "lines radiating outward beneath the main subject, the brand's signature platform."),
-                'server_corridor':  ("The setting is a neon-lit futuristic corridor with strong perspective lines "
-                                     "converging toward a glowing vanishing point."),
-                'deep_network':     ("The setting is a deep dark void filled with faint network nodes and "
-                                     "constellation-like connections, a vast digital space."),
-                'glass_chamber':    ("The setting is an enclosed glass chamber with translucent walls showing "
-                                     "circuit patterns, a controlled tech environment."),
-            },
-            'camera': {
-                'eye_level_symmetric': ("The camera is at eye level, centered symmetrically, giving a balanced "
-                                        "architectural view of the scene."),
-                'low_angle_hero':      ("The camera looks up at the scene from a low angle, making the central "
-                                        "subject feel monumental."),
-                'one_point_corridor':  ("The camera is positioned frontally with one-point perspective, pulling "
-                                        "the eye straight down the depth of the scene."),
-                'slight_overhead':     ("The camera looks down at a slight overhead angle, giving a clear view "
-                                        "of panels and platform layout."),
-            },
-            'energy': {
-                'calm_premium':      "The lighting is still and confident, with a soft, even glow throughout the scene.",
-                'dramatic_tension':  ("The lighting is high-contrast with deep shadows and drifting fog, creating "
-                                      "dramatic tension."),
-                'explosive_dynamic': ("The scene is full of motion, with fragments hanging mid-air and bursts of "
-                                      "light radiating outward, conveying explosive energy."),
-            },
-            'mood_accent': {
-                'cyan':          "The dominant accent color throughout the scene is electric cyan/teal.",
-                'cyan_vs_red':   ("The scene contrasts electric cyan/green on the positive side against "
-                                  "dim alarm red on the negative side."),
-                'cyan_vs_green': ("The scene features both electric cyan/teal for analytical elements and "
-                                  "bright emerald green for active/positive/RZ elements."),
-            },
-            'wolf': {
-                'none':    '',
-                'kid':     ("The Blue Kid mascot stands in the scene -- a round-faced 3D character with electric-blue "
-                            "hair, an orange-brown fuzzy beanie hat, an oversized fuzzy blue sweater, dark shorts, and "
-                            "bright green sneakers -- pointing at or interacting with a glass UI panel."),
-                'wolfman': ("The Wolf mascot stands in the scene -- a low-poly faceted blue wolf at human height, "
-                            "wearing a tailored dark business suit with white shirt and tie -- gesturing toward or "
-                            "presenting information on a glass panel."),
-                'both':    ("Both mascot characters appear together: the Blue Kid (round-faced, blue hair, orange "
-                            "beanie, fuzzy blue sweater, dark shorts, green sneakers) and the Wolf (low-poly faceted "
-                            "blue wolf in a dark suit with white shirt and tie) -- flanking or interacting with glass "
-                            "UI panels, pointing and presenting."),
-            },
-        },
-        'routing_table': """
-Classify the article's sharpest claim as one READ, then pick the family:
 
-CONTRAST (A vs B, custody vs on-chain, with/without RZ, fee comparison, old vs new model)
-  general contrast / two sides ........ versus        (fallback: table)
-  explicit feature-by-feature ......... table         (fallback: versus)
-  myths vs reality / fact-check ....... table         (fallback: versus)
-
-NUMBER (stat, price, record, fee structure, metric comparison)
-  ascending metrics / fee tiers ....... data_tiles    (fallback: product)
-  product screen IS the proof ......... product       (fallback: data_tiles)
-
-PROCESS (how-it-works, lifecycle, expiry, reservation mechanism, decision tree)
-  ordered steps / user journey ........ flow          (fallback: product)
-  conditional / what-if outcomes ...... flow          (fallback: versus)
-
-THREAT (regulation, crackdown, hack, scam, trust, verification)
-  regulation / compliance positive .... shatter       (fallback: blueprint)
-  scam / trust / verification ......... shatter       (fallback: versus)
-  legacy-to-onchain transition ........ blueprint     (fallback: shatter)
-
-LAUNCH (product feature, protocol update, new capability)
-  product / interface showcase ........ product       (fallback: data_tiles)
-  architecture / infrastructure ....... blueprint     (fallback: product)
-
-EDUCATION (explainer, guide, FAQ, newcomer onboarding)
-  how-it-works / newcomer guide ....... flow          (fallback: product)
-  architecture / audit / infra ........ blueprint     (fallback: flow)
-  character-led explanation ........... character     (fallback: flow)
-
-Anything ambiguous .................... product       (fallback: versus)
-""".strip(),
-        'text_rules': """
-1. Headline: 10 words or fewer, UPPERCASE, punchy and often a conversational question or provocative
-   statement. Big numbers and tickers are encouraged. One key word MAY be solid cyan or green.
-   Never use hard-to-spell proper nouns -- tickers (BTC, ETH, RZUSD) are fine.
-2. In-scene text budget per family: versus up to 6 labels across both sides, product up to 4 UI labels,
-   flow up to 5 step/outcome phrases, table up to 8 row labels plus headers, character up to 4
-   (speech bubbles + panel labels), shatter up to 5 (center badges + edge labels), data_tiles up to 3
-   value+label pairs, blueprint up to 4 panel labels.
-3. Every in-scene text string must sit on its own clear glass panel or surface.
-4. Values are 1-5 characters; labels and phrases are 1-5 words; render them large and crisp.
-5. UI labels like RESERVED, AVAILABLE, VERIFIED, AUDITED, ON-CHAIN are encouraged where relevant.
-6. Full short sentences on glass panels are permitted (up to 8 words) -- this brand is text-heavy
-   by design. Speech bubbles may carry conversational phrases.
-7. No real company/exchange names anywhere in the image. No wallet addresses (0x...).
-""".strip(),
-        'fallback_brief': {
-            'read': 'LAUNCH',
-            'family': 'product',
-            'headline': 'CRYPTO MARKETS MOVE',
-            'data_elements': [],
-            'environment': 'circuit_floor',
-            'camera': 'eye_level_symmetric',
-            'energy': 'calm_premium',
-            'mood_accent': 'cyan',
-            'wolf': 'none',
-            'subject_scene': (
-                "A single clear glass UI panel sits on a dark circuit-board platform with glowing cyan "
-                "trace lines, displaying a clean app-mockup interface with a status indicator and the "
-                "green RZ coin icon, radiating soft cyan light."
-            ),
-        },
-        'brief_examples': """
-Worked examples (for guidance only -- do not copy headlines or scenes verbatim):
-
-A. Article: "Why custodial exchanges still hold your crypto hostage"
-{"read": "CONTRAST", "family": "versus", "headline": "NOT YOUR KEYS, NOT YOUR CRYPTO", "data_elements": [{"value": "CUSTODY", "label": ""}, {"value": "ON-CHAIN", "label": ""}, {"value": "MIDDLEMAN", "label": ""}, {"value": "DIRECT", "label": ""}], "environment": "circuit_floor", "camera": "eye_level_symmetric", "energy": "dramatic_tension", "mood_accent": "cyan_vs_red", "wolf": "both", "subject_scene": "On the left, a dim red-tinted panel shows CUSTODY and MIDDLEMAN with red X marks, broken glass fragments drifting from it. On the right, a pristine cyan-green panel shows ON-CHAIN and DIRECT with green checkmarks. The Blue Kid and Wolf stand on the right side, the Kid pointing at the positive panel while the Wolf gestures dismissively at the broken left side. Circuit-board floor with glowing traces beneath."}
-
-B. Article: "RZ Prime launches structured early access for token reservations"
-{"read": "LAUNCH", "family": "product", "headline": "EARLY ACCESS SHOULD BE STRUCTURED", "data_elements": [{"value": "RESERVE", "label": ""}, {"value": "RZUSD", "label": ""}, {"value": "AVAILABLE", "label": ""}], "environment": "circuit_floor", "camera": "low_angle_hero", "energy": "calm_premium", "mood_accent": "cyan_vs_green", "wolf": "none", "subject_scene": "A large clear glass UI panel sits on a circuit-board platform, displaying an app-mockup reserve interface with RESERVE, RZUSD, and AVAILABLE fields glowing in cyan and green, the green RZ coin icon hovering beside it."}
-
-C. Article: "What actually happens when your reservation window expires"
-{"read": "PROCESS", "family": "flow", "headline": "WHAT ACTUALLY HAPPENS IF I DO NOTHING", "data_elements": [{"value": "EXPIRES", "label": "WINDOW"}, {"value": "RELEASED", "label": "TOKENS"}, {"value": "$0", "label": "COST"}], "environment": "circuit_floor", "camera": "eye_level_symmetric", "energy": "calm_premium", "mood_accent": "cyan", "wolf": "both", "subject_scene": "Three connected clear glass panels descend diagonally on a circuit-board platform, arrows linking them: WINDOW EXPIRES at top, TOKENS RELEASED in middle, YOU PAY ZERO at bottom with a green checkmark. The Blue Kid touches the top panel while the Wolf stands at the bottom, gesturing calmly toward the zero-cost outcome."}
-
-D. Article: "The old model vs RZ Prime: a feature comparison"
-{"read": "CONTRAST", "family": "table", "headline": "WHY ARE PEOPLE STILL USING THE OLD MODEL", "data_elements": [{"value": "CeFi", "label": ""}, {"value": "RZ", "label": ""}, {"value": "FEES", "label": ""}, {"value": "KYC", "label": ""}, {"value": "CUSTODY", "label": ""}], "environment": "circuit_floor", "camera": "slight_overhead", "energy": "calm_premium", "mood_accent": "cyan_vs_red", "wolf": "kid", "subject_scene": "A glass comparison table fills the center on a circuit-board platform: CeFi column dim and red-tinted on the left, RZ PRIME column glowing cyan-green on the right, with rows for FEES, KYC, and CUSTODY. The Blue Kid stands beside the table, pointing at the RZ PRIME column. Green checkmarks on the RZ side, red X marks on the CeFi side."}
-
-E. Article: "RZ Prime fees are transparent: 3%, 6%, or 9%"
-{"read": "NUMBER", "family": "data_tiles", "headline": "CLEAR FEE, CLEAR TIMING, CLEAR OUTCOME", "data_elements": [{"value": "3%", "label": "TIER 1"}, {"value": "6%", "label": "TIER 2"}, {"value": "9%", "label": "TIER 3"}], "environment": "circuit_floor", "camera": "low_angle_hero", "energy": "calm_premium", "mood_accent": "cyan_vs_green", "wolf": "none", "subject_scene": "Three ascending clear glass tiles rise from a circuit-board platform like stairs, each displaying a fee percentage in large cyan text with a tier label below, the tiles growing taller left to right, soft green glow on the highest tier."}
-
-F. Article: "In a space where humans make mistakes, code doesn't"
-{"read": "THREAT", "family": "shatter", "headline": "IN A SPACE WHERE HUMANS MAKE MISTAKES CODE DOESN'T", "data_elements": [{"value": "VERIFIED", "label": ""}, {"value": "AUDITED", "label": ""}, {"value": "ON-CHAIN", "label": ""}, {"value": "CUSTODY", "label": ""}, {"value": "MIDDLEMAN", "label": ""}], "environment": "circuit_floor", "camera": "low_angle_hero", "energy": "explosive_dynamic", "mood_accent": "cyan_vs_red", "wolf": "none", "subject_scene": "A pristine glass cube at center glows cyan with VERIFIED, AUDITED, and ON-CHAIN badges in green on its faces. At the edges, crumbling legacy elements labeled CUSTODY and MIDDLEMAN shatter outward with red X marks and alarm-red cracks, fragments suspended mid-air. Circuit-board floor with glowing traces radiates beneath the intact cube."}
-""".strip(),
-    },
-    'Coin Hall': {
-        'brand_name': 'Coin Halls',
-        'brand_tagline': "a luxury Web3 prediction-game brand set in a 1920s Art Deco mansion world, where "
-                         "holographic on-chain data lives inside classical opulence",
-        'headline_max_words': 7,
-        'headline_uppercase': False,
-        'mood_accent_default': 'gold',
-        'mood_accent_restricted': {'gold_vs_mono': 'contrast'},
-        'axis_optional': {'hall_theme': True},
-        'data_element_template': 'an engraved gold plaque or glowing holographic panel displaying "{value}"{label_part}',
-        'data_element_label_template': ' next to the label "{label}"',
-        'legibility_line': "All lettering is large, elegant, crisp and clearly legible, engraved gold serif style.",
-        'anti_repetition_rules': (
-            "Hard rules: do not repeat the same family more than 2 times in a row; do not use the "
-            "'grand_hall' environment more than 3 times in a row; use the 'society' family at most "
-            "once every 4 posts; include a hall_theme other than 'none' at least once every 5 posts; "
-            "include a holographic/on-chain element in at least 2 of every 3 posts."
-        ),
-        # §0 — Frozen brand layer: never varies, never touches an LLM.
-        'frozen_style': {
-            'format': "vertical 4:5 editorial poster set in a 1920s Art Deco / Gatsby-era luxury world -- grand "
-                      "mansion interiors and estates, rendered as cinematic photographic realism, NOT glossy "
-                      "3D-render and NOT neon sci-fi",
-            'palette': "near-black and deep warm brown base, with champagne gold, brass and amber as the dominant "
-                       "accent, and warm candlelight / chandelier glow throughout. The one permitted tech color is "
-                       "a faint teal-emerald holographic glow, used sparingly",
-            'materials': "black marble with gold veining, polished brass, crystal chandeliers, aged paper, "
-                         "leather-bound ledgers, velvet, gold engraving, candle flame",
-            'rendering': "warm, low-key, candlelit / chandelier-lit cinematic photography with dramatic shadows "
-                         "and golden reflections on polished marble floors; elegant figures in evening wear, "
-                         "silhouettes and candlelit crowds are allowed and encouraged, with faces stylized-cinematic "
-                         "and never recognizable real people",
-            'background_vocab': "the brand's signature fusion -- holographic on-chain data living inside the "
-                                 "classical world: teal glass panels with predictions or timestamps floating over "
-                                 "marble, data light-streams entering windows, glowing verified-price tags. Most "
-                                 "images contain at least one subtle on-chain element; the technology is a guest "
-                                 "in the mansion, never the architecture",
-            'headline_zone': "the top zone carries the headline in elegant letter-spaced SERIF type in gold or "
-                             "champagne, often framed by Art Deco ornamental borders with corner flourishes; mixed "
-                             "case or small-caps is allowed",
-            'never': "no neon cyberpunk, no sci-fi corridors, no frosted-glass cube aesthetics, no daylight or "
-                     "office settings, no casual or cartoon style, no white backgrounds, no recognizable real "
-                     "people, no real luxury-brand logos or names, no paragraphs of text, no small dense labels",
-        },
-        # §0 metaphor library — shared visual vocabulary the Art Director can draw on.
-        'metaphors': {
-            "timing / timestamps":               "an antique pocket watch, grandfather clock, or hourglass",
-            "oracle / verified price":            "brass scales of justice, a wax-sealed verdict, or an illuminated 'verified' tag",
-            "entries / records / on-chain log":   "a handwritten ledger, fountain pen, wax seal, or holographic registry board",
-            "the pot / prize":                    "a golden trophy cup overflowing with light or coins",
-            "the halls / choices":                "grand doors, archways, or corridors of doors with engraved signs",
-            "blockchain / on-chain proof":        "teal holographic glass panels, data light-streams, or glowing constellation lines",
-            "skill / precision":                  "a chess piece, telescope, compass, or magnifying glass over numbers",
-            "chaos / gambling / the old way":     "blurred monochrome casino noise, roulette motion blur, or scattered chips",
-            "the platform itself":                "the mansion or chateau at night, with glowing windows",
-            "hall themes":                        "a sculptural luxury automobile (car), a diamond on velvet (jewelry), vintage "
-                                                   "luggage with a glass horizon (trip), brass machinery and gears (industrial), "
-                                                   "or a skyline beyond arched windows (real estate)",
-        },
-        # §1 — Layout families F1-F8 (artifact/contrast/registry/doors/procession/reveal/hologram/society).
-        'families': {
-            'artifact': {
-                'name': "ARTIFACT",
-                'skeleton': "ONE exquisite object sits in macro/close-up on black marble -- a pocket watch, brass "
-                            "scales, trophy, ledger, diamond, or key -- candlelit with shallow depth of field, a "
-                            "dim mansion room blurred behind. The object may carry one short engraved or displayed value.",
-                'text_policy': "Headline plus at most ONE in-scene value displayed on the object itself (a number, "
-                               "a date, or 1-4 words). Prefer art_only or a single data element.",
-                'default_axes': {'environment': 'marble_table', 'camera': 'close_up_macro', 'energy': 'quiet_prestige'},
-                'data_budget': 1,
-            },
-            'contrast': {
-                'name': "CONTRAST",
-                'skeleton': "The frame is split left/right. The negative side is desaturated, monochrome and "
-                            "motion-blurred -- casino noise, roulette wheels, frantic crowds, scattered chips. The "
-                            "positive side is still, warm and golden -- composed figures in an Art Deco hall under "
-                            "chandelier light, ordered and calm. A clean vertical seam or architectural divide "
-                            "separates the two sides.",
-                'text_policy': "Headline only, ideally spanning the seam. At most one short label per side if essential.",
-                'default_axes': {'environment': 'grand_hall', 'camera': 'eye_level_wide', 'energy': 'dramatic_tension'},
-                'data_budget': 2,
-            },
-            'registry': {
-                'name': "REGISTRY",
-                'skeleton': "Either (a) a teal holographic board floats above a marble pedestal in a candlelit "
-                            "hall, listing 2-4 large values with one row highlighted gold as the winner or record; "
-                            "or (b) an open aged ledger lies on marble with 2-3 large handwritten entries, a "
-                            "fountain pen, and a wax seal.",
-                'text_policy': "Headline plus at most 3 value+label pairs. Values are 1-6 characters (e.g. $85.34, "
-                               "$12.4M); labels are 1-2 words. Each value rendered large on its own row or line. "
-                               "No timestamps as microtext.",
-                'default_axes': {'environment': 'grand_hall', 'camera': 'low_angle_pedestal', 'energy': 'quiet_prestige'},
-                'data_budget': 3,
-            },
-            'doors': {
-                'name': "DOORS OF OUTCOME",
-                'skeleton': "2-3 grand doors or archways stand in a marble corridor, each with a short engraved "
-                            "sign above. A golden light-path on the floor splits and flows toward them; doors may "
-                            "glow differently -- warm and open vs dim and closed -- to show outcomes.",
-                'text_policy': "Headline plus at most 3 engraved door signs of 1-3 words each, large.",
-                'default_axes': {'environment': 'door_corridor', 'camera': 'one_point_symmetry', 'energy': 'quiet_prestige'},
-                'data_budget': 3,
-            },
-            'procession': {
-                'name': "HALL PROCESSION",
-                'skeleton': "A symmetrical row of 3-5 ornate doors or archways under a chandelier (the five-halls "
-                            "shot), or three objects on marble pedestals along a corridor, each step represented "
-                            "by an icon-object (door, ledger, trophy) connected by a golden floor inlay.",
-                'text_policy': "Headline plus at most 3 short labels (1-2 words) on signs above doors or pedestals. "
-                               "For the five-hall establishing shot, use hall names (CAR, JEWELRY, TRIP, "
-                               "INDUSTRIAL, REAL ESTATE) but show only 3 visible signs, with the rest implied.",
-                'default_axes': {'environment': 'grand_hall', 'camera': 'one_point_symmetry', 'energy': 'quiet_prestige'},
-                'data_budget': 3,
-            },
-            'reveal': {
-                'name': "REVEAL",
-                'skeleton': "Scale and unveiling: the chateau at night with glowing windows beneath a "
-                            "constellation-lined sky, or a trophy cup swelling with golden light at the end of a "
-                            "long hall, or curtains drawing back from a prize. A small dim foreground gives way "
-                            "to a grand, glowing subject.",
-                'text_policy': "Headline plus optionally one value (the prize or pot figure) on a plaque or holo tag.",
-                'default_axes': {'environment': 'estate_exterior', 'camera': 'eye_level_wide', 'energy': 'ceremonial_awe'},
-                'data_budget': 1,
-            },
-            'hologram': {
-                'name': "HOLOGRAM IN THE HALL",
-                'skeleton': "Teal holographic elements materialize inside the classical space -- a holo panel "
-                            "hovering above a marble table showing a glowing checkmark or seal, a stream of "
-                            "luminous data flowing through a window into a ledger, or ghostly constellation lines "
-                            "connecting a chandelier to a verified-price tag. The classical room dominates; the "
-                            "hologram accent fills roughly 20% of the frame.",
-                'text_policy': "Headline plus at most 2 short holo labels (e.g. 'VERIFIED', one value). Any "
-                               "diagrammatic content is abstract and wordless.",
-                'default_axes': {'environment': 'study_library', 'camera': 'eye_level_wide', 'energy': 'quiet_prestige'},
-                'data_budget': 2,
-            },
-            'society': {
-                'name': "SOCIETY SCENE",
-                'skeleton': "Elegant evening-dress figures populate the hall -- a celebrated winner under a "
-                            "spotlight, an applauding crowd around a prize, or guests with faint holo "
-                            "prediction-tags floating beside them. Cinematic group staging, golden light, marble "
-                            "reflections.",
-                'text_policy': "Headline plus at most 2 short holo-tag values, or one plaque line (e.g. 'CAR "
-                               "HALL'). Never wallet addresses or long strings.",
-                'default_axes': {'environment': 'grand_hall', 'camera': 'eye_level_wide', 'energy': 'ceremonial_awe'},
-                'data_budget': 2,
-            },
-        },
-        # §3 — Variation axes: each value maps to a fixed sentence used by the assembler.
-        'axes': {
-            'environment': {
-                'grand_hall':      "The setting is a grand Art Deco hall, with crystal chandeliers, columns, and "
-                                   "a black marble floor inlaid with gold.",
-                'study_library':   "The setting is an intimate wood-paneled study or library, with a desk lamp, "
-                                   "a leather-bound ledger, and a glass of whisky.",
-                'door_corridor':   "The setting is a marble corridor lined with ornate doors and archways, "
-                                   "receding into the depth of the frame.",
-                'marble_table':    "The setting is an extreme close-up world: a single object resting on a black "
-                                   "marble surface, candlelight reflecting off the stone.",
-                'estate_exterior': "The setting is the grand chateau at night, its windows glowing warmly beneath "
-                                   "a starlit, constellation-lined sky.",
-                'gallery_balcony': "The setting is a mezzanine gallery overlooking the grand hall below, with "
-                                   "ornate railings and deep architectural shadow.",
-            },
-            'camera': {
-                'close_up_macro':    "The camera is in extreme close-up, macro focus on the texture and surface "
-                                     "detail of the central object.",
-                'eye_level_wide':    "The camera is a cinematic eye-level wide establishing shot.",
-                'one_point_symmetry':"The camera is positioned frontally with one-point symmetry, looking "
-                                     "straight down a corridor or row of doors.",
-                'low_angle_pedestal':"The camera looks up at a pedestal or holographic board from a low angle.",
-                'over_shoulder':     "The camera looks past a silhouetted guest toward the subject.",
-            },
-            'energy': {
-                'quiet_prestige':   "The lighting is still and confident, candlelit and golden, conveying quiet prestige.",
-                'dramatic_tension': "The lighting is high-contrast with deep shadows and a single hard light "
-                                    "source, creating dramatic tension.",
-                'ceremonial_awe':   "The scene is lit like a ceremonial spotlight moment, with swirling light and "
-                                    "a sense of celebration.",
-            },
-            'hall_theme': {
-                'car':         "A sculptural luxury automobile silhouette with brass engine details is woven into "
-                               "the scene, evoking the Car Hall.",
-                'jewelry':     "A diamond or necklace resting on dark velvet, catching candle glints, is woven "
-                               "into the scene, evoking the Jewelry Hall.",
-                'trip':        "Vintage travel luggage and a glass horizon traced with golden map lines are woven "
-                               "into the scene, evoking the Trip Hall.",
-                'industrial':  "Polished brass machinery and gears with a forge-like glow are woven into the "
-                               "scene, evoking the Industrial Hall.",
-                'real_estate': "A skyline glimpsed beyond arched windows, alongside an architectural model on "
-                               "marble, is woven into the scene, evoking the Real Estate Hall.",
-            },
-            'mood_accent': {
-                'gold':       "The dominant accent color throughout the scene is champagne gold and brass.",
-                'gold_teal':  "The dominant accent blends champagne gold with the brand's teal-emerald "
-                              "holographic glow, for scenes carrying on-chain elements.",
-                'gold_vs_mono':"The scene contrasts champagne gold and warm light on the positive side against "
-                               "desaturated monochrome on the negative side.",
-            },
-        },
-        # §2 — News-type -> family routing guidance for the Art Director.
-        'routing_table': """
-News category -> Primary family (fallback):
-- Auction results / collectible price records -> registry (fallback: artifact)
-- Luxury category news (cars, watches, jewelry, travel, real estate) -> artifact (fallback: society)
-- Luxury market trends / wealth reports -> registry (fallback: reveal)
-- Oracle / price feeds / Chainlink / Pyth -> hologram (fallback: artifact)
-- Smart-contract fairness / transparency / timestamps -> hologram (fallback: doors)
-- No-KYC / wallet-based access -> hologram (fallback: contrast)
-- Web3 gaming / entertainment market context -> contrast (fallback: society)
-- Gambling-vs-skill / positioning / FUD -> contrast (fallback: artifact)
-- How-it-works / mechanics explainers -> doors (fallback: procession)
-- Platform overview / five halls -> procession (fallback: reveal)
-- Winner / prize / pot announcements -> society (fallback: reveal)
-- Growth / big numbers / anticipation -> reveal (fallback: registry)
-- Anything ambiguous -> artifact
-
-Tie-breakers: prefer the family NOT used in the last 3 posts (see anti-repetition notes below). If still
-tied, prefer the lower-risk family -- artifact is the safest universal fallback.
-""".strip(),
-        # §4 items 1-5 — global text rules for the Art Director (item 6, the legibility line, is
-        # appended deterministically by the assembler).
-        'text_rules': """
-1. Headline: 7 words or fewer, elegant, mixed case or small-caps allowed. Big values are encouraged. Avoid
-   hard-to-spell proper nouns; never use real auction-house or luxury-brand names (say THE RECORD SALE, not
-   Sotheby's), and never depict real luxury-brand logos or names in the image.
-2. In-scene text budget per family: artifact <=1, contrast <=2, registry <=3 value+label pairs, doors <=3
-   door signs, procession <=3 labels, reveal <=1 value, hologram <=2 holo labels, society <=2 short tags.
-3. Values are 1-6 characters; labels and signs are 1-3 words; render every string large on its own clean
-   surface (a plaque, sign, holo panel, or ledger line).
-4. Sub-headlines are not generated in-image; thin taglines belong to the overlay layer, not the prompt.
-5. Never render wallet addresses, timestamps as microtext, dense lists, or paragraphs.
-""".strip(),
-        # Safe fallback brief used when the Art Director response is missing/invalid/banned.
-        'fallback_brief': {
-            'family': 'artifact',
-            'headline': 'A Quiet Moment, Recorded',
-            'layout': 'art_only',
-            'data_elements': [],
-            'environment': 'marble_table',
-            'camera': 'close_up_macro',
-            'energy': 'quiet_prestige',
-            'mood_accent': 'gold',
-            'hall_theme': 'none',
-            'subject_scene': (
-                "An antique gold pocket watch lies open on black marble veined with gold, its face catching "
-                "warm candlelight, with the dim glow of a grand hall blurred softly behind it."
-            ),
-        },
-        'brief_examples': """
-Worked examples (for guidance only -- do not copy headlines or scenes verbatim):
-
-A. Article: "Patek Philippe watch sells for record $12.4M at auction"
-{"family": "registry", "headline": "A Record Falls Under the Hammer", "layout": "art_with_data", "data_elements": [{"value": "$12.4M", "label": "HAMMER"}, {"value": "x3", "label": "ESTIMATE"}], "environment": "grand_hall", "camera": "low_angle_pedestal", "energy": "quiet_prestige", "mood_accent": "gold_teal", "hall_theme": "jewelry", "subject_scene": "A teal holographic registry board hovers above a black marble pedestal in a candlelit Art Deco hall, two glowing ledger rows displaying the record figures with the top row haloed in gold; below, a diamond necklace rests on dark velvet catching candlelight, while blurred evening-dress silhouettes watch from the shadows."}
-
-B. Article: "Chainlink launches new low-latency price feeds"
-{"family": "hologram", "headline": "The Oracle Just Got Faster", "layout": "art_with_data", "data_elements": [{"value": "VERIFIED", "label": ""}], "environment": "study_library", "camera": "eye_level_wide", "energy": "quiet_prestige", "mood_accent": "gold_teal", "hall_theme": "none", "subject_scene": "A teal stream of luminous data pours through a tall window onto an open ledger on a wood-paneled desk, while a brass scale beside it tips gently into balance, one holographic tag glowing above the ledger."}
-
-C. Article: "Global luxury car market hits new high"
-{"family": "artifact", "headline": "Motion Has Never Been Worth More", "layout": "art_with_data", "data_elements": [{"value": "CAR HALL", "label": ""}], "environment": "marble_table", "camera": "close_up_macro", "energy": "quiet_prestige", "mood_accent": "gold_teal", "hall_theme": "car", "subject_scene": "A sculptural brass automobile model rests on black marble, candlelight catching its curves, with faint teal constellation lines tracing its silhouette and a small engraved plaque beside it."}
-
-D. Article: "Survey: users abandoning casino dApps for skill-based games"
-{"family": "contrast", "headline": "Luck Fades. Skill Compounds.", "layout": "art_only", "data_elements": [], "environment": "grand_hall", "camera": "eye_level_wide", "energy": "dramatic_tension", "mood_accent": "gold_vs_mono", "hall_theme": "none", "subject_scene": "On the left, monochrome motion-blurred slot machines and frantic figures dissolve into noise; on the right, a still golden Art Deco hall where composed guests in evening wear study a glowing registry board, a clean marble seam dividing the two worlds."}
-
-E. Article: "Car Hall winner announced"
-{"family": "society", "headline": "The Pot Found Its Owner", "layout": "art_with_data", "data_elements": [{"value": "CAR HALL", "label": ""}], "environment": "grand_hall", "camera": "eye_level_wide", "energy": "ceremonial_awe", "mood_accent": "gold_teal", "hall_theme": "car", "subject_scene": "A spotlight falls on an applauded winner in evening dress beside a veiled sculptural automobile in a grand Art Deco hall, golden confetti light drifting down, with one holographic plaque glowing softly nearby."}
-
-F. Article: "What happens at the final reveal?"
-{"family": "doors", "headline": "Every Pot Finds Its Owner", "layout": "art_with_data", "data_elements": [{"value": "EXACT", "label": ""}, {"value": "FIRST", "label": ""}, {"value": "CLOSEST", "label": ""}], "environment": "door_corridor", "camera": "one_point_symmetry", "energy": "quiet_prestige", "mood_accent": "gold", "hall_theme": "none", "subject_scene": "Three arched marble doors recede down a candlelit corridor, each engraved with a single word above its frame, a golden light-path splitting across the floor toward them with the leftmost door glowing warmly open."}
-""".strip(),
-        'extra_banned_subject_terms': [
-            'rolex', 'patek philippe', "sotheby's", 'sothebys', "christie's", 'christies',
-            'rolls-royce', 'rolls royce', 'ferrari', 'lamborghini', 'wallet address',
-        ],
-    },
-    'Meta Coin Guard': {
-        'brand_name': 'Meta Coin Guard',
-        'brand_tagline': 'a parametric on-chain cover protocol for Web3 -- translucent engineered glass, '
-                         'dark steel platforms, and glowing circuit networks define a world where rules '
-                         'are written before volatility arrives',
-        'headline_max_words': 7,
-        'headline_uppercase': True,
-        'mood_accent_default': 'teal',
-        'mood_accent_restricted': {'teal_vs_red': {'families': ['threat_vs_guard'], 'environments': ['void_storm', 'ruin_contrast']}},
-        'environment_restricted': {
-            'void_storm': {'energies': ['storm_tension'], 'families': ['threat_vs_guard']},
-            'ruin_contrast': {'energies': ['storm_tension'], 'families': ['threat_vs_guard']},
-        },
-        'data_element_template': 'a glowing panel or glass surface displaying "{value}"{label_part}',
-        'data_element_label_template': ' labeled "{label}"',
-        'legibility_line': "All text is large, bold, crisp and clearly legible.",
-        'logo_line': "A small MCG shield emblem in white or teal sits in the bottom-left corner of the frame.",
-        'anti_repetition_rules': (
-            "Hard rules: do not repeat the same family more than 2 times in a row; do not use "
-            "'threat_vs_guard' more than 2 times in any 4 consecutive posts; do not use the "
-            "'glass_dark' finish more than 4 times in a row; use the 'guardian' family at most "
-            "once every 8 posts; use the 'left_block' headline_layout roughly 1 in 3 posts; "
-            "the shield motif should appear in some form in every post; include a glass/transparent "
-            "structure in at least 3 of every 4 posts."
-        ),
-        'frozen_style': {
-            'format': "vertical 4:5 editorial poster set in a security-infrastructure world of translucent "
-                      "engineered glass, dark steel platforms, and glowing circuit networks -- clean 3D product "
-                      "visualization aesthetic, NOT photorealistic and NOT cartoon",
-            'palette': "near-black charcoal base, with teal/cyan glow as the primary accent (shield outlines, "
-                       "conduit traces, protected states) and purple/violet as the secondary accent (brand "
-                       "shield icon, energy cores, headline gradients); headline type fades from white to "
-                       "purple or from white to sage-green. Red/crimson is permitted only as the threat color "
-                       "-- crashes, shattering, ruins -- and never represents the brand itself. Gold/bronze "
-                       "appears only on coins, premium badges, or ranking numbers",
-            'materials': "translucent engineered glass with visible circuit-board internals (the signature "
-                         "material), dark gunmetal steel platforms and pedestals, circuit-board floor surfaces "
-                         "with teal trace lines, teal neon conduit tubes, server rack corridors, polished "
-                         "dark composite surfaces",
-            'rendering': "clean high-contrast stylized 3D product-visualization with cinematic rim-lighting "
-                         "in teal and purple; dark dramatic shadows; glass objects are transparent and "
-                         "luminous, not frosted or blurry; no humans except the faceless armored Guardian "
-                         "figure or anonymous silhouettes in conceptual scenes",
-            'background_vocab': "the shield motif is the brand's universal anchor -- a 3D metallic shield, "
-                                 "a glowing teal outline, a glass shield frame, or an embossed badge -- "
-                                 "alongside circuit-board terrain, teal conduit lines connecting structures, "
-                                 "and server-rack corridor environments",
-            'headline_zone': "the headline is set in bold geometric sans-serif UPPERCASE type, white or "
-                             "fading from white to purple, positioned centered in a top zone or stacked "
-                             "in a left-aligned editorial block",
-            'never': "no frosted/blurry glassmorphism (glass must be CLEAR and transparent), no gold "
-                     "Art Deco or classical luxury, no wireframe-only voids, no daylight or white "
-                     "backgrounds, no casual or cartoon style, no recognizable real people, no real "
-                     "logos, no paragraphs of text, no micro-labels",
-        },
-        'metaphors': {
-            "protection / the Guard": "a shield -- 3D metallic, glowing teal outline, translucent glass form, or embossed badge",
-            "the protocol / rules": "a terminal window with short glowing code, or engraved logic lines on a glass panel",
-            "threat / volatility / crashes": "shattering glass objects, falling red candlestick charts, crumbling structures "
-                                              "with red embers, or collapsing dominoes",
-            "time pressure / missed moment": "a shattering hourglass with glass shards and spilling sand",
-            "custody risk / drained funds": "a breached vault or crumbling institutional building leaking red light",
-            "user's assets / wallet": "a dark leather-and-metal wallet with a glowing shield emblem, or a sealed case",
-            "non-custodial / user control": "the wallet standing untouched outside the vault, with no key held by anyone",
-            "on-chain verification / audit": "a glowing green checkmark seal, a verified badge, or teal scan lines",
-            "liquidity / capital flows": "a translucent glass wave or flowing teal light streams",
-            "oracle / data feeds": "luminous data conduits feeding a console, teal energy streams, or price tickers on dark panels",
-            "monitoring / transparency": "a holographic command table, transparent glass structures with visible internals",
-            "plans / tiers": "glass-and-steel blocks in ascending steps, or metal shield badges in silver, gold, and platinum",
-            "discipline / structure": "a calm figure or shield standing solid while chaos surrounds it",
-            "the platform / app": "a dark UI card showing wallet balance and green checkmark, framed by a glass shield",
-        },
-        'families': {
-            'shield_hero': {
-                'name': "SHIELD HERO",
-                'skeleton': "ONE large shield dominates the frame as the central hero object -- it can be a "
-                            "3D metallic shield, a glowing teal shield outline, or a translucent glass shield "
-                            "with visible circuitry inside -- sitting on a dark steel pedestal or platform, "
-                            "with teal conduit traces converging toward it and a circuit-board floor beneath.",
-                'text_policy': "Headline plus at most 1 short label or value displayed on the shield face "
-                               "(e.g. 'YOUR GUARD', a percentage, or 1-4 words). Prefer art_only.",
-                'default_axes': {'environment': 'steel_platform', 'camera': 'low_angle_hero', 'energy': 'calm_structure', 'finish': 'glass_dark'},
-                'data_budget': 1,
-            },
-            'threat_vs_guard': {
-                'name': "THREAT vs GUARD",
-                'skeleton': "A two-zone confrontation in flexible geometry (left/right, top/bottom, or "
-                            "background/foreground): one zone is the THREAT -- shattering glass objects, "
-                            "crashing red candlestick charts, crumbling structures with red embers or "
-                            "smoke, collapsing dominoes, or a breached vault; the other zone is the GUARD "
-                            "-- an intact shield, a transparent glass structure, or a calm wallet on a "
-                            "platform, rendered in teal and purple, always visually heavier and more stable "
-                            "than the chaos beside it.",
-                'text_policy': "Headline plus at most 2 short zone labels (1-3 words each, e.g. 'MARKET PRICE' / "
-                               "'DECLARED VALUE'). Labels on the threat side may name the threat.",
-                'default_axes': {'environment': 'void_storm', 'camera': 'dutch_or_split', 'energy': 'storm_tension', 'finish': 'glass_dark'},
-                'data_budget': 2,
-            },
-            'glass_fortress': {
-                'name': "GLASS FORTRESS",
-                'skeleton': "A large translucent glass-and-steel architectural structure -- a glass cube "
-                            "building, a transparent server tower, or a crystal citadel -- with visible "
-                            "circuit-board internals and teal energy flowing through its transparent walls. "
-                            "The structure may have the MCG shield emblem embedded in or floating above it. "
-                            "Often shown at monumental scale from a low angle.",
-                'text_policy': "Headline plus at most 2 short labels on glass panels (e.g. 'Transparent', "
-                               "'Autonomous'). Labels appear as floating holographic tags.",
-                'default_axes': {'environment': 'server_corridor', 'camera': 'low_angle_hero', 'energy': 'calm_structure', 'finish': 'glass_bright'},
-                'data_budget': 2,
-            },
-            'plan_blocks': {
-                'name': "PLAN BLOCKS",
-                'skeleton': "2-3 engineered glass-and-steel blocks stand on circuit-board terrain, arranged "
-                            "in a row or as ascending steps; each block is a translucent glass platform "
-                            "with teal or purple internal glow, carrying one large value and one short "
-                            "label; a coin badge or shield may hover above the key block.",
-                'text_policy': "Headline plus at most 3 value+label pairs. Values are 1-6 characters; "
-                               "labels are 1-2 words. Each pair isolated on its own block face, rendered large.",
-                'default_axes': {'environment': 'circuit_terrain', 'camera': 'isometric_high', 'energy': 'calm_structure', 'finish': 'glass_dark'},
-                'data_budget': 3,
-            },
-            'protocol_flow': {
-                'name': "PROTOCOL FLOW",
-                'skeleton': "A horizontal three-node sequence connected by glowing teal arrows or conduit "
-                            "lines -- three translucent glass cards, three icons on pedestals, or three "
-                            "holographic stages -- each step represented by an icon or UI element "
-                            "(wallet, token, smart contract, shield) showing a process left to right.",
-                'text_policy': "Headline plus at most 3 step labels of 1-3 words (e.g. 'GUARD ACTIVATED', "
-                               "'MARKET MOVES', 'PROTOCOL EXECUTES').",
-                'default_axes': {'environment': 'steel_platform', 'camera': 'frontal_wide', 'energy': 'calm_structure', 'finish': 'glass_dark'},
-                'data_budget': 3,
-            },
-            'code_terminal': {
-                'name': "CODE TERMINAL",
-                'skeleton': "A terminal window or stack of rule-notification panels floats as the hero "
-                            "element, framed by the MCG shield outline or embedded in a glass structure; "
-                            "the panels have purple neon borders and show short rule text or pseudo-code "
-                            "lines; thin data threads connect the terminal to the environment.",
-                'text_policy': "Headline plus at most 3 lines of short rule text or pseudo-code (each <=6 "
-                               "words). Each rule panel is its own visual element with an icon.",
-                'default_axes': {'environment': 'server_corridor', 'camera': 'frontal_terminal', 'energy': 'calm_structure', 'finish': 'glass_dark'},
-                'data_budget': 3,
-            },
-            'dashboard': {
-                'name': "DASHBOARD",
-                'skeleton': "A dark UI card or app mockup sits centrally, showing a wallet balance or "
-                            "Guard status with a green checkmark; the card is framed by a translucent "
-                            "glass shield structure; floating badges around it display key parameters "
-                            "(token, duration, plan); teal energy waves or conduit lines flow in the "
-                            "background.",
-                'text_policy': "Headline plus at most 3 floating badge labels (1-3 words each, e.g. "
-                               "'Token: INS', 'Guard Plan: X', 'Duration: 4 months').",
-                'default_axes': {'environment': 'steel_platform', 'camera': 'frontal_wide', 'energy': 'calm_structure', 'finish': 'glass_bright'},
-                'data_budget': 3,
-            },
-            'guardian': {
-                'name': "THE GUARDIAN",
-                'skeleton': "The anonymous armored sentinel -- sleek dark armor with teal accent lines "
-                            "and a reflective visor, no visible face -- stands calm on a raised platform "
-                            "or pedestal; an optional three-node timeline or shield projection appears "
-                            "beside or behind the figure; circuit-board floor and dark environment.",
-                'text_policy': "Headline plus at most 2 short labels (timeline nodes or one tag).",
-                'default_axes': {'environment': 'steel_platform', 'camera': 'low_angle_hero', 'energy': 'calm_structure', 'finish': 'glass_dark'},
-                'data_budget': 2,
-            },
-        },
-        'axes': {
-            'environment': {
-                'steel_platform':  "The setting is a dark polished steel platform or pedestal, with "
-                                   "circuit-board traces in the floor and teal conduit lines at the edges.",
-                'server_corridor': "The setting is a corridor of glowing server racks receding into the "
-                                   "distance, with teal and purple rim-lighting on the rack surfaces.",
-                'circuit_terrain': "The setting is a vast landscape of circuit-board terrain stretching "
-                                   "to the horizon, with teal trace lines glowing like city grids.",
-                'console_deck':    "The setting is a dark operations room centered on a holographic "
-                                   "command table or glass platform.",
-                'void_storm':      "The setting is dark space with fragments of shattering glass and "
-                                   "falling red chart candles, smoke and crimson embers.",
-                'ruin_contrast':   "The setting splits: one side shows crumbling institutional buildings "
-                                   "or rusted structures with red glow; the other side shows clean glass "
-                                   "and teal-lit infrastructure.",
-            },
-            'camera': {
-                'low_angle_hero':   "The camera looks up at the central object or figure from a low angle, "
-                                    "making it feel monumental.",
-                'isometric_high':   "The camera is a high analytical three-quarter isometric view.",
-                'frontal_wide':     "The camera is a flat-on cinematic wide shot, symmetrical.",
-                'frontal_terminal': "The camera faces the terminal or panel stack directly, centered.",
-                'dutch_or_split':   "The camera uses a tilted angle or a two-zone split framing for "
-                                    "confrontation.",
-                'close_up_detail':  "The camera is in close-up on the glass surface detail, showing "
-                                    "circuit internals and light refractions.",
-            },
-            'energy': {
-                'calm_structure': "The lighting is still, ordered and confident -- clean teal and purple "
-                                  "rim-lights on glass and metal.",
-                'storm_tension':  "The threat is active -- red light, volumetric haze, shattering glass "
-                                  "and falling chart candles charge the scene.",
-                'ascendant':      "The light is rising upward, with a sense of scale reveal and growth, "
-                                  "teal energy flowing upward through glass structures.",
-            },
-            'mood_accent': {
-                'teal':        "The dominant accent color throughout the scene is teal/cyan.",
-                'teal_purple': "The dominant accent blends teal/cyan with purple/violet, for "
-                               "brand-core or shield-led scenes.",
-                'teal_vs_red': "The scene contrasts teal and purple on the Guard's side against "
-                               "red/crimson on the threat side.",
-            },
-            'finish': {
-                'glass_dark':   "The dominant finish is dark gunmetal with translucent glass elements "
-                                "glowing from within, deep shadows and neon accents.",
-                'glass_bright': "The dominant finish emphasizes the glass transparency -- brighter, "
-                                "more luminous, with teal and purple light filling the glass structures.",
-            },
-            'headline_layout': {
-                'centered_top': "the headline is centered in a clean top zone of the frame.",
-                'left_block':   "the headline is stacked in a left-aligned editorial block.",
-            },
-        },
-        'routing_table': """
-News category -> Primary family (fallback):
-- Hacks / exploits / drained protocols -> threat_vs_guard (fallback: shield_hero)
-- Market crashes / volatility spikes -> threat_vs_guard (fallback: shield_hero)
-- Smart-contract security / audits -> code_terminal (fallback: glass_fortress)
-- Rule-based / automated settlement -> code_terminal (fallback: protocol_flow)
-- Non-custodial design / user control -> shield_hero (fallback: glass_fortress)
-- Wallet monitoring / on-chain visibility -> dashboard (fallback: code_terminal)
-- Oracle reliability / price feeds -> dashboard (fallback: code_terminal)
-- DeFi metrics / TVL / fees -> plan_blocks (fallback: dashboard)
-- Policy / regulation / sanctions -> threat_vs_guard in glass_bright finish (fallback: glass_fortress)
-- Institutional Web3 adoption -> glass_fortress in glass_bright finish (fallback: shield_hero)
-- Multi-chain / protocol expansion -> glass_fortress (fallback: dashboard)
-- How-it-works / plans / mechanics -> protocol_flow (fallback: code_terminal)
-- Plan comparisons / tiers / pricing -> plan_blocks (fallback: protocol_flow)
-- Psychology / discipline / panic -> guardian (fallback: threat_vs_guard)
-- Product / app features / UX -> dashboard (fallback: protocol_flow)
-- Anything ambiguous -> shield_hero
-
-Tie-breakers: prefer the family NOT used in the last 3 posts (see anti-repetition notes below). If still
-tied, prefer the lower-risk family -- shield_hero is the safest universal fallback. The threat_vs_guard
-family will naturally dominate given the security news flow; the anti-repetition rules keep it from
-monopolizing the feed.
-""".strip(),
-        'text_rules': """
-1. Headline: 7 words or fewer, bold UPPERCASE sans, white or fading to purple or sage-green.
-   Avoid hard-to-spell proper nouns; refer to protocols and companies by concept (e.g. THE BRIDGE EXPLOIT,
-   not the protocol's name) -- this also avoids implying accusations on developing incident news. Tickers
-   (BTC, ETH, SOL) are safe to use.
-2. In-scene text budget per family: shield_hero <=1 label, threat_vs_guard <=2 zone labels, plan_blocks <=3
-   value+label pairs, code_terminal <=3 rule lines (<=6 words each), protocol_flow <=3 step labels,
-   glass_fortress <=2 holo labels, dashboard <=3 badge labels, guardian <=2 labels.
-3. Values are 1-6 characters; labels are 1-3 words; render every string large on its own clean glass or
-   steel surface.
-4. Sub-headlines are not generated in-image; they belong to the overlay layer, not the prompt.
-5. Never render wallet addresses, dense dashboards, readable candlestick charts, or paragraphs of text.
-""".strip(),
-        'fallback_brief': {
-            'family': 'shield_hero',
-            'headline': 'THE GUARD HOLDS',
-            'layout': 'art_only',
-            'data_elements': [],
-            'environment': 'steel_platform',
-            'camera': 'low_angle_hero',
-            'energy': 'calm_structure',
-            'mood_accent': 'teal',
-            'finish': 'glass_dark',
-            'headline_layout': 'centered_top',
-            'subject_scene': (
-                "A translucent glass shield with visible circuit-board internals stands on a dark "
-                "polished steel pedestal, glowing with teal light from within, teal conduit traces "
-                "converging toward it across the circuit-board floor, server rack silhouettes fading "
-                "into shadow behind it."
-            ),
-        },
-        'brief_examples': """
-Worked examples (for guidance only -- do not copy headlines or scenes verbatim):
-
-A. Article: "Bridge protocol exploited for $120M"
-{"family": "threat_vs_guard", "headline": "PROTOCOLS FALL, RULES DON'T", "layout": "art_with_data", "data_elements": [{"value": "$120M", "label": "DRAINED"}], "environment": "ruin_contrast", "camera": "dutch_or_split", "energy": "storm_tension", "mood_accent": "teal_vs_red", "finish": "glass_dark", "headline_layout": "centered_top", "subject_scene": "The left side shows crumbling server structures with red ember glow and smoke, labeled panels falling from rusted walls; the right side shows the MCG shield standing intact on a clean glass platform connected by teal conduit lines, transparent glass panels with visible circuitry glowing steadily behind it."}
-
-B. Article: "Major audit firm publishes smart-contract security report"
-{"family": "code_terminal", "headline": "CLEAR RULES FAVOR CLEAR CODE", "layout": "art_with_data", "data_elements": [{"value": "verify", "label": ""}, {"value": "execute", "label": ""}, {"value": "settle", "label": ""}], "environment": "server_corridor", "camera": "frontal_terminal", "energy": "calm_structure", "mood_accent": "teal_purple", "finish": "glass_dark", "headline_layout": "left_block", "subject_scene": "A stack of three glass-and-steel rule panels with purple neon borders floats within the outline of the MCG shield, each panel showing a short glowing line of text with a small icon, thin teal data threads anchoring the panels to the server racks behind them."}
-
-C. Article: "DeFi TVL hits $200B milestone"
-{"family": "plan_blocks", "headline": "THE FLOOR JUST GOT HIGHER", "layout": "art_with_data", "data_elements": [{"value": "$200B", "label": "TVL"}, {"value": "+40%", "label": "YOY"}], "environment": "circuit_terrain", "camera": "isometric_high", "energy": "ascendant", "mood_accent": "teal_purple", "finish": "glass_dark", "headline_layout": "centered_top", "subject_scene": "Two translucent glass-and-steel blocks stand on circuit-board terrain in ascending steps, each block glowing with teal internal light and carrying a large value on its face, a purple shield badge hovering above the taller block, teal conduit traces connecting the blocks along the ground."}
-
-D. Article: "How the parametric cover protocol works"
-{"family": "protocol_flow", "headline": "STRUCTURE BEFORE VOLATILITY", "layout": "art_with_data", "data_elements": [{"value": "ACTIVATE", "label": ""}, {"value": "MONITOR", "label": ""}, {"value": "EXECUTE", "label": ""}], "environment": "steel_platform", "camera": "frontal_wide", "energy": "calm_structure", "mood_accent": "teal", "finish": "glass_dark", "headline_layout": "centered_top", "subject_scene": "Three translucent glass cards sit in a horizontal row on a dark steel platform, connected by glowing teal arrows, the first card showing a wallet icon, the second a pulse monitor, the third a shield with checkmark, each card glowing faintly from within with circuit-board patterns visible through the glass."}
-
-E. Article: "Why panic selling costs more than the drop"
-{"family": "guardian", "headline": "PANIC IS THE EXPENSIVE PART", "layout": "art_only", "data_elements": [], "environment": "steel_platform", "camera": "low_angle_hero", "energy": "calm_structure", "mood_accent": "teal_purple", "finish": "glass_dark", "headline_layout": "centered_top", "subject_scene": "The anonymous armored sentinel stands motionless on a raised dark platform, sleek dark armor with teal accent lines and a reflective visor, a faint three-node timeline glowing behind it with teal dots connected by a horizontal line, circuit-board floor beneath and server rack silhouettes in the background."}
-
-F. Article: "New wallet-monitoring dashboard launches"
-{"family": "dashboard", "headline": "WHEN MARKETS MOVE FAST, RULES MATTER", "layout": "art_with_data", "data_elements": [{"value": "INS", "label": "Token"}, {"value": "4 mo", "label": "Duration"}], "environment": "steel_platform", "camera": "frontal_wide", "energy": "calm_structure", "mood_accent": "teal_purple", "finish": "glass_bright", "headline_layout": "centered_top", "subject_scene": "A dark UI card showing a wallet balance with a glowing green checkmark sits centrally, framed by a translucent glass shield structure with visible circuitry, floating glass badges around it display parameters, teal energy waves flowing through the background."}
-""".strip(),
-        'extra_banned_subject_terms': [
-            'frosted glass', 'blurry glass', 'art deco', 'chandelier', 'marble', 'gatsby',
-            'wallet address', 'gold luxury',
-        ],
-    },
-    'ChainReporter': {
-        'brand_name': 'ChainReporter',
+_RZWIRE_EDITORIAL_BASE = {
+        'brand_name': 'RZWire',
         'brand_tagline': "a crypto news media outlet built on ten rotating editorial visual formats -- not "
                          "one house style, but a magazine that picks the cover treatment each story needs",
         'core_axes': ('stage', 'composition', 'energy', 'accent'),
         'headline_max_words': 7,
         'meme_enabled': False,
-        'mood_accent_default': 'cr_signal',
+        'mood_accent_default': 'workspace_signal',
         'mood_accent_restricted': {'free': {'families': ['type_led', 'art_drop', 'meme']}},
         'axis_companion_field': {'story_color': 'accent_justification'},
         'passthrough_fields': ['accent_justification', 'art_style'],
@@ -984,9 +25,9 @@ F. Article: "New wallet-monitoring dashboard launches"
             "Hard rules: do not repeat the same family more than 2 times in a row; 'duotone' may not "
             "exceed 3 of any 5 consecutive posts; 'art_drop' art_style must not repeat within 5 posts; "
             "'meme' at most 1 in 6 posts even when enabled; 'stat_card' at most 1 in 5 posts; the "
-            "'cr_signal' accent must appear in at least 1 of every 3 posts."
+            "'workspace_signal' accent must appear in at least 1 of every 3 posts."
         ),
-        # §0 — Frozen brand layer: never varies, never touches an LLM. Applies to every mode.
+        # Â§0 â€” Frozen brand layer: never varies, never touches an LLM. Applies to every mode.
         'frozen_style': {
             'format': "vertical 4:5 editorial poster for a crypto news media outlet",
             'palette': "one dominant accent color per post plus neutrals -- the accent can be any color, "
@@ -1003,7 +44,7 @@ F. Article: "New wallet-monitoring dashboard launches"
                      "disclaimers or microtext, more than 3 text elements, watermarks, or recognizable real "
                      "people generated by AI",
         },
-        # §0 metaphor library — common crypto-news beats mapped to visual choices.
+        # Â§0 metaphor library â€” common crypto-news beats mapped to visual choices.
         'metaphors': {
             "price moves / market records": "a single giant accent-colored numeral, or a duotone "
                 "chart-and-coin treatment with directional geometry (rising arcs for gains, falling shards "
@@ -1027,7 +68,7 @@ F. Article: "New wallet-monitoring dashboard launches"
                 "crypto motif (a coin, chain link, or Bitcoin glyph) embedded naturally, with zero "
                 "in-image text",
         },
-        # §1 — Visual modes M1-M10, mapped to snake_case family keys.
+        # Â§1 â€” Visual modes M1-M10, mapped to snake_case family keys.
         'families': {
             'duotone': {
                 'name': "DUOTONE EDITORIAL",
@@ -1036,7 +77,7 @@ F. Article: "New wallet-monitoring dashboard launches"
                             "geometric treatment overlaid as a color-split background, duotone wash, or "
                             "large sweeping rings or diagonal panels that interact with the subject.",
                 'text_policy': "Headline only, art_only layout.",
-                'default_axes': {'stage': 'photo_real', 'composition': 'full_bleed_photo', 'energy': 'newsroom_neutral', 'accent': 'cr_signal'},
+                'default_axes': {'stage': 'photo_real', 'composition': 'full_bleed_photo', 'energy': 'newsroom_neutral', 'accent': 'workspace_signal'},
                 'data_budget': 0,
                 'headline_treatment': "set in a clean overlay bar across the lower third, or a left-aligned editorial block",
             },
@@ -1048,7 +89,7 @@ F. Article: "New wallet-monitoring dashboard launches"
                             "corners, and optionally one floating 3D token or object anchors a corner.",
                 'text_policy': "One giant value (1-7 characters) plus one short supporting line (<=6 words). "
                                "The value dominates the frame.",
-                'default_axes': {'stage': 'studio_dark', 'composition': 'centered_hero', 'energy': 'celebratory', 'accent': 'cr_signal'},
+                'default_axes': {'stage': 'studio_dark', 'composition': 'centered_hero', 'energy': 'celebratory', 'accent': 'workspace_signal'},
                 'data_budget': 1,
                 'headline_treatment': "the giant numeral dominates the frame; the headline is set small above or below it",
             },
@@ -1058,7 +99,7 @@ F. Article: "New wallet-monitoring dashboard launches"
                             "sculptural logo -- sits on a clean stage, rendered in glossy glass or metal "
                             "materials with controlled studio reflections.",
                 'text_policy': "Headline plus at most one short label or value near the object.",
-                'default_axes': {'stage': 'gradient_sweep', 'composition': 'centered_hero', 'energy': 'celebratory', 'accent': 'cr_signal'},
+                'default_axes': {'stage': 'gradient_sweep', 'composition': 'centered_hero', 'energy': 'celebratory', 'accent': 'workspace_signal'},
                 'data_budget': 1,
                 'headline_treatment': "set in a clean zone above or beside the object, modest scale",
             },
@@ -1068,7 +109,7 @@ F. Article: "New wallet-monitoring dashboard launches"
                             "the world, never an identifiable generated face -- fills the frame with "
                             "generous negative space, evoking political-ad or brand-campaign energy.",
                 'text_policy': "Headline only, short and declarative (5 words or fewer ideal).",
-                'default_axes': {'stage': 'photo_real', 'composition': 'full_bleed_photo', 'energy': 'newsroom_neutral', 'accent': 'cr_signal'},
+                'default_axes': {'stage': 'photo_real', 'composition': 'full_bleed_photo', 'energy': 'newsroom_neutral', 'accent': 'workspace_signal'},
                 'data_budget': 0,
                 'headline_treatment': "set small in the negative space as a minimal declarative tagline",
                 'headline_uppercase': False,
@@ -1124,7 +165,7 @@ F. Article: "New wallet-monitoring dashboard launches"
                             "element (a 3D object or illustration) in a corner.",
                 'text_policy': "Headline plus at most 4 tiles, each a value plus a 1-2 word label. This is "
                                "the text-heaviest mode -- a hard ceiling.",
-                'default_axes': {'stage': 'studio_light', 'composition': 'card_grid', 'energy': 'newsroom_neutral', 'accent': 'cr_signal'},
+                'default_axes': {'stage': 'studio_light', 'composition': 'card_grid', 'energy': 'newsroom_neutral', 'accent': 'workspace_signal'},
                 'data_budget': 4,
                 'headline_treatment': "a bold title block spans the top of the grid",
             },
@@ -1136,13 +177,13 @@ F. Article: "New wallet-monitoring dashboard launches"
                             "backdrop carries both entity names typeset in an acquisition-style layout.",
                 'text_policy': "Headline plus the two entity names as short labels (<=8 characters each) -- "
                                "the one place proper nouns appear in-image.",
-                'default_axes': {'stage': 'gradient_sweep', 'composition': 'centered_hero', 'energy': 'celebratory', 'accent': 'cr_signal'},
+                'default_axes': {'stage': 'gradient_sweep', 'composition': 'centered_hero', 'energy': 'celebratory', 'accent': 'workspace_signal'},
                 'data_budget': 2,
                 'headline_treatment': "set above the medallions, with the entity names as two short labels beneath or beside them",
                 'data_value_max_len': 8,
             },
         },
-        # §3 — Variation axes: each value maps to a fixed sentence used by the assembler.
+        # Â§3 â€” Variation axes: each value maps to a fixed sentence used by the assembler.
         'axes': {
             'stage': {
                 'studio_dark':    "The setting is a dark or single-color studio field, evenly lit and uncluttered.",
@@ -1167,14 +208,14 @@ F. Article: "New wallet-monitoring dashboard launches"
                 'playful':          "The lighting and mood are light, warm and playful.",
             },
             'accent': {
-                'cr_signal':   "The dominant accent color throughout the scene is ChainReporter's signal red-orange.",
+                'workspace_signal':   "The dominant accent color throughout the scene is RZWire's signal red-orange.",
                 'story_color': "The dominant accent color is justified by the story itself -- green for a "
                                "green protocol's hack, gold for a gold-backed token, blue for an "
                                "ocean-themed chain -- and the reason is named in the brief.",
                 'free':        "The dominant accent color is chosen freely to suit this mode's rotating style, not tied to the brand accent.",
             },
         },
-        # §2 — News-type -> mode routing guidance for the Art Director.
+        # Â§2 â€” News-type -> mode routing guidance for the Art Director.
         'routing_table': """
 News category -> Primary family (fallback):
 - Regulation / enforcement / policy actions -> duotone (fallback: concept_photo)
@@ -1196,7 +237,7 @@ News category -> Primary family (fallback):
 Tie-breakers: prefer the family NOT used in the last 3 posts; then prefer the lower-risk family --
 duotone is the safest universal fallback.
 """.strip(),
-        # §4 items 1-4 — global text rules for the Art Director (item 5, the legibility line, is
+        # Â§4 items 1-4 â€” global text rules for the Art Director (item 5, the legibility line, is
         # appended deterministically by the assembler).
         'text_rules': """
 1. Headline: 7 words or fewer. Treatment depends on the family (overlay bar in duotone, giant in
@@ -1220,7 +261,7 @@ duotone is the safest universal fallback.
             'stage': 'photo_real',
             'composition': 'full_bleed_photo',
             'energy': 'newsroom_neutral',
-            'accent': 'cr_signal',
+            'accent': 'workspace_signal',
             'accent_justification': '',
             'art_style': '',
             'subject_scene': (
@@ -1233,7 +274,7 @@ duotone is the safest universal fallback.
 Worked examples (for guidance only -- do not copy headlines or scenes verbatim):
 
 A. Article: "SEC approves first crypto perps framework"
-{"family": "duotone", "headline": "THE DOOR OPENS FOR CRYPTO PERPS", "layout": "art_only", "data_elements": [], "stage": "photo_real", "composition": "full_bleed_photo", "energy": "newsroom_neutral", "accent": "cr_signal", "accent_justification": "", "art_style": "", "subject_scene": "A monochrome photographic close-up of a classical federal building facade fills the frame, its columns rendered in cold black-and-white; two giant signal-orange rings sweep across the composition from opposite corners, one passing behind the columns and one in front."}
+{"family": "duotone", "headline": "THE DOOR OPENS FOR CRYPTO PERPS", "layout": "art_only", "data_elements": [], "stage": "photo_real", "composition": "full_bleed_photo", "energy": "newsroom_neutral", "accent": "workspace_signal", "accent_justification": "", "art_style": "", "subject_scene": "A monochrome photographic close-up of a classical federal building facade fills the frame, its columns rendered in cold black-and-white; two giant signal-orange rings sweep across the composition from opposite corners, one passing behind the columns and one in front."}
 
 B. Article: "Uniswap does $100M volume on Polygon in 24h"
 {"family": "big_number", "headline": "$100M IN A SINGLE DAY", "layout": "art_with_data", "data_elements": [{"value": "$100M+", "label": "24H VOLUME"}], "stage": "studio_dark", "composition": "centered_hero", "energy": "celebratory", "accent": "story_color", "accent_justification": "Polygon violet, since the volume happened on the Polygon network", "art_style": "", "subject_scene": "A near-black studio field holds one giant violet figure reading $100M+ dominating the upper half of the frame, with a cluster of small violet dots scattered along the bottom edge."}
@@ -1242,13 +283,13 @@ C. Article: "Daily Bitcoin price post -- $76,940"
 {"family": "art_drop", "headline": "BITCOIN AT $76,940", "layout": "art_only", "data_elements": [], "stage": "texture_macro", "composition": "full_bleed_photo", "energy": "playful", "accent": "free", "accent_justification": "", "art_style": "vintage botanical engraving", "subject_scene": "A Bitcoin coin is rendered as the head of a sunflower, its petals radiating outward in fine engraved linework, surrounded by detailed botanical leaves and stems in the style of a 19th-century natural history print."}
 
 D. Article: "Chainlink integrates with major L2"
-{"family": "lockup", "headline": "A NEW DATA BRIDGE GOES LIVE", "layout": "art_with_data", "data_elements": [{"value": "LINK", "label": ""}, {"value": "L2NAME", "label": ""}], "stage": "gradient_sweep", "composition": "centered_hero", "energy": "celebratory", "accent": "cr_signal", "accent_justification": "", "art_style": "", "subject_scene": "Two chrome medallions, each engraved with an abstract geometric glyph, sit side by side on a soft gradient stage, joined by a glowing signal-orange light-bridge arcing between them."}
+{"family": "lockup", "headline": "A NEW DATA BRIDGE GOES LIVE", "layout": "art_with_data", "data_elements": [{"value": "LINK", "label": ""}, {"value": "L2NAME", "label": ""}], "stage": "gradient_sweep", "composition": "centered_hero", "energy": "celebratory", "accent": "workspace_signal", "accent_justification": "", "art_style": "", "subject_scene": "Two chrome medallions, each engraved with an abstract geometric glyph, sit side by side on a soft gradient stage, joined by a glowing signal-orange light-bridge arcing between them."}
 
 E. Article: "How restaking actually works"
 {"family": "flat_explainer", "headline": "RESTAKING, EXPLAINED", "layout": "art_with_data", "data_elements": [{"value": "STAKE", "label": ""}, {"value": "EARN", "label": ""}], "stage": "flat_field", "composition": "isometric", "energy": "newsroom_neutral", "accent": "story_color", "accent_justification": "teal and white, a calm two-color palette suited to a clean technical explainer", "art_style": "", "subject_scene": "Three flat translucent slabs are stacked in isometric perspective, with small coin shapes flowing in a cycle between them via simple arrows, rendered in a clean two-color illustration style."}
 
 F. Article: "Weekly market recap: 4 key numbers"
-{"family": "stat_card", "headline": "THE WEEK IN NUMBERS", "layout": "art_with_data", "data_elements": [{"value": "+4.2%", "label": "BTC"}, {"value": "+6.8%", "label": "ETH"}, {"value": "$182B", "label": "TVL"}, {"value": "+38%", "label": "TOP GAINER"}], "stage": "studio_light", "composition": "card_grid", "energy": "newsroom_neutral", "accent": "cr_signal", "accent_justification": "", "art_style": "", "subject_scene": "A bright off-white studio field holds a grid of four rounded stat tiles beneath a bold title block, each tile carrying one icon and one large value, with a small 3D chart-arrow object anchoring the bottom-right corner."}
+{"family": "stat_card", "headline": "THE WEEK IN NUMBERS", "layout": "art_with_data", "data_elements": [{"value": "+4.2%", "label": "BTC"}, {"value": "+6.8%", "label": "ETH"}, {"value": "$182B", "label": "TVL"}, {"value": "+38%", "label": "TOP GAINER"}], "stage": "studio_light", "composition": "card_grid", "energy": "newsroom_neutral", "accent": "workspace_signal", "accent_justification": "", "art_style": "", "subject_scene": "A bright off-white studio field holds a grid of four rounded stat tiles beneath a bold title block, each tile carrying one icon and one large value, with a small 3D chart-arrow object anchoring the bottom-right corner."}
 
 G. Article: "DOGE pumps 40% on viral moment" (only reachable if meme_enabled is turned on)
 {"family": "meme", "headline": "DOGE GOES TO THE MOON, LITERALLY", "layout": "art_only", "data_elements": [], "stage": "photo_real", "composition": "centered_hero", "energy": "playful", "accent": "story_color", "accent_justification": "earthlight green, matching the rising chart in the joke", "art_style": "", "subject_scene": "A photoreal shiba inu in a tiny astronaut suit sits calmly on the lunar surface sipping from a coffee cup, while a glowing green candlestick chart rises across the dark sky behind it, lit by soft earthlight."}
@@ -1259,5 +300,1940 @@ G. Article: "DOGE pumps 40% on viral moment" (only reachable if meme_enabled is 
             'gunmetal',
             'real logo', 'real person', 'looks like',
         ],
-    },
+    }
+
+
+def _rzwire_profile(name, tagline, palette, materials, rendering, background, metaphors, fallback, keywords):
+    """Build a brand profile on the neutral RZWire editorial layout grammar."""
+    profile = deepcopy(_RZWIRE_EDITORIAL_BASE)
+    profile['brand_name'] = name
+    profile['brand_tagline'] = tagline
+    profile['brand_keywords'] = keywords
+    profile['frozen_style'].update({
+        'palette': palette,
+        'materials': materials,
+        'rendering': rendering,
+        'background_vocab': background,
+    })
+    profile['metaphors'] = metaphors
+    profile['axes']['accent']['workspace_signal'] = (
+        f'The dominant accent treatment follows the locked {name} palette and visual identity.'
+    )
+    profile['fallback_brief'] = fallback
+    profile['extra_banned_subject_terms'] = sorted(set(
+        profile.get('extra_banned_subject_terms', [])
+        + ['real logo', 'watermark', 'investment guarantee', 'guaranteed returns']
+    ))
+    return profile
+
+def _mgc_profile():
+    """MGC's campaign system, distilled from the supplied 2025-2026 reference archive."""
+    return {
+        'brand_name': 'MGC Coin',
+        'brand_tagline': (
+            'a participation-first gaming utility brand whose visual system combines bold campaign '
+            'typography, gaming and lifestyle photography, playful 3D reward objects, and modular '
+            'editorial explainers in a tightly controlled yellow, black, and white identity'
+        ),
+        'brand_keywords': ['mgc coin', 'meta games coin', 'metagamescoin', 'mgc', 'metagamesc'],
+        'core_axes': ('stage', 'composition', 'energy', 'accent'),
+        'headline_max_words': 7,
+        'headline_uppercase': False,
+        'meme_enabled': False,
+        'mood_accent_default': 'yellow_black',
+        'mood_accent_restricted': {
+            'yellow_violet': {'families': ['gaming_scene', 'step_explainer', 'token_hero']},
+            'data_signal': {'families': ['data_compare']},
+        },
+        'axis_companion_field': {},
+        'passthrough_fields': [],
+        'passthrough_field_schema': {},
+        'no_text_mode': None,
+        'data_numbers_must_appear_in_article': True,
+        'families_requiring_data': ['data_compare'],
+        'approved_directions': {
+            '01 kinetic competitor / mono_lifestyle': (
+                'high-contrast monochrome esports competitor on true black, large left type block, '
+                'signal-yellow motion curves and outline squircles, with cropped medallions only at edges'
+            ),
+            '02 playable utility / playable_product': (
+                'macro black controller photography where one abstract gold-and-black participation '
+                'module physically docks into the device and becomes functional rather than speculative'
+            ),
+            '03 community mosaic / community_mosaic': (
+                'a white modular squircle wall mixing candid monochrome gamer portraits, yellow cells, '
+                'black cells, and a single simple controller silhouette'
+            ),
+            '04 progress world / concept_metaphor': (
+                'a monumental signal-yellow staircase rising through a dark arena landscape toward a '
+                'rounded luminous gateway, with restrained violet depth and one small player for scale'
+            ),
+            '05 Dubai destination / destination_poster': (
+                'a broad yellow copy field beside a tall rounded architectural photograph, with a '
+                'single translucent yellow plane integrated into realistic Dubai city geometry'
+            ),
+            '06 creative team / team_documentary': (
+                'candid black-and-white game-team collaboration in a real studio, framed by one large '
+                'rounded yellow headline panel and one selectively yellow furniture or wall element'
+            ),
+            '07 participation sequence / step_explainer': (
+                'three large circular worlds connected by thick yellow arrows: active play, community '
+                'contribution, then a trophy or progress milestone, on generous warm-white space'
+            ),
+            '08 leaderboard arena / arena_achievement': (
+                'a generic competitor seen from behind approaching monumental ascending black podium '
+                'rings, edged and spotlit in signal yellow, with one abstract achievement object above'
+            ),
+            '09 official update / announcement': (
+                'near-black textured statement card with one yellow icon tile, a faint oversized outline '
+                'squircle, broad negative space, and no decorative finance or token imagery'
+            ),
+            '10 choice path / concept_metaphor': (
+                'top-down controller photography feeding a forked yellow-and-black tactile pathway that '
+                'reconnects at one achievement ring, expressing agency rather than investment outcomes'
+            ),
+        },
+        'data_element_template': 'a bold, clean data module displaying "{value}"{label_part}',
+        'data_element_label_template': ' with the short descriptor "{label}"',
+        'legibility_line': (
+            'All typography uses a heavy geometric sans-serif, with strong hierarchy, generous spacing, '
+            'and clean edges that remain readable at mobile-feed size.'
+        ),
+        'anti_repetition_rules': (
+            'Do not repeat the same family twice in a row. Across any 6 posts, use at least one '
+            'photographic family and one graphic or 3D family. Do not repeat the same central prop, '
+            'person archetype, landmark, or metaphor within 5 posts. data_compare appears at most once '
+            'in 6 posts; announcement appears at most twice in 6 posts. Alternate light and dark stages.'
+        ),
+        'frozen_style': {
+            'format': (
+                'premium MGC social campaign artwork composed for a vertical 4:5 master and a safe square '
+                '1:1 crop, with the same bold clarity as the supplied landscape and portrait references'
+            ),
+            'palette': (
+                'signal yellow (#FFD400) is the unmistakable primary color, paired with true black, '
+                'charcoal, and clean white; violet may appear only as a restrained gaming-world secondary, '
+                'while red and green are reserved exclusively for verified source data'
+            ),
+            'materials': (
+                'matte color fields, black-and-white editorial photography, glossy gold and black '
+                'medallions, lightly polished 3D gaming props, thin outline squircles, and crisp paper-like '
+                'graphic panels; never generic blue crypto glass'
+            ),
+            'rendering': (
+                'campaign-grade art direction with one immediate idea, bold asymmetric hierarchy, '
+                'controlled photorealism or clean soft 3D, realistic hands and devices, and deliberate '
+                'cropped foreground objects that add depth without clutter'
+            ),
+            'background_vocab': (
+                'true-black, clean-white, or full signal-yellow fields; monochrome lifestyle and city '
+                'photography; modular rounded-square grids; soft violet gaming atmospheres; every image '
+                'uses one dominant field and no more than one secondary accent system'
+            ),
+            'headline_zone': (
+                'reserve a large clean zone occupying roughly 35-55 percent of the frame for a short bold '
+                'headline, often with one key phrase switched between black, white, and signal yellow'
+            ),
+            'never': (
+                'investment promises, guaranteed earnings, invented prices or percentages, unsupported '
+                'adoption or performance claims, candlestick-chart decoration without source data, '
+                'Bitcoin-style circuitry on every coin, generic neon cyberpunk, blue glass finance UI, '
+                'busy coin rain, public-figure or celebrity likenesses, malformed controllers or hands, '
+                'tiny paragraphs, more than 4 text elements, invented logos, or watermarks'
+            ),
+        },
+        'metaphors': {
+            'participation / utility': (
+                'a clear action-to-value path using a controller, match tile, contribution marker, '
+                'inventory object, or reward checkpoint rather than passive holding imagery'
+            ),
+            'ranking / achievement': (
+                'an ascending leaderboard, circular tier path, podium, trophy, badge, or finish-line split '
+                'that communicates progress through participation'
+            ),
+            'gaming ecosystem': (
+                'a controller or player at the center of a small modular network linking game action, '
+                'profile, marketplace, and community'
+            ),
+            'how it works / education': (
+                'three to five distinct rounded modules connected by one directional path; each stage is '
+                'visually different and can be understood before reading the headline'
+            ),
+            'community / team': (
+                'a focused meeting, shared screen, tournament table, or group of generic participants '
+                'shown with documentary realism and strong yellow brand architecture'
+            ),
+            'global growth / events': (
+                'a recognizable city silhouette or landmark treated as a monochrome destination poster, '
+                'paired with a large yellow field and restrained campaign typography'
+            ),
+            'product / token utility': (
+                'one abstract gold-and-black participation medallion interacting with a game device, '
+                'inventory system, reward platform, or real-world action; never a pile of speculative coins'
+            ),
+            'complex idea / strategy': (
+                'one editorial metaphor such as an iceberg, forked road, mountain, launch path, or '
+                'transforming pedestal, simplified into yellow, black, white, and one supporting material'
+            ),
+            'official statement / update': (
+                'a disciplined dark announcement field with one yellow icon tile, a concise headline, '
+                'and a short readable statement; no decorative market imagery'
+            ),
+            'verified comparison': (
+                'a black data field with two or three large rounded chart modules and highly legible '
+                'figures copied only from the supplied source'
+            ),
+        },
+        'families': {
+            'split_photo': {
+                'name': 'SPLIT PHOTO CAMPAIGN',
+                'skeleton': (
+                    'A bold yellow, black, or white copy panel occupies about 40 percent of the frame while '
+                    'a high-quality lifestyle, workplace, city, or gaming photograph occupies the other '
+                    '60 percent. A large rounded corner or overlapping squircle softly joins both halves. '
+                    'The photograph may contain generic adults, but no identifiable public figure.'
+                ),
+                'text_policy': 'One bold headline plus at most one very short supporting line.',
+                'default_axes': {'stage': 'photo_real', 'composition': 'split_left_copy', 'energy': 'bold_confident', 'accent': 'yellow_black'},
+                'data_budget': 1,
+                'headline_treatment': 'a large left-aligned title block with one phrase highlighted in signal yellow',
+            },
+            'team_documentary': {
+                'name': 'TEAM DOCUMENTARY',
+                'skeleton': (
+                    'A candid black-and-white photograph shows three to five generic adult game creators, '
+                    'community organizers, or competitors collaborating in a believable studio, meeting, '
+                    'or review session. One large rounded signal-yellow panel carries the headline, while '
+                    'one chair, wall module, notebook, or presentation accent may remain selectively '
+                    'yellow. Gestures feel natural; never stage a handshake or corporate pose.'
+                ),
+                'text_policy': 'One bold headline only; abstract presentation graphics contain no readable copy.',
+                'default_axes': {'stage': 'mono_photo', 'composition': 'split_left_copy', 'energy': 'bold_confident', 'accent': 'yellow_black'},
+                'data_budget': 0,
+                'headline_treatment': 'heavy black type inside one large rounded signal-yellow panel',
+            },
+            'mono_lifestyle': {
+                'name': 'MONO LIFESTYLE EDITORIAL',
+                'skeleton': (
+                    'A documentary-style black-and-white photograph of a generic gamer, creator, trader, '
+                    'meeting, or device fills the frame. Signal-yellow clothing, panels, thin looping lines, '
+                    'or one abstract reward medallion provide the only color accents. The subject feels '
+                    'natural and candid, never like an identifiable celebrity or corporate headshot.'
+                ),
+                'text_policy': 'Headline only, or headline plus one compact supporting line.',
+                'default_axes': {'stage': 'mono_photo', 'composition': 'full_bleed_photo', 'energy': 'editorial_calm', 'accent': 'yellow_black'},
+                'data_budget': 1,
+                'headline_treatment': 'a bold white-and-yellow block in an uncluttered side or lower-third zone',
+            },
+            'community_mosaic': {
+                'name': 'COMMUNITY PORTRAIT MOSAIC',
+                'skeleton': (
+                    'A clean white field holds an asymmetric wall of large rounded-square cells containing '
+                    'five to eight candid monochrome portraits of diverse generic adult gamers and creators. '
+                    'Alternate portrait cells with solid signal-yellow, solid black, and thin black-outline '
+                    'cells; one yellow cell may hold a simple controller silhouette. Every face is unique, '
+                    'natural, and credible, with no public figures or duplicated identities.'
+                ),
+                'text_policy': 'One large community headline; no names, captions, or profile statistics.',
+                'default_axes': {'stage': 'white_field', 'composition': 'modular_grid', 'energy': 'editorial_calm', 'accent': 'yellow_black'},
+                'data_budget': 0,
+                'headline_treatment': 'large black type above or beside the mosaic with one word in signal yellow',
+            },
+            'modular_grid': {
+                'name': 'MODULAR SQUIRCLE GRID',
+                'skeleton': (
+                    'A clean white or signal-yellow field carries an asymmetric grid of rounded-square '
+                    'cells. Some cells are solid yellow or black, some are thin outlined loops, and at most '
+                    'three hold a cropped city, gaming, or product image. One cell contains an abstract '
+                    'interlocking emblem shape, not an invented brand mark.'
+                ),
+                'text_policy': 'One large headline; no small explanatory copy.',
+                'default_axes': {'stage': 'white_field', 'composition': 'modular_grid', 'energy': 'editorial_calm', 'accent': 'yellow_black'},
+                'data_budget': 0,
+                'headline_treatment': 'large mixed-case black type placed beside or above the module grid',
+            },
+            'token_hero': {
+                'name': 'TOKEN / REWARD HERO',
+                'skeleton': (
+                    'One premium abstract gold-and-black participation medallion, reward core, or trophy '
+                    'object dominates a minimal stage. It may float, stack, or interact with one pedestal, '
+                    'device, or progress path. Use two or three cropped foreground medallions only as depth '
+                    'accents; do not create a shower of coins and do not engrave fake text.'
+                ),
+                'text_policy': 'One short headline plus at most one factual value or micro-line.',
+                'default_axes': {'stage': 'black_field', 'composition': 'centered_hero', 'energy': 'bold_confident', 'accent': 'yellow_black'},
+                'data_budget': 1,
+                'headline_treatment': 'a large clean title above or to the left of the object',
+            },
+            'playable_product': {
+                'name': 'PLAYABLE UTILITY PRODUCT',
+                'skeleton': (
+                    'A photorealistic macro product scene centers one unbranded black controller, handheld '
+                    'device, headset, or gaming peripheral on tactile charcoal material. One abstract '
+                    'gold-and-black participation module physically docks into, unlocks, powers, or '
+                    'connects with the device, communicating practical gaming utility. Hardware geometry '
+                    'is realistic and restrained; no fake interface copy, coin pile, or financial symbolism.'
+                ),
+                'text_policy': 'One short utility headline only.',
+                'default_axes': {'stage': 'black_field', 'composition': 'split_left_copy', 'energy': 'bold_confident', 'accent': 'yellow_black'},
+                'data_budget': 0,
+                'headline_treatment': 'large white type in a clean upper-left zone with one final word in signal yellow',
+            },
+            'gaming_scene': {
+                'name': 'GAMING ACTION SCENE',
+                'skeleton': (
+                    'A realistic controller, gaming setup, generic player, trophy, leaderboard, or tournament '
+                    'stage becomes the main visual. Signal yellow controls the focal light and interface '
+                    'accents; restrained violet may support playful 3D environments. The scene communicates '
+                    'active play, competition, access, or progression rather than passive wealth.'
+                ),
+                'text_policy': 'One energetic headline and optionally one short question or action line.',
+                'default_axes': {'stage': 'photo_real', 'composition': 'full_bleed_photo', 'energy': 'playful_gaming', 'accent': 'yellow_violet'},
+                'data_budget': 1,
+                'headline_treatment': 'large white and yellow type anchored in a dark clean region',
+            },
+            'arena_achievement': {
+                'name': 'ARENA ACHIEVEMENT',
+                'skeleton': (
+                    'A cinematic photoreal tournament arena uses monumental matte-black podium rings, '
+                    'tiered stages, or leaderboard architecture edged by precise signal-yellow light. One '
+                    'generic adult competitor is shown from behind approaching or climbing the structure '
+                    'with an unbranded controller. The achievement is earned and aspirational, never a '
+                    'wealth promise; sponsor boards and third-party team marks are absent.'
+                ),
+                'text_policy': 'One short achievement or competition headline.',
+                'default_axes': {'stage': 'photo_real', 'composition': 'centered_hero', 'energy': 'high_momentum', 'accent': 'yellow_black'},
+                'data_budget': 0,
+                'headline_treatment': 'large white-and-yellow type anchored in clean upper-left darkness',
+            },
+            'step_explainer': {
+                'name': 'STEP-BY-STEP EXPLAINER',
+                'skeleton': (
+                    'Three to five large rounded modules form one unmistakable directional sequence using '
+                    'arrows, a path, or a circular progression. Each module contains one simple 3D or flat '
+                    'object; the diagram uses white space, yellow, black, and restrained violet. The process '
+                    'must describe only facts explicitly supported by the source.'
+                ),
+                'text_policy': 'One headline plus at most 3 short step words supplied as data elements.',
+                'default_axes': {'stage': 'white_field', 'composition': 'top_headline', 'energy': 'playful_gaming', 'accent': 'yellow_violet'},
+                'data_budget': 3,
+                'headline_treatment': 'a large title in a rounded yellow header or clean white upper band',
+            },
+            'data_compare': {
+                'name': 'VERIFIED DATA COMPARISON',
+                'skeleton': (
+                    'A true-black portrait data poster contains two or three large rounded comparison '
+                    'modules, clean line charts or bars, and one dominant takeaway. Red and green may be '
+                    'used only to encode source-confirmed negative and positive values. Every visible '
+                    'number must be copied from the supplied article; never infer or estimate figures.'
+                ),
+                'text_policy': 'One headline plus 2-4 source-verified values and short descriptors.',
+                'default_axes': {'stage': 'dark_data', 'composition': 'data_card', 'energy': 'high_momentum', 'accent': 'data_signal'},
+                'data_budget': 4,
+                'headline_treatment': 'a heavy white headline above the chart modules',
+            },
+            'announcement': {
+                'name': 'MINIMAL ANNOUNCEMENT',
+                'skeleton': (
+                    'A black field with a very subtle warm-yellow edge glow holds one small signal-yellow '
+                    'rounded icon tile and a disciplined left-aligned headline zone. The result feels like '
+                    'an official statement card: minimal, sober, spacious, and free of decorative token or '
+                    'market imagery.'
+                ),
+                'text_policy': 'One concise headline and at most one short supporting statement.',
+                'default_axes': {'stage': 'black_field', 'composition': 'left_type_block', 'energy': 'editorial_calm', 'accent': 'yellow_black'},
+                'data_budget': 1,
+                'headline_treatment': 'a medium-large white title beside a small yellow icon tile',
+            },
+            'concept_metaphor': {
+                'name': 'EDITORIAL CONCEPT METAPHOR',
+                'skeleton': (
+                    'One clear visual metaphor such as an iceberg, forked road, launch path, mountain, '
+                    'transforming pedestal, or ascending arrow is rendered as a premium photo composite or '
+                    'clean soft-3D scene. Yellow, black, and white carry the full idea, with violet used only '
+                    'if a gaming environment genuinely requires it.'
+                ),
+                'text_policy': 'One provocative headline, optionally phrased as a question.',
+                'default_axes': {'stage': 'soft_3d', 'composition': 'top_headline', 'energy': 'bold_confident', 'accent': 'yellow_black'},
+                'data_budget': 0,
+                'headline_treatment': 'a large clean title occupying the upper third or one side',
+            },
+            'destination_poster': {
+                'name': 'GLOBAL DESTINATION POSTER',
+                'skeleton': (
+                    'A recognizable city silhouette, venue, or landmark is photographed in high-contrast '
+                    'black and white and cropped into a tall rounded rectangle. A large signal-yellow field '
+                    'fills the remaining space with editorial event or community energy. Never fabricate '
+                    'event dates, locations, partnerships, or sponsorship marks.'
+                ),
+                'text_policy': 'One destination or event headline; factual date/location only if present in source.',
+                'default_axes': {'stage': 'mono_photo', 'composition': 'split_right_copy', 'energy': 'bold_confident', 'accent': 'yellow_black'},
+                'data_budget': 2,
+                'headline_treatment': 'bold black type on the yellow field with a small factual sub-line if supplied',
+            },
+        },
+        'axes': {
+            'stage': {
+                'black_field': 'The setting is a true-black or charcoal field with subtle warm-yellow falloff and generous negative space.',
+                'white_field': 'The setting is a clean white or soft off-white field with crisp black type zones and yellow modular forms.',
+                'yellow_field': 'The setting is a full signal-yellow field, flat and confident, with black type and minimal white relief.',
+                'photo_real': 'The setting is believable editorial photography: a real gaming, workplace, lifestyle, city, or event environment with controlled brand treatment.',
+                'mono_photo': 'The setting is high-contrast black-and-white photography with signal yellow introduced only through graphic overlays or one selected object.',
+                'soft_3d': 'The setting is a clean soft-3D illustration stage in white, yellow, and restrained violet with tactile rounded forms.',
+                'dark_data': 'The setting is a true-black data field with faint grid structure and no decorative finance scenery.',
+            },
+            'composition': {
+                'split_left_copy': 'Reserve the left 38-45 percent for a large copy block and let the main image fill the right side, joined by one rounded transition.',
+                'split_right_copy': 'Reserve one side for a tall rounded photograph and use the other side as a broad, uncluttered yellow copy field.',
+                'centered_hero': 'Center one dominant reward, gaming, or trophy object, with cropped secondary objects only at the outer edges for depth.',
+                'top_headline': 'Reserve the upper 30-40 percent as a strong headline band and place the visual system clearly beneath it.',
+                'modular_grid': 'Arrange an asymmetric grid of rounded-square modules, mixing filled, outlined, and image-bearing cells with ample white space.',
+                'full_bleed_photo': 'Use one full-bleed photograph with a naturally quiet region for bold overlay type and a few deliberate yellow accents.',
+                'left_type_block': 'Build a spacious left-aligned editorial type block with a small icon tile and minimal supporting imagery.',
+                'data_card': 'Stack two or three oversized rounded chart or comparison modules beneath a clear headline, with strict alignment and large values.',
+            },
+            'energy': {
+                'bold_confident': 'The mood is decisive and campaign-like, using hard scale contrast, assertive type, and a single clear focal point.',
+                'playful_gaming': 'The mood is energetic and inviting, with rounded 3D props, game-world color, and a sense of active participation.',
+                'editorial_calm': 'The mood is restrained, informative, and composed, with generous space and minimal visual noise.',
+                'high_momentum': 'The mood is fast and directional, using ascending paths or decisive comparisons without implying guaranteed financial returns.',
+            },
+            'accent': {
+                'mgc_yellow': 'Signal yellow is the dominant field or object color, supported only by black and white.',
+                'yellow_black': 'Signal yellow and true black create the primary contrast; white is used for breathing room and legibility.',
+                'yellow_violet': 'Signal yellow remains dominant while restrained violet supports gaming depth and reward-world atmosphere.',
+                'data_signal': 'Signal yellow anchors the brand; red and green appear only beside verified negative and positive source data.',
+            },
+        },
+        'routing_table': """
+Story category -> Primary family (fallback):
+- Gaming hardware, access, playable feature, controller utility -> playable_product (fallback: gaming_scene)
+- Gaming lifestyle, player experience, active play -> gaming_scene (fallback: mono_lifestyle)
+- Participation, utility, rewards, token role -> token_hero (fallback: concept_metaphor)
+- How-to, education, mechanics, onboarding -> step_explainer (fallback: modular_grid)
+- Rankings, achievements, leaderboards, competition -> arena_achievement (fallback: gaming_scene)
+- Community breadth, member stories, diverse participation -> community_mosaic (fallback: modular_grid)
+- Team, meeting, creator process, behind-the-scenes -> team_documentary (fallback: split_photo)
+- Global expansion, city, venue, event, travel -> destination_poster (fallback: split_photo)
+- Brand campaign, awareness, lifestyle -> split_photo (fallback: modular_grid)
+- Strategy, debate, hidden benefit, difficult concept -> concept_metaphor (fallback: token_hero)
+- Official update, correction, maintenance, statement -> announcement (fallback: modular_grid)
+- Verified price, performance, or numeric comparison -> data_compare (fallback: announcement)
+- Clean identity or evergreen brand post -> modular_grid (fallback: token_hero)
+
+Hard routing rule: data_compare is allowed only when the supplied article itself contains every requested
+number. If the story makes a general market or growth claim without exact source data, use announcement or
+concept_metaphor and omit charts. Prefer a family not used in the last 3 posts.
+""".strip(),
+        'text_rules': """
+1. Headline: 7 words or fewer, written like a confident campaign line. Use title case or selective uppercase;
+   never capitalize every word mechanically. Highlight no more than one key phrase in signal yellow.
+2. Text budget: most families use headline only. split_photo, mono_lifestyle, token_hero, gaming_scene,
+   announcement, and destination_poster may add one short supporting line. team_documentary,
+   community_mosaic, playable_product, and arena_achievement use headline only. step_explainer allows at
+   most 3 step words. data_compare allows at most 4 verified values with short descriptors.
+3. Claims must come from the supplied article or approved MGC knowledge. Never invent prices, percentages,
+   dates, adoption claims, partnerships, listings, token mechanics, rankings, returns, or event details.
+   Never imply guaranteed profit, passive income, or that buying alone produces rewards.
+4. Use participation language: play, contribute, compete, create, progress, use, connect, and unlock. Use
+   "earn" only where the supplied source explicitly describes a real participation-based reward mechanic.
+5. Generic adult gamers, creators, teams, and community members are allowed in photographic families. Never
+   depict or imitate a public figure, celebrity, founder, or named person. Do not add third-party trademarks.
+6. Do not ask the image model to invent the official emblem. Use abstract reward medallions and leave the
+   protected bottom-left corner clear for the real logo applied after generation.
+""".strip(),
+        'fallback_brief': {
+            'family': 'modular_grid',
+            'headline': 'Play Builds Progress',
+            'layout': 'art_only',
+            'data_elements': [],
+            'stage': 'white_field',
+            'composition': 'modular_grid',
+            'energy': 'editorial_calm',
+            'accent': 'yellow_black',
+            'subject_scene': (
+                'A clean asymmetric grid of rounded-square modules links a game controller, a profile '
+                'badge, a contribution marker, and a reward checkpoint across a white field with bold '
+                'signal-yellow blocks and thin black outlines.'
+            ),
+        },
+        'brief_examples': """
+Worked examples (guidance only; never copy them verbatim):
+
+A. Community update
+{"family":"split_photo","headline":"Built Together, Played Forward","data_elements":[],"stage":"photo_real","composition":"split_left_copy","energy":"bold_confident","accent":"yellow_black","subject_scene":"A candid generic gaming team reviews a tournament screen in a bright modern workspace, occupying the right half, while a large signal-yellow rounded panel creates a clean campaign zone on the left."}
+
+B. Participation explainer
+{"family":"step_explainer","headline":"From Play To Progress","data_elements":[{"value":"PLAY","label":""},{"value":"CONTRIBUTE","label":""},{"value":"PROGRESS","label":""}],"stage":"white_field","composition":"top_headline","energy":"playful_gaming","accent":"yellow_violet","subject_scene":"Three large circular modules connect from a realistic controller to a community contribution tile and then to a glowing achievement trophy, using yellow arrows and restrained violet depth on a clean white stage."}
+
+C. Gaming utility
+{"family":"gaming_scene","headline":"Every Match Moves You Forward","data_elements":[],"stage":"photo_real","composition":"full_bleed_photo","energy":"playful_gaming","accent":"yellow_black","subject_scene":"A close-up controller rests in a believable gaming setup while its central achievement surface glows signal yellow; headphones and a competition screen recede naturally into the dark background."}
+
+D. Official statement
+{"family":"announcement","headline":"An Important Community Update","data_elements":[],"stage":"black_field","composition":"left_type_block","energy":"editorial_calm","accent":"yellow_black","subject_scene":"A restrained true-black field with a subtle warm-yellow edge glow and one small rounded yellow announcement icon tile, leaving broad clean space for the statement."}
+
+E. Global event story
+{"family":"destination_poster","headline":"The Community Meets In Paris","data_elements":[{"value":"PARIS","label":""}],"stage":"mono_photo","composition":"split_right_copy","energy":"bold_confident","accent":"mgc_yellow","subject_scene":"A dramatic black-and-white low-angle photograph of the Eiffel Tower is cropped inside a tall rounded panel on the right, while a broad signal-yellow campaign field fills the left."}
+
+F. Verified comparison article containing the figures 12% and 8%
+{"family":"data_compare","headline":"Participation Outpaced The Market","data_elements":[{"value":"+12%","label":"PARTICIPATION"},{"value":"-8%","label":"MARKET"}],"stage":"dark_data","composition":"data_card","energy":"high_momentum","accent":"data_signal","subject_scene":"Two oversized rounded comparison modules sit on a true-black field, one carrying a clean ascending green line and the other a restrained descending red line, with signal-yellow alignment marks and no decorative coins."}
+""".strip(),
+        'extra_banned_subject_terms': [
+            'investment guarantee', 'guaranteed return', 'guaranteed profit', 'passive income',
+            'risk-free', 'get rich', 'moonshot', 'to the moon', 'fake logo', 'invented logo',
+            'public figure', 'celebrity likeness', 'elon musk', 'donald trump',
+            'glowing humanoid robot', 'blue glass cube', 'generic crypto collage',
+        ],
+    }
+
+
+def _oasis_profile():
+    """Oasis visual system built on RZWire's editorial family grammar."""
+    profile = deepcopy(_RZWIRE_EDITORIAL_BASE)
+    profile.update({
+        'brand_name': 'Oasis Coin',
+        'brand_tagline': (
+            'the fixed-supply OASIS utility token and long-term RZOASIS Galaxy vision, communicated '
+            'through restrained monochrome cosmic editorial design, honest phased development, and '
+            'source-verified market information rather than speculative hype'
+        ),
+        'brand_keywords': [
+            'oasis coin', 'oasis token', 'oasis_rz', 'rzoasis', 'rzoasis galaxy',
+            'rzoasis.tech', 'oasis ecosystem',
+        ],
+        'core_axes': ('stage', 'composition', 'energy', 'accent'),
+        'headline_max_words': 7,
+        'headline_uppercase': False,
+        'meme_enabled': False,
+        'mood_accent_default': 'lunar_silver',
+        'mood_accent_restricted': {
+            'emerald_data': {'families': ['big_number', 'stat_card']},
+            'champagne_light': {'families': ['hero_object', 'concept_photo', 'lockup']},
+        },
+        'axis_companion_field': {},
+        'passthrough_fields': ['art_style'],
+        'passthrough_field_schema': {
+            'art_style': '"" unless family is "art_drop" -- a short monochrome cosmic art direction that must differ from recent values',
+        },
+        'no_text_mode': 'art_drop',
+        'no_text_line': 'No text, no letters, no numbers anywhere in the image.',
+        'data_numbers_must_appear_in_article': True,
+        'families_requiring_data': ['big_number', 'stat_card'],
+        'data_element_template': 'a restrained dark data module displaying "{value}"{label_part}',
+        'data_element_label_template': ' with the short descriptor "{label}"',
+        'legibility_line': (
+            'All visible words use a clean geometric sans-serif with generous tracking and precise '
+            'hierarchy; numerals are large, white, and mobile-feed legible.'
+        ),
+        'anti_repetition_rules': (
+            'Do not repeat the same family twice in a row. Across any 6 posts, use at least one '
+            'typography-led statement, one cosmic photographic scene, one diagram or data composition, '
+            'and one tactile hero object. Do not reuse the same planet angle, eclipse position, orbit '
+            'shape, monolith, terminal screen, or token treatment within 5 posts. art_drop art_style '
+            'must not repeat within 6 posts. big_number and stat_card each appear at most twice in 6 '
+            'posts. Alternate absolute-black fields, deep-space environments, graphite data stages, '
+            'and sparse lunar-light compositions.'
+        ),
+    })
+
+    profile['approved_directions'] = {
+        '01 black-field statement / type_led': (
+            'absolute-black field, oversized left-aligned white statement, one thin lunar-silver '
+            'orbital arc, a small eclipse disc, and broad untouched negative space'
+        ),
+        '02 orbital data / big_number': (
+            'one verified figure dominates beneath a curved silver eclipse boundary, with one abstract '
+            'emerald progress trace inside a rounded graphite module and no copied market interface'
+        ),
+        '03 eclipse hero / hero_object': (
+            'one original unbranded black-and-lunar-silver eclipse medallion floats in a dark orbital '
+            'chamber, using brushed obsidian and pearl-silver materials with disciplined product light'
+        ),
+        '04 cosmic civilization / concept_photo': (
+            'a rain-polished black boulevard leads toward a future city visibly under construction '
+            'beneath a colossal eclipse, with no cyberpunk advertising or live-world implication'
+        ),
+        '05 orbital explainer / flat_explainer': (
+            'a central eclipse core and three clean concentric systems show modules growing from '
+            'foundation to prototype to future worlds along one restrained emerald continuity line'
+        ),
+        '06 cosmic art drop / art_drop': (
+            'a zero-copy obsidian monolith gateway stands on a cratered black lunar plain and frames a '
+            'perfect eclipse with museum-grade cinematic realism and extensive darkness'
+        ),
+        '07 roadmap cards / roadmap_card': (
+            'three staggered rounded obsidian cards communicate foundation, infrastructure, and future '
+            'worlds through abstract construction icons and one emerald connector without invented dates'
+        ),
+        '08 connected worlds / lockup': (
+            'one central eclipse core links through precise silver orbits to six distinct abstract '
+            'monolith gateways, presented as intended future possibilities rather than live products'
+        ),
+        '09 monochrome resilience / duotone': (
+            'an anonymous hand calmly places one lunar-silver foundation block at the base of an '
+            'unfinished obsidian orbital structure under a thin eclipse glow'
+        ),
+        '10 long-horizon campaign / concept_photo': (
+            'a colossal black pearl sphere rises from a lunar horizon with an engineered silver orbit '
+            'that remains visibly incomplete above sparse architectural survey lines'
+        ),
+    }
+
+    profile['approved_reference_assets'] = {
+        '01 black-field statement / type_led': 'brand_references/oasis/approved/01-black-field-statement.png',
+        '02 orbital data / big_number': 'brand_references/oasis/approved/02-orbital-data.png',
+        '03 eclipse hero / hero_object': 'brand_references/oasis/approved/03-eclipse-hero.png',
+        '04 cosmic civilization / concept_photo': 'brand_references/oasis/approved/04-cosmic-civilization.png',
+        '05 orbital explainer / flat_explainer': 'brand_references/oasis/approved/05-orbital-explainer.png',
+        '06 cosmic art drop / art_drop': 'brand_references/oasis/approved/06-cosmic-art-drop.png',
+        '07 roadmap cards / roadmap_card': 'brand_references/oasis/approved/07-roadmap-cards.png',
+        '08 connected worlds / lockup': 'brand_references/oasis/approved/08-connected-worlds.png',
+        '09 monochrome resilience / duotone': 'brand_references/oasis/approved/09-monochrome-resilience.png',
+        '10 long-horizon campaign / concept_photo': 'brand_references/oasis/approved/10-long-horizon-campaign.png',
+    }
+
+    profile['frozen_style'] = {
+        'format': (
+            'premium vertical 4:5 editorial poster for OASIS and the long-term RZOASIS Galaxy vision, '
+            'with safe square cropping and enough negative space to remain calm at mobile size'
+        ),
+        'palette': (
+            'absolute black (#000000), ink navy (#0D0E18), midnight graphite (#191A25), structural '
+            'graphite (#222531), orbit gray (#4E4F5B), lunar silver (#A3A5A7), and soft white (#F4F3F0); '
+            'verified positive market data alone may use emerald (#20C98B), while restrained steel-blue '
+            'or blue-violet atmosphere may appear only as low-saturation cosmic depth'
+        ),
+        'materials': (
+            'matte obsidian, charcoal paper, brushed black metal, smoked glass used sparingly, polished '
+            'silver rims, lunar regolith, fine stardust, dark satin interface panels, and precise white '
+            'orbit lines; every surface feels quiet, tactile, and premium'
+        ),
+        'rendering': (
+            'cinematic monochrome realism with disciplined exposure, deep blacks, finely controlled '
+            'silver highlights, sparse practical light, credible scale, and one focal idea; the result '
+            'feels architectural, editorial, and long-horizon rather than colorful science-fiction spectacle'
+        ),
+        'background_vocab': (
+            'absolute-black and graphite gradients, sparse star fields, silent lunar or planetary horizons, '
+            'dark future cities, empty reflective roads, monumental gates, orbital diagrams, black studio '
+            'fields, and disciplined data panels with large regions of uninterrupted negative space'
+        ),
+        'headline_zone': (
+            'reserve 32-55 percent of the frame as an uncluttered black, graphite, or sky region for a '
+            'short white headline; supporting copy is exceptional and never becomes a paragraph'
+        ),
+        'never': (
+            'rainbow galaxies, saturated cyan cyberpunk, generic neon city clutter, busy spaceship battles, '
+            'multiple competing planets, festive token piles, coin rain, speculative rockets, guaranteed '
+            'profit language, invented prices or timelines, unsupported live-utility claims, finished '
+            'metaverse scenes presented as current, copied exchange interfaces, visible contract addresses, '
+            'tiny dashboards, long paragraphs, more than 4 copy elements, public-figure likenesses, '
+            'invented brand marks, malformed architecture, or watermarks'
+        ),
+    }
+
+    profile['metaphors'] = {
+        'long-term building': (
+            'a distant light reached by an empty road, a monolith assembled in visible layers, a gate '
+            'under construction, or a planet emerging gradually from darkness'
+        ),
+        'one energy unit / connected worlds': (
+            'one eclipse core sending a thin silver orbit through several distinct future planetary modules'
+        ),
+        'phased development': (
+            'four incomplete orbital stations, world fragments, or graphite phase cards that become more '
+            'defined along a single path; later states remain visibly conceptual'
+        ),
+        'future gaming utility': (
+            'a dormant energy core beside abstract game-world inventory, rank, power, or access modules, '
+            'clearly framed as a design intention rather than active product UI'
+        ),
+        'fixed supply / token facts': (
+            'one finite ring, sealed eclipse disc, closed orbital loop, or precisely counted module system '
+            'without implying scarcity-driven returns'
+        ),
+        'market movement': (
+            'one restrained data trace, lunar arc, or horizon line with verified source figures, never a '
+            'decorative trading collage or prediction'
+        ),
+        'resilience / transparency': (
+            'a narrow beam remaining visible through a black field, a stable orbit through turbulence, or '
+            'a sparse structural statement card with no hype'
+        ),
+        'ecosystem architecture': (
+            'separate planets, gates, platforms, or eclipse medallions connected by one shared orbital '
+            'geometry rather than merged into an undifferentiated network cloud'
+        ),
+        'identity / citizenship / creation': (
+            'a future traveler silhouette, empty identity beacon, workshop monolith, or world passport '
+            'shape presented as conceptual architecture without a generated face'
+        ),
+        'audit / security disclosure': (
+            'a published report tile, inspected sealed mechanism, or lit verification aperture that '
+            'communicates review without claiming risk-free or universal security'
+        ),
+        'milestone / season / new chapter': (
+            'one glass sphere, eclipse ring, or star path holding a single restrained date or chapter '
+            'marker, without filling the scene with branded coins'
+        ),
+    }
+
+    profile['families'] = {
+        'duotone': {
+            'name': 'MONOCHROME ECLIPSE EDITORIAL',
+            'skeleton': (
+                'A black-and-white or blue-black photographic subject such as a moon, observatory, empty '
+                'road, monolith, gateway, city, or engineered object fills the frame. One thin lunar-silver '
+                'orbit, eclipse arc, or low-saturation steel-blue wash interacts with the subject while '
+                'large black regions remain untouched.'
+            ),
+            'text_policy': 'One short headline only.',
+            'default_axes': {'stage': 'cosmic_photo', 'composition': 'full_bleed_photo', 'energy': 'quiet_vision', 'accent': 'lunar_silver'},
+            'data_budget': 0,
+            'headline_treatment': 'small white editorial type in a quiet sky, road, or architectural region',
+            'headline_uppercase': False,
+        },
+        'big_number': {
+            'name': 'ORBITAL DATA POSTER',
+            'skeleton': (
+                'A black or graphite field holds one oversized source-verified value beneath a thin '
+                'silver eclipse arc. One compact dark module may carry a restrained emerald trace or '
+                'comparison marker, but the value remains the single dominant element.'
+            ),
+            'text_policy': 'One verified value plus one short contextual headline.',
+            'default_axes': {'stage': 'graphite_data', 'composition': 'number_orbit', 'energy': 'measured_momentum', 'accent': 'emerald_data'},
+            'data_budget': 1,
+            'headline_treatment': 'the verified value dominates, with a small white context line above it',
+        },
+        'hero_object': {
+            'name': 'ECLIPSE HERO OBJECT',
+            'skeleton': (
+                'One premium black-and-silver object such as an eclipse medallion, sealed energy core, '
+                'monolith fragment, planetary key, or orbital instrument sits on matte obsidian. A razor-thin '
+                'white rim and one soft reflected arc define the form; there are no duplicate tokens.'
+            ),
+            'text_policy': 'One restrained headline and at most one source-supported value.',
+            'default_axes': {'stage': 'obsidian_studio', 'composition': 'centered_hero', 'energy': 'milestone', 'accent': 'eclipse_white'},
+            'data_budget': 1,
+            'headline_treatment': 'small white type above or beside the object with generous negative space',
+        },
+        'concept_photo': {
+            'name': 'COSMIC CIVILIZATION CAMPAIGN',
+            'skeleton': (
+                'A single cinematic future-facing scene such as a silent city under a huge moon, an empty '
+                'road toward a planetary gate, an unfinished world fragment, or monumental orbital '
+                'architecture fills the frame. No identifiable face appears, and the image reads as '
+                'conceptual long-term vision rather than a live product screenshot.'
+            ),
+            'text_policy': 'One declarative headline, ideally 5 words or fewer.',
+            'default_axes': {'stage': 'deep_space', 'composition': 'horizon_campaign', 'energy': 'quiet_vision', 'accent': 'deep_space_blue'},
+            'data_budget': 0,
+            'headline_treatment': 'small widely tracked white type aligned to the horizon or lower negative space',
+            'headline_uppercase': False,
+        },
+        'flat_explainer': {
+            'name': 'ORBITAL SYSTEM EXPLAINER',
+            'skeleton': (
+                'Three to five monochrome planetary modules, eclipse nodes, world fragments, or phase '
+                'cards connect along one precise silver orbital path. Each module is large and distinct; '
+                'future modules remain incomplete, dim, or outlined to preserve honest development status.'
+            ),
+            'text_policy': 'One headline plus at most three short phase or mechanism chips.',
+            'default_axes': {'stage': 'diagram_void', 'composition': 'orbital_diagram', 'energy': 'architectural_calm', 'accent': 'lunar_silver'},
+            'data_budget': 3,
+            'headline_treatment': 'a clean white title band above or beside the orbital diagram',
+        },
+        'type_led': {
+            'name': 'BLACK-FIELD STATEMENT',
+            'skeleton': (
+                'Typography is the principal design on absolute black or a barely visible graphite '
+                'gradient. One small white rounded icon tile, eclipse line, or silver object anchors the '
+                'statement. The composition is spacious, calm, and official, never a dense press release.'
+            ),
+            'text_policy': 'One concise headline plus at most one short supporting sentence.',
+            'default_axes': {'stage': 'statement_black', 'composition': 'left_statement', 'energy': 'official_calm', 'accent': 'eclipse_white'},
+            'data_budget': 1,
+            'headline_treatment': 'medium-large white type in a disciplined left-aligned block with wide line spacing',
+        },
+        'art_drop': {
+            'name': 'COSMIC ART DROP',
+            'skeleton': (
+                'A standalone zero-copy artwork explores one eclipse, energy core, city fragment, cosmic '
+                'threshold, orbit, dark planet, or star map in a rotating monochrome fine-art treatment '
+                'such as silver-gelatin photography, graphite drawing, black paper relief, or lunar etching.'
+            ),
+            'text_policy': 'Zero in-image text; all context lives in the social copy.',
+            'default_axes': {'stage': 'cosmic_texture', 'composition': 'centered_hero', 'energy': 'quiet_vision', 'accent': 'lunar_silver'},
+            'data_budget': 0,
+        },
+        'stat_card': {
+            'name': 'VERIFIED DATA CARD',
+            'skeleton': (
+                'A graphite field holds two to four large rounded dark modules inside one continuous '
+                'silver outline. Modules present only source-verified market values, token facts, or allocation '
+                'figures. One eclipse arc or small 3D object anchors the frame; there is '
+                'no copied exchange interface or tiny terminal clutter.'
+            ),
+            'text_policy': 'One headline plus 2-4 source-supported values.',
+            'default_axes': {'stage': 'graphite_data', 'composition': 'card_grid', 'energy': 'architectural_calm', 'accent': 'lunar_silver'},
+            'data_budget': 4,
+            'headline_treatment': 'a clean white title above the modules with generous separation',
+        },
+        'roadmap_card': {
+            'name': 'PHASED ROADMAP CARDS',
+            'skeleton': (
+                'Two to four staggered rounded obsidian cards descend through a black field and connect '
+                'with one thin silver or restrained emerald path. Each card uses one abstract construction '
+                'icon and one short source-supported phase label; future stages remain visibly incomplete.'
+            ),
+            'text_policy': 'One headline plus 2-4 short source-supported phase labels; no invented dates or completion percentages.',
+            'default_axes': {'stage': 'graphite_data', 'composition': 'card_grid', 'energy': 'architectural_calm', 'accent': 'lunar_silver'},
+            'data_budget': 4,
+            'headline_treatment': 'a clean white title above the staggered phase cards with broad black spacing',
+        },
+        'lockup': {
+            'name': 'CONNECTED WORLDS LOCKUP',
+            'skeleton': (
+                'Two abstract eclipse medallions, planets, gateways, or world modules sit apart on a black '
+                'stage and connect through one thin silver orbit, narrow light bridge, or aligned aperture. '
+                'The forms contain no invented marks and never imply an integration that the source does '
+                'not confirm.'
+            ),
+            'text_policy': 'One headline plus up to two short entity or world labels when source-supported.',
+            'default_axes': {'stage': 'obsidian_studio', 'composition': 'dual_orbit', 'energy': 'milestone', 'accent': 'champagne_light'},
+            'data_budget': 2,
+            'headline_treatment': 'small white title above the paired forms with short labels beneath if needed',
+            'data_value_max_len': 12,
+        },
+    }
+
+    profile['axes'] = {
+        'stage': {
+            'statement_black': 'The stage is absolute black fading almost imperceptibly to graphite, with no decorative texture behind the copy zone.',
+            'obsidian_studio': 'The stage is a matte-obsidian studio with controlled silver reflections and a seamless black horizon.',
+            'graphite_data': 'The stage is midnight graphite with quiet dark modules, a continuous silver outline, and no exchange-like clutter.',
+            'cosmic_photo': 'The stage is a realistic monochrome moon, road, observatory, city, gateway, or engineered environment under sparse cosmic light.',
+            'deep_space': 'The stage is a deep ink-navy star field or planetary horizon with one monumental architectural subject and extensive darkness.',
+            'diagram_void': 'The stage is a clean black diagram field with thin silver orbital geometry and large, distinct system modules.',
+            'cosmic_texture': 'The stage is a tactile monochrome cosmic material world such as lunar dust, graphite, black paper, or silver-gelatin grain.',
+        },
+        'composition': {
+            'centered_hero': 'Center one object or eclipse form with commanding symmetry and a broad untouched black perimeter.',
+            'left_statement': 'Reserve the left or upper-left region for a disciplined statement block and place one small icon or silver detail nearby.',
+            'full_bleed_photo': 'Use a full-bleed cinematic photograph with a naturally quiet sky, road, or architectural zone for the headline.',
+            'horizon_campaign': 'Build the scene around one low horizon or vanishing point, placing the monumental cosmic subject above it and copy below or beside it.',
+            'number_orbit': 'Let one verified value dominate the upper or central frame while one silver eclipse arc and compact module establish context.',
+            'orbital_diagram': 'Arrange three to five modules along one precise orbit or phased path with clear separation and visible unfinished states.',
+            'card_grid': 'Arrange two to four oversized dark cards inside one continuous silver frame beneath a clean title block.',
+            'dual_orbit': 'Balance two distinct forms on opposite sides of one silver orbital connector, leaving the center clean and purposeful.',
+        },
+        'energy': {
+            'official_calm': 'The mood is sober, transparent, and composed, using restrained hierarchy and almost no decorative motion.',
+            'quiet_vision': 'The mood is visionary but patient, emphasizing distance, scale, and long-horizon building rather than urgency.',
+            'architectural_calm': 'The mood is precise and system-led, with ordered geometry, quiet modules, and measured technical confidence.',
+            'measured_momentum': 'The mood acknowledges verified movement through one controlled directional trace without predicting future performance.',
+            'milestone': 'The mood marks a meaningful chapter with focused light and formal symmetry, never speculative celebration.',
+            'tension': 'The mood is high-contrast and cautious, using broken orbit lines or dimmed modules for risk, correction, or delay stories.',
+        },
+        'accent': {
+            'lunar_silver': 'Lunar silver and soft white define the orbit, rim light, or key geometry against black and graphite.',
+            'eclipse_white': 'A razor-thin soft-white eclipse rim is the only bright accent on the absolute-black stage.',
+            'deep_space_blue': 'A low-saturation steel-blue or blue-violet atmospheric wash adds cosmic depth while the composition remains overwhelmingly monochrome.',
+            'emerald_data': 'Emerald appears only on source-verified positive figures or traces; everything else remains black, graphite, silver, and white.',
+            'champagne_light': 'One restrained warm-white or pale champagne glint marks a milestone or connection without turning the palette gold or luxurious.',
+        },
+    }
+
+    profile['routing_table'] = """
+Story category -> Primary family (fallback):
+- Official update, correction, status, transparency statement -> type_led (fallback: duotone)
+- Verified price, percentage, supply, allocation, or single metric -> big_number (fallback: stat_card)
+- Verified comparison, tokenomics, or market recap -> stat_card (fallback: big_number)
+- Source-supported roadmap phases or staged development update -> roadmap_card (fallback: flat_explainer)
+- Token identity, fixed supply, launch foundation, published audit report -> hero_object (fallback: type_led)
+- Galaxy vision, future world, long-horizon brand campaign -> concept_photo (fallback: duotone)
+- Roadmap mechanics, planned utility, phases, how the galaxy connects -> flat_explainer (fallback: stat_card)
+- Ecosystem relationship, future integration, two connected worlds -> lockup (fallback: flat_explainer)
+- Market correction, regulation, macro pressure, resilience -> duotone (fallback: type_led)
+- Milestone, season, anniversary, new chapter -> hero_object (fallback: concept_photo)
+- Evergreen cosmic identity or social visual with no in-image copy -> art_drop (fallback: concept_photo)
+- Anything ambiguous -> duotone
+
+Hard routing rules:
+1. OASIS is the token; RZOASIS is the ecosystem or galaxy. Keep them distinct.
+2. Future games, worlds, identity, marketplace, land, governance, and utility must appear as planned,
+   intended, conceptual, incomplete, outlined, distant, or under construction unless the source confirms they are live.
+3. big_number and stat_card may use only figures present in the supplied source. Never infer price,
+   performance, circulating supply, dates, deadlines, or completion percentages.
+4. Market visuals may summarize source-confirmed history but never predict direction or imply guaranteed returns.
+5. Prefer a family, stage, orbit shape, and central object not used in the last 3 posts.
+""".strip()
+
+    profile['text_rules'] = """
+1. Headline: 7 words or fewer, usually sentence case, direct, restrained, and transparent. Avoid urgency,
+   hype punctuation, "moon," "next 100x," guaranteed growth, or scarcity-as-profit language.
+2. Text budget: duotone and concept_photo use headline only; big_number uses one verified value plus a
+   short context line; hero_object uses headline plus at most one value; flat_explainer allows at most
+   three short chips; type_led allows headline plus one short sentence; art_drop uses zero copy;
+   stat_card allows 2-4 verified values; roadmap_card allows 2-4 short source-supported phase labels;
+   lockup allows two short source-supported labels.
+3. Every visible number, price, percentage, supply figure, allocation, date, phase number, and comparison
+   must appear in the supplied article. Never use remembered live-market data.
+4. Describe unbuilt capabilities with "planned," "intended," "designed to," "future," or equivalent
+   visual incompleteness. Never present the full galaxy, marketplace, land, gaming systems, governance,
+   identity, or connected worlds as currently active without a newer official source.
+5. Do not promise returns, price appreciation, passive income, guaranteed demand, risk-free security,
+   completed audits, listings, launches, or deadlines. The existence of a published audit report is not
+   proof that every component is secure.
+6. Do not place a contract address, wallet address, QR code, purchase button, exchange logo, or third-party
+   market interface in generated artwork. Use abstract data modules and add official assets separately.
+7. Never invent the official eclipse emblem or wordmark. Leave the protected bottom-left corner as a
+   seamless continuation of the artwork for the real logo added after generation.
+""".strip()
+
+    profile['fallback_brief'] = {
+        'family': 'concept_photo',
+        'headline': 'A galaxy built in phases',
+        'layout': 'art_only',
+        'data_elements': [],
+        'stage': 'deep_space',
+        'composition': 'horizon_campaign',
+        'energy': 'quiet_vision',
+        'accent': 'deep_space_blue',
+        'art_style': '',
+        'subject_scene': (
+            'A single unfinished dark planet rises above a quiet ink-navy horizon while three distant '
+            'world fragments remain dim and incomplete along one thin silver orbital path.'
+        ),
+    }
+
+    profile['brief_examples'] = """
+Worked examples (guidance only; never copy them verbatim):
+
+A. Transparent development update
+{"family":"type_led","headline":"Building the next layer","data_elements":[],"stage":"statement_black","composition":"left_statement","energy":"official_calm","accent":"eclipse_white","art_style":"","subject_scene":"An absolute-black field holds one small white rounded announcement tile and a razor-thin eclipse arc, preserving a broad calm region for the update."}
+
+B. Verified article containing $0.9339 and 9.11%
+{"family":"big_number","headline":"One month of measured movement","data_elements":[{"value":"$0.9339","label":"OASIS"}],"stage":"graphite_data","composition":"number_orbit","energy":"measured_momentum","accent":"emerald_data","art_style":"","subject_scene":"One large white value dominates a graphite field beneath a thin silver eclipse arc while a compact dark module carries a restrained emerald historical trace."}
+
+C. Long-horizon galaxy vision
+{"family":"concept_photo","headline":"Built for a longer horizon","data_elements":[],"stage":"deep_space","composition":"horizon_campaign","energy":"quiet_vision","accent":"deep_space_blue","art_style":"","subject_scene":"A silent reflective road runs through a dark future city toward one distant white gateway while an oversized moon hangs above the skyline and most windows remain unlit."}
+
+D. Phased roadmap
+{"family":"flat_explainer","headline":"The galaxy grows in phases","data_elements":[{"value":"FOUNDATION","label":""},{"value":"PROTOTYPE","label":""},{"value":"WORLDS","label":""}],"stage":"diagram_void","composition":"orbital_diagram","energy":"architectural_calm","accent":"lunar_silver","art_style":"","subject_scene":"Three large planetary modules follow one silver orbital path; the first is solid, the second is partly assembled, and the third remains a faint outlined world fragment."}
+
+E. Token foundation
+{"family":"hero_object","headline":"One unit for future worlds","data_elements":[],"stage":"obsidian_studio","composition":"centered_hero","energy":"milestone","accent":"eclipse_white","art_style":"","subject_scene":"One black-and-silver eclipse medallion floats above matte obsidian, defined by a razor-thin white rim and one soft reflected orbit with no duplicate objects."}
+
+F. Verified comparison article
+{"family":"stat_card","headline":"A measured market comparison","data_elements":[{"value":"+9.11%","label":"OASIS"},{"value":"-2.40%","label":"BENCHMARK"}],"stage":"graphite_data","composition":"card_grid","energy":"measured_momentum","accent":"emerald_data","art_style":"","subject_scene":"Two oversized dark comparison modules sit inside one continuous silver frame on graphite, with a single emerald historical trace beside the positive source value and no terminal clutter."}
+
+G. Zero-copy identity artwork
+{"family":"art_drop","headline":"COSMIC IDENTITY","data_elements":[],"stage":"cosmic_texture","composition":"centered_hero","energy":"quiet_vision","accent":"lunar_silver","art_style":"silver-gelatin eclipse photography with tactile lunar grain","subject_scene":"A near-black eclipse hangs above a fractured lunar plain while one fine silver orbit passes through floating dust and an unfinished monolith emerges at the horizon."}
+
+H. Source-supported staged roadmap
+{"family":"roadmap_card","headline":"A system built in stages","data_elements":[{"value":"FOUNDATION","label":""},{"value":"INFRASTRUCTURE","label":""},{"value":"FUTURE WORLDS","label":""}],"stage":"graphite_data","composition":"card_grid","energy":"architectural_calm","accent":"lunar_silver","art_style":"","subject_scene":"Three staggered obsidian cards descend through black space, each holding one abstract construction icon and one short phase label while a thin connector stops before the visibly incomplete future stage."}
+""".strip()
+
+    profile['extra_banned_subject_terms'] = [
+        'guaranteed return', 'guaranteed profit', 'passive income', 'risk-free', 'unhackable',
+        'moonshot', 'to the moon', '100x', 'get rich', 'price prediction', 'guaranteed launch',
+        'finished metaverse', 'live metaverse', 'active marketplace', 'live marketplace',
+        'completed galaxy', 'fully built world', 'current land system', 'instant governance',
+        'wallet address', 'contract address', 'qr code', 'buy button', 'exchange screen',
+        'copied interface', 'coin pile', 'coin rain', 'token shower', 'rocket launch',
+        'rainbow galaxy', 'saturated cyberpunk', 'glowing humanoid robot', 'public figure',
+        'celebrity likeness', 'fake logo', 'invented logo',
+    ]
+    return profile
+
+
+def _ranking_profile():
+    """Ranking's campaign system, distilled from the supplied 2025-2026 references."""
+    return {
+        'brand_name': 'Ranking Platform',
+        'brand_tagline': (
+            'a colorful competitive-gaming platform that turns real play into visible profiles, '
+            'game-specific rankings, PvP records, team progress, tournaments, community, and '
+            'eligible rewards across digital and physical games'
+        ),
+        'brand_keywords': ['ranking platform', 'ranking.game', 'ranking game', 'rankingdotgame'],
+        'core_axes': ('stage', 'composition', 'energy', 'accent'),
+        'headline_max_words': 7,
+        'headline_uppercase': True,
+        'meme_enabled': False,
+        'mood_accent_default': 'full_spectrum',
+        'mood_accent_restricted': {
+            'mint_field': {'families': ['fact_poster', 'feature_explainer', 'game_grid', 'editorial_window']},
+            'orange_field': {'families': ['fact_poster', 'feature_explainer', 'game_grid', 'editorial_window']},
+            'neon_photo': {'families': ['player_spotlight', 'platform_in_action', 'achievement_moment', 'game_culture']},
+        },
+        'axis_companion_field': {},
+        'passthrough_fields': [],
+        'passthrough_field_schema': {},
+        'no_text_mode': None,
+        'data_numbers_must_appear_in_article': True,
+        'families_requiring_data': ['fact_poster'],
+        'approved_directions': {
+            '01 platform in action / platform_in_action': (
+                'a real player seen from behind at a monitor or holding a phone, lit in violet and mint, '
+                'with an abstract dark Ranking-style interface and one stacked hot-pink headline pill'
+            ),
+            '02 visible competitive identity / profile_hero': (
+                'one oversized dark player-profile card on a hot-pink field, with a circular portrait, '
+                'a few clean performance markers, white outline geometry, and an orange controller sticker'
+            ),
+            '03 win becomes progress / achievement_moment': (
+                'a candid winner lifting a trophy under magenta-violet arena light, with a strong lower '
+                'headline and a small mint achievement-node accent rather than token or money imagery'
+            ),
+            '04 any game can count / game_grid': (
+                'four clean photographic cells for digital and physical play, such as a controller, '
+                'chessboard, football, and billiards, unified by a bright outlined frame and one headline'
+            ),
+            '05 competitive history / fact_poster': (
+                'a full-bleed documentary or archive-style image tinted deep aubergine, with one large '
+                'date chip, a compact fact headline, and one supporting sentence'
+            ),
+            '06 gaming culture editorial / editorial_window': (
+                'a hot-pink, mint, or orange field with one large rounded cross-shaped photo window, '
+                'oversized left-aligned type, white line loops, and small controller or node stickers'
+            ),
+            '07 tournament discovery / tournament_deck': (
+                'three to five tilted rounded tournament cards on aubergine, using hot pink, mint, and '
+                'orange frames with generic competition imagery and a single clear invitation headline'
+            ),
+            '08 the platform world / role_wheel': (
+                'a circular wheel of bright segments for players, teams, organizers, referees, fans, '
+                'communities, and venues around one calm central message on deep aubergine'
+            ),
+            '09 play-submit-climb / ranking_ladder': (
+                'a flat illustrated ladder or bracket built from orange and mint rails, populated by '
+                'small diverse player silhouettes and game symbols on a dark aubergine field'
+            ),
+            '10 weekly progress / ranking_calendar': (
+                'a loose grid of outlined day or match cards on aubergine with one mint score badge, '
+                'one pink controller badge, and one orange trophy; simple, playful, and highly legible'
+            ),
+            '11 real-world competition / venue_story': (
+                'a bright orange campaign field framing a rounded photograph of a club, office, gaming '
+                'center, or local event, with overlapping pink and aubergine statement pills'
+            ),
+            '12 one idea, one object / sticker_still_life': (
+                'one controller, headset, trophy, gaming chair, bracket, or profile tile isolated inside '
+                'a large white-outlined organic frame on a flat brand-color field'
+            ),
+        },
+        'data_element_template': 'an outlined sticker chip displaying "{value}"{label_part}',
+        'data_element_label_template': ' with the short descriptor "{label}"',
+        'legibility_line': (
+            'All visible words use a heavy rounded condensed display face for headlines and a clean '
+            'geometric sans-serif for supporting copy, with thick white keylines, generous spacing, '
+            'and mobile-feed legibility.'
+        ),
+        'anti_repetition_rules': (
+            'Do not repeat the same family twice in a row. Across any 6 posts, use at least one '
+            'people-led photo, one product or interface scene, one flat graphic or illustrated layout, '
+            'and one gaming-culture editorial. Do not reuse the same prop, game category, portrait '
+            'archetype, photo-window shape, field color, or pill arrangement within 4 posts. Alternate '
+            'dark aubergine stages with bright pink, mint, orange, or documentary-photo stages. '
+            'fact_poster and feature_explainer each appear at most twice in 6 posts.'
+        ),
+        'frozen_style': {
+            'format': (
+                'high-impact Ranking social campaign artwork that remains clear as a vertical 4:5 or '
+                'portrait post, a safe square crop, or a wide 16:9 card; every composition communicates '
+                'one gaming-native idea within one second'
+            ),
+            'palette': (
+                'deep aubergine (#20113D) is the anchor, with hot pink (#FF4F91), fresh mint '
+                '(#55E6A3), bright orange (#FF8A48), and clean white; use one dominant field plus two '
+                'supporting brand colors, reserving green and red data semantics for verified source facts'
+            ),
+            'materials': (
+                'flat saturated color fields, photographic cutouts, dark product-interface surfaces, '
+                'thick white keylines, rounded sticker pills, soft rounded rectangles, organic '
+                'cross-shaped photo windows, thin looping connector lines, lightly grainy paper texture, '
+                'and occasional clean 3D gaming props'
+            ),
+            'rendering': (
+                'youthful campaign design with crisp cutouts, confident scale contrast, believable diverse '
+                'adult players, clean editorial photography, restrained neon lighting, and deliberately '
+                'imperfect tilted cards or stickers; polished and playful rather than cyberpunk or corporate'
+            ),
+            'background_vocab': (
+                'solid aubergine, hot-pink, mint, orange, or warm-white fields; full-bleed tournament, '
+                'gaming, club, workplace, or archival photography with an aubergine color wash; subtle '
+                'oversized linked-node line patterns may repeat at low contrast behind the content'
+            ),
+            'headline_zone': (
+                'reserve 30-48 percent of the frame for a short headline, using oversized white or '
+                'aubergine type and no more than two highlighted words inside outlined pink, mint, orange, '
+                'or aubergine sticker pills'
+            ),
+            'never': (
+                'financial-trading visuals, speculative coin art, Bitcoin symbols, candlestick charts, '
+                'wallet screens, cash rain, guaranteed reward language, invented ranking values, fake '
+                'tournament details, unsupported blockchain claims, generic blue neon crypto scenery, '
+                'dark metallic esports crests, cluttered dashboards, more than 5 visible copy elements, '
+                'long paragraphs, tiny interface copy, copied third-party game characters or logos, '
+                'public-figure likenesses, invented brand marks, malformed hands or hardware, or watermarks'
+            ),
+        },
+        'metaphors': {
+            'visible progress': (
+                'a player card advancing through a ladder, league rail, calendar, or stack of outlined '
+                'ranking tiles, showing movement through documented play rather than financial growth'
+            ),
+            'play-submit-climb': (
+                'three connected moments: a match, a submitted result card, and a higher position on a '
+                'game-specific ladder; never imply automatic verification or guaranteed advancement'
+            ),
+            'competitive identity': (
+                'one bold profile card surrounded by a small set of performance, team, tournament, and '
+                'achievement markers that feel like a public record rather than a social-media vanity page'
+            ),
+            'PvP / rivalry': (
+                'two opposing players, controllers, pieces, or profile tiles meeting across one central '
+                'versus line, bracket junction, table, court, or arena boundary'
+            ),
+            'tournaments': (
+                'tilted event cards, a branching bracket, a trophy node, or a lit arena pathway that '
+                'converges on one final stage without inventing dates, fees, or prize values'
+            ),
+            'many kinds of play': (
+                'a four-cell grid combining digital gaming, board games, cue sports, and physical sport, '
+                'unified by the same white keyline and Ranking color rhythm'
+            ),
+            'community ecosystem': (
+                'a role wheel, connected-node world, or linked card system joining players, teams, '
+                'organizers, referees, fans, communities, and venues without implying every feature is live'
+            ),
+            'recognition / achievement': (
+                'a trophy, medal, podium, star, badge, or raised hand used as a symbol of earned '
+                'recognition; never cash, investment yield, or a token-price promise'
+            ),
+            'verified record / trust': (
+                'a clean match card becoming a locked history tile or transparent record path; describe '
+                'the system as designed for credible records unless the source confirms technical details'
+            ),
+            'gaming culture / history': (
+                'one strong documentary image plus a date chip, fact pill, or editorial window that '
+                'connects an external gaming fact to competition, community, or progress'
+            ),
+            'healthy play / social value': (
+                'mindful focus, balanced participation, friendship, teamwork, or community support shown '
+                'through respectful human photography and a single calm graphic connection'
+            ),
+            'local to global': (
+                'a small club, gaming center, sports venue, or community bracket connecting into a broader '
+                'competition network without inventing partnerships or sponsorships'
+            ),
+        },
+        'families': {
+            'player_spotlight': {
+                'name': 'PLAYER SPOTLIGHT',
+                'skeleton': (
+                    'A high-quality photograph of one generic adult player or a pair of teammates dominates '
+                    'the frame. Their candid expression conveys focus, surprise, rivalry, or celebration. '
+                    'The person is cut cleanly against aubergine or a believable gaming environment, with '
+                    'one bright clothing or lighting accent and two or three small sticker motifs.'
+                ),
+                'text_policy': 'One large headline, with at most two words highlighted in one or two sticker pills.',
+                'default_axes': {'stage': 'people_photo', 'composition': 'split_statement', 'energy': 'playful_competitive', 'accent': 'full_spectrum'},
+                'data_budget': 0,
+                'headline_treatment': 'a large staggered type block beside the person, with one tilted outlined color pill',
+            },
+            'platform_in_action': {
+                'name': 'PLATFORM IN ACTION',
+                'skeleton': (
+                    'A believable player uses a phone, monitor, tablet, or laptop in a real gaming, home, '
+                    'club, or work setting. The screen shows a dark abstract competitive interface with one '
+                    'profile, a rounded tournament bracket, controller icons, and an achievement marker; '
+                    'never use line graphs, bar charts, price charts, currency, balances, or token-like '
+                    'geometry. If an official interface reference is supplied, preserve its structure '
+                    'rather than inventing features.'
+                ),
+                'text_policy': 'One direct product headline and no readable interface microcopy.',
+                'default_axes': {'stage': 'product_photo', 'composition': 'lower_statement', 'energy': 'confident_product', 'accent': 'neon_photo'},
+                'data_budget': 0,
+                'headline_treatment': 'a bold lower-third or side headline with one hot-pink pill and thick white outline',
+            },
+            'profile_hero': {
+                'name': 'COMPETITIVE PROFILE HERO',
+                'skeleton': (
+                    'One oversized rounded dark profile card is the hero on a pink, mint, orange, or warm-white '
+                    'field. It contains a circular generic avatar, a neutral handle block, and only three or '
+                    'four abstract markers for games, teams, match history, or placement. White line paths and '
+                    'one controller sticker connect the card to the surrounding campaign field.'
+                ),
+                'text_policy': 'One short profile or progress headline; no names, ranks, scores, or follower counts.',
+                'default_axes': {'stage': 'bright_graphic', 'composition': 'centered_card', 'energy': 'confident_product', 'accent': 'pink_mint'},
+                'data_budget': 0,
+                'headline_treatment': 'a large two-line headline above the card with one phrase reversed inside aubergine',
+            },
+            'achievement_moment': {
+                'name': 'ACHIEVEMENT MOMENT',
+                'skeleton': (
+                    'A candid generic competitor raises a trophy, holds a medal, high-fives a teammate, or '
+                    'celebrates beneath real-looking venue lights. Magenta, violet, mint, and orange light '
+                    'create event energy while a simple outlined lower-third anchors the campaign message.'
+                ),
+                'text_policy': 'One recognition headline only; never state or imply a guaranteed reward.',
+                'default_axes': {'stage': 'arena_photo', 'composition': 'lower_statement', 'energy': 'celebratory', 'accent': 'neon_photo'},
+                'data_budget': 0,
+                'headline_treatment': 'large white lower-third type with one key word inside an aubergine, pink, or orange pill',
+            },
+            'versus_match': {
+                'name': 'VERSUS MATCH',
+                'skeleton': (
+                    'Two generic competitors, teams, game devices, chess sides, cue-sport setups, or physical '
+                    'sports objects face one another across a clear central divide. Pink and mint identify '
+                    'the two sides while orange marks the meeting point, bracket junction, or result path.'
+                ),
+                'text_policy': 'One challenge headline; no invented player names, scores, odds, or match results.',
+                'default_axes': {'stage': 'competition_photo', 'composition': 'versus_split', 'energy': 'high_tension', 'accent': 'pink_mint'},
+                'data_budget': 0,
+                'headline_treatment': 'a compact top headline with one versus or action word inside an orange sticker pill',
+            },
+            'game_culture': {
+                'name': 'GAMING CULTURE EDITORIAL',
+                'skeleton': (
+                    'One strong documentary image of an arena, LAN gathering, arcade, controller, gaming '
+                    'setup, VR session, local club, or physical game fills the frame. A dark aubergine wash '
+                    'protects readability, while one date, category, or topic chip and one bold headline '
+                    'turn the image into a branded gaming-media poster.'
+                ),
+                'text_policy': 'One headline plus one source-supported date or topic chip; no copied game key art.',
+                'default_axes': {'stage': 'documentary_photo', 'composition': 'top_story', 'energy': 'editorial_energy', 'accent': 'neon_photo'},
+                'data_budget': 1,
+                'headline_treatment': 'a top or lower-left editorial block with one outlined mint, pink, or orange fact chip',
+            },
+            'editorial_window': {
+                'name': 'EDITORIAL PHOTO WINDOW',
+                'skeleton': (
+                    'A flat hot-pink, mint, orange, aubergine, or warm-white field contains one large organic '
+                    'rounded photo window inspired by linked-node cross geometry. A single gaming or culture '
+                    'photograph sits inside the window. Thin white loops, small controller marks, and a '
+                    'low-contrast repeating node pattern provide rhythm without clutter.'
+                ),
+                'text_policy': 'One bold headline and at most one short supporting sentence.',
+                'default_axes': {'stage': 'bright_graphic', 'composition': 'window_split', 'energy': 'editorial_energy', 'accent': 'full_spectrum'},
+                'data_budget': 1,
+                'headline_treatment': 'a large left-aligned headline with one emphasized word in an outlined sticker pill',
+            },
+            'fact_poster': {
+                'name': 'VERIFIED FACT POSTER',
+                'skeleton': (
+                    'A full-bleed documentary or archival-style scene is paired with one oversized rounded '
+                    'date or value chip, one factual headline, and a short supporting line. The photograph '
+                    'may be tinted aubergine or framed by a mint or orange field. Every visible number must '
+                    'be copied exactly from the supplied article.'
+                ),
+                'text_policy': 'One headline, one supporting sentence, and 1-3 source-verified values.',
+                'default_axes': {'stage': 'documentary_photo', 'composition': 'fact_stack', 'energy': 'editorial_energy', 'accent': 'full_spectrum'},
+                'data_budget': 3,
+                'headline_treatment': 'an oversized rounded date or value chip above a compact left-aligned fact headline',
+            },
+            'feature_explainer': {
+                'name': 'FEATURE EXPLAINER',
+                'skeleton': (
+                    'A clean flat field presents three or four large modules connected by simple white paths. '
+                    'Modules may represent a match, submitted result, profile, team, bracket, venue, or '
+                    'ranking position using simple icons and abstract cards. The flow reads immediately '
+                    'without relying on paragraphs or tiny interface detail.'
+                ),
+                'text_policy': 'One headline plus up to four one- or two-word step chips.',
+                'default_axes': {'stage': 'aubergine_graphic', 'composition': 'connected_modules', 'energy': 'clear_explainer', 'accent': 'full_spectrum'},
+                'data_budget': 4,
+                'headline_treatment': 'a large top-left headline followed by oversized colored modules with minimal step words',
+            },
+            'role_wheel': {
+                'name': 'COMMUNITY ROLE WHEEL',
+                'skeleton': (
+                    'A circular or orbiting system of six to eight oversized pink, mint, and orange role '
+                    'segments surrounds one calm aubergine center. Simple human, team, bracket, whistle, '
+                    'community, and venue symbols suggest the ecosystem. The composition feels like a '
+                    'world of participation, not a financial pie chart.'
+                ),
+                'text_policy': 'One question or ecosystem headline plus at most six single-word role chips.',
+                'default_axes': {'stage': 'aubergine_graphic', 'composition': 'radial_system', 'energy': 'clear_explainer', 'accent': 'full_spectrum'},
+                'data_budget': 0,
+                'headline_treatment': 'a large question on the left or top, with a short center statement inside the wheel',
+            },
+            'ranking_ladder': {
+                'name': 'RANKING LADDER ILLUSTRATION',
+                'skeleton': (
+                    'A playful flat illustration builds an ascending ladder, bracket, calendar, or tier '
+                    'system from thick orange and mint rails on deep aubergine. Small diverse generic '
+                    'competitors and simple symbols for digital games, board games, cue sports, and '
+                    'physical sports populate different levels without forming a fake leaderboard.'
+                ),
+                'text_policy': 'One progress headline only; optional non-numeric level words if supported by the source.',
+                'default_axes': {'stage': 'aubergine_graphic', 'composition': 'vertical_progression', 'energy': 'playful_competitive', 'accent': 'mint_orange'},
+                'data_budget': 0,
+                'headline_treatment': 'a short white headline at the top or left, separate from the illustrated ladder',
+            },
+            'ranking_calendar': {
+                'name': 'RANKING CALENDAR',
+                'skeleton': (
+                    'A loose grid of five to seven thick white-outlined cards sits on aubergine. A few cards '
+                    'hold a mint score marker, pink controller, orange trophy, match symbol, or simple '
+                    'progress arrow; the remaining cards stay intentionally empty for visual rhythm. The '
+                    'result resembles a playful weekly competition board rather than a dashboard.'
+                ),
+                'text_policy': 'One weekly or progress headline; no dates or rankings unless supplied by the article.',
+                'default_axes': {'stage': 'aubergine_graphic', 'composition': 'card_grid', 'energy': 'playful_competitive', 'accent': 'full_spectrum'},
+                'data_budget': 2,
+                'headline_treatment': 'a large top headline with alternating white, mint, and pink words above the loose card grid',
+            },
+            'tournament_deck': {
+                'name': 'TOURNAMENT CARD DECK',
+                'skeleton': (
+                    'Three to five large rounded event cards overlap at slight angles on a deep aubergine '
+                    'field. Pink, mint, orange, and aubergine frames carry generic digital or physical '
+                    'competition photography. Cards contain no dates, game names, fees, prize pools, or '
+                    'organizer marks unless those details are explicitly present in the supplied article.'
+                ),
+                'text_policy': 'One invitation headline; source-supported tournament details may appear as up to three short chips.',
+                'default_axes': {'stage': 'aubergine_graphic', 'composition': 'tilted_deck', 'energy': 'playful_competitive', 'accent': 'full_spectrum'},
+                'data_budget': 3,
+                'headline_treatment': 'a centered or top headline with the action word reversed inside a large hot-pink pill',
+            },
+            'game_grid': {
+                'name': 'ANY GAME GRID',
+                'skeleton': (
+                    'A clean two-by-two grid shows four distinct, believable categories of play such as a '
+                    'controller, chessboard, football, billiards table, table tennis setup, or archery '
+                    'target. One luminous white keyline unifies the cells while subtle mint and orange light '
+                    'keeps the grid connected to the Ranking palette.'
+                ),
+                'text_policy': 'One inclusive gaming headline; no game titles or category list unless sourced.',
+                'default_axes': {'stage': 'photo_grid', 'composition': 'quadrant_grid', 'energy': 'clear_explainer', 'accent': 'mint_orange'},
+                'data_budget': 0,
+                'headline_treatment': 'one large centered or lower-third headline crossing the grid with strong white type',
+            },
+            'venue_story': {
+                'name': 'REAL-WORLD VENUE STORY',
+                'skeleton': (
+                    'A real club, gaming center, sports venue, community event, or organizer workspace '
+                    'appears inside one tall rounded photographic window on a bright orange, mint, or pink '
+                    'field. Two overlapping statement pills connect the physical setting to competition, '
+                    'community, or organization without inventing a partnership.'
+                ),
+                'text_policy': 'One headline plus one short impact line; no partnership or sponsorship claim unless sourced.',
+                'default_axes': {'stage': 'venue_photo', 'composition': 'window_stack', 'energy': 'confident_product', 'accent': 'orange_field'},
+                'data_budget': 0,
+                'headline_treatment': 'two overlapping pink and aubergine statement pills beneath or beside the photo window',
+            },
+            'sticker_still_life': {
+                'name': 'STICKER STILL LIFE',
+                'skeleton': (
+                    'One controller, headset, trophy, gaming chair, handheld device, sports object, match '
+                    'card, or abstract achievement tile is isolated as a crisp photographic cutout or clean '
+                    'soft-3D object. A large rounded white outline frames it on one solid brand-color field, '
+                    'with two tiny node or controller stickers providing scale and movement.'
+                ),
+                'text_policy': 'One trend, question, or feature headline only.',
+                'default_axes': {'stage': 'bright_graphic', 'composition': 'centered_object', 'energy': 'editorial_energy', 'accent': 'orange_field'},
+                'data_budget': 0,
+                'headline_treatment': 'two stacked outlined color pills above the object or one large left-aligned title',
+            },
+            'announcement': {
+                'name': 'MINIMAL PLATFORM ANNOUNCEMENT',
+                'skeleton': (
+                    'A spacious aubergine, warm-white, mint, or orange field contains one oversized linked-node '
+                    'line pattern, a single small abstract status tile, and a disciplined headline zone. '
+                    'There is no decorative game artwork, product mockup, token imagery, or unnecessary data.'
+                ),
+                'text_policy': 'One concise headline and at most one short supporting sentence.',
+                'default_axes': {'stage': 'aubergine_graphic', 'composition': 'left_statement', 'energy': 'editorial_calm', 'accent': 'full_spectrum'},
+                'data_budget': 1,
+                'headline_treatment': 'a large left-aligned headline with one highlighted phrase and broad negative space',
+            },
+        },
+        'axes': {
+            'stage': {
+                'aubergine_graphic': 'The stage is a solid deep-aubergine field with faint oversized linked-node linework and generous negative space.',
+                'bright_graphic': 'The stage is one flat hot-pink, mint, orange, or warm-white field with crisp white keylines and no gradient clutter.',
+                'people_photo': 'The stage uses a candid people-led gaming or community photograph, cleanly cut out or naturally lit, with a controlled brand-color field.',
+                'product_photo': 'The stage is a believable device or interface setting lit with restrained violet, mint, pink, and orange practical light.',
+                'arena_photo': 'The stage is a real-looking competition venue with atmospheric violet and magenta light, readable subjects, and controlled confetti or crowd detail.',
+                'competition_photo': 'The stage is a believable digital or physical match environment organized around two opposing sides and a clear central boundary.',
+                'documentary_photo': 'The stage is a strong documentary, archive-style, gaming-culture, or event photograph with an aubergine readability wash.',
+                'photo_grid': 'The stage is a clean grid of distinct photographic play categories unified by one bright outline and consistent lighting.',
+                'venue_photo': 'The stage combines a real-world venue or organizer photograph with a dominant flat Ranking color field.',
+            },
+            'composition': {
+                'split_statement': 'Reserve 38-46 percent for a staggered headline block and let the person or subject occupy the opposite side with a deliberate crop.',
+                'lower_statement': 'Let the image fill most of the frame and build a bold lower-third statement from one or two large outlined pills.',
+                'centered_card': 'Center one oversized profile or platform card, leaving a clean headline band above and a few small sticker accents around it.',
+                'versus_split': 'Divide the frame into two clear opposing sides that meet at one bright central line, node, table, or bracket junction.',
+                'top_story': 'Reserve the upper 30-38 percent for a source-led headline and chip while the documentary image carries the lower field.',
+                'window_split': 'Place one large organic rounded photo window on one side and a bold headline block on the other, connected by a thin looping line.',
+                'fact_stack': 'Stack an oversized value chip, one factual headline, and one short support line over a quiet region of the image.',
+                'connected_modules': 'Arrange three or four oversized modules along one obvious path with thick spacing and no tiny interface detail.',
+                'radial_system': 'Build a circular ecosystem of large colored segments around one calm central message with a separate headline zone.',
+                'vertical_progression': 'Use a tall ascending ladder, bracket, or tier path as the central illustration, keeping the headline outside the path.',
+                'card_grid': 'Arrange a loose, slightly tilted card grid with intentional empty cards and one strong headline above it.',
+                'tilted_deck': 'Overlap three to five large rounded cards at varied angles while preserving a clear headline band and readable silhouettes.',
+                'quadrant_grid': 'Use four equally strong photographic cells with one continuous frame and a headline crossing the center or lower third.',
+                'window_stack': 'Frame one tall real-world photograph in a rounded window and overlap two short statement pills across its lower edge.',
+                'centered_object': 'Center one oversized object inside a single white-outlined organic frame, with a compact headline above or to one side.',
+                'left_statement': 'Build a spacious left-aligned headline block with one small status tile and a faint node pattern occupying the far background.',
+            },
+            'energy': {
+                'playful_competitive': 'The mood is bright, social, and competitive, using tilted stickers, lively expressions, and bold scale without childish cartoon excess.',
+                'confident_product': 'The mood is useful and aspirational, showing the platform or object clearly in a believable context with controlled campaign polish.',
+                'celebratory': 'The mood captures an earned moment of recognition with human energy, directional light, and restrained event effects.',
+                'high_tension': 'The mood is focused and rivalrous, using opposing color sides and compressed distance without violence or aggression.',
+                'editorial_energy': 'The mood is curious and gaming-native, balancing one striking visual with a strong factual or cultural hook.',
+                'clear_explainer': 'The mood is informative and approachable, with an immediate visual sequence, large modules, and almost no decorative noise.',
+                'editorial_calm': 'The mood is official, trustworthy, and spacious, using disciplined hierarchy and minimal supporting decoration.',
+            },
+            'accent': {
+                'full_spectrum': 'Use aubergine as the anchor with hot pink, mint, orange, and white distributed as large pills, stickers, and keylines; avoid rainbow gradients.',
+                'pink_mint': 'Hot pink and mint form the primary two-sided contrast on aubergine or white, with orange limited to one small action accent.',
+                'mint_orange': 'Fresh mint and bright orange carry the modules or progression path, supported by aubergine type and white outlines.',
+                'orange_field': 'Bright orange is the dominant field, with aubergine type, white keylines, and one mint or hot-pink secondary accent.',
+                'mint_field': 'Fresh mint is the dominant field, with aubergine type, white keylines, and one orange or hot-pink secondary accent.',
+                'neon_photo': 'The photograph carries restrained violet and magenta atmosphere with mint and orange practical highlights; graphics remain crisp and flat.',
+            },
+        },
+        'routing_table': """
+Story category -> Primary family (fallback):
+- Ranking product overview, join, sign up, platform use -> platform_in_action (fallback: profile_hero)
+- Player profile, identity, reputation, visible history -> profile_hero (fallback: player_spotlight)
+- Player, team, creator, streamer, or community spotlight -> player_spotlight (fallback: editorial_window)
+- Win, medal, milestone, recognition, eligible reward -> achievement_moment (fallback: sticker_still_life)
+- PvP, challenge, rivalry, head-to-head, match result -> versus_match (fallback: player_spotlight)
+- Tournament discovery, registration, schedule, format -> tournament_deck (fallback: game_culture)
+- Rankings, leagues, progression, periodic ladder movement -> ranking_ladder (fallback: ranking_calendar)
+- Weekly recap, new rankings, recurring competition -> ranking_calendar (fallback: ranking_ladder)
+- How-to, feature flow, play-submit-climb, result recording -> feature_explainer (fallback: platform_in_action)
+- Audience ecosystem, teams, organizers, referees, fans, communities -> role_wheel (fallback: feature_explainer)
+- Multiple digital and physical games, cross-game inclusion -> game_grid (fallback: editorial_window)
+- Venue, branch, gaming center, sports club, local organizer -> venue_story (fallback: platform_in_action)
+- Gaming news, culture, history, mental health, trends, trivia -> game_culture (fallback: editorial_window)
+- Source-supported year, ranking, count, comparison, or historical fact -> fact_poster (fallback: game_culture)
+- Single trend, product, object, equipment, or provocative question -> sticker_still_life (fallback: editorial_window)
+- Official update, maintenance, correction, policy, simple statement -> announcement (fallback: feature_explainer)
+
+Hard routing rules:
+1. Ranking Platform is a platform, never a token, exchange, wallet, or investment product.
+2. fact_poster is allowed only when every visible number appears in the supplied article.
+3. Third-party games may inform the category or atmosphere, but do not reproduce protected key art,
+   characters, team marks, screenshots, or game logos unless the user supplied that exact approved image.
+4. Tournament dates, entry fees, prize pools, organizer names, player names, scores, rankings, and reward
+   values may appear only when explicitly present in the current source.
+5. Prefer a family, stage color, human archetype, and central prop not used in the last 3 posts.
+""".strip(),
+        'text_rules': """
+1. Headline: 7 words or fewer, usually uppercase, with a challenging, energetic, gaming-native rhythm.
+   Highlight at most two short words or phrases in rounded sticker pills. Do not turn every word into a pill.
+2. Text budget: most families use headline only. editorial_window, fact_poster, venue_story, game_culture,
+   and announcement may add one short supporting sentence. feature_explainer allows at most four one- or
+   two-word step chips. role_wheel allows at most six single-word roles. Long paragraphs are never allowed.
+3. All claims must come from the supplied article or approved Ranking knowledge. Never invent scores,
+   ranks, records, dates, counts, player names, tournament terms, game availability, partnerships,
+   blockchain implementation, reward amounts, or MGC mechanics.
+4. Use product language first: play, challenge, submit, record, rank, climb, join, organize, compete,
+   connect, and build your profile. Use "earn" only when a current source explicitly confirms eligible
+   participation-based MGC rewards. Never promise profit, passive income, guaranteed prizes, or automatic wins.
+5. Generic diverse adult players, teams, organizers, fans, and venue staff are allowed. Never depict or
+   imitate a public figure, celebrity, professional player, founder, or named person. Avoid children unless
+   the user supplies an approved image and the article specifically requires an age-appropriate youth context.
+6. Do not ask the image model to invent the official Ranking symbol or wordmark. The repeating linked-node
+   geometry may appear only as an abstract line pattern or sticker motif. Leave the protected bottom-left
+   corner visually continuous and empty for the real logo applied after generation.
+7. Product screens must remain abstract unless an official interface reference is supplied. Never create
+   plausible-looking buttons, balances, rankings, or user data that could be mistaken for current product truth.
+""".strip(),
+        'fallback_brief': {
+            'family': 'ranking_ladder',
+            'headline': 'MAKE EVERY GAME COUNT',
+            'layout': 'art_only',
+            'data_elements': [],
+            'stage': 'aubergine_graphic',
+            'composition': 'vertical_progression',
+            'energy': 'playful_competitive',
+            'accent': 'mint_orange',
+            'subject_scene': (
+                'A playful ascending competition ladder built from thick mint and orange rails connects '
+                'a controller, chess piece, football, cue ball, profile card, and trophy marker against '
+                'a spacious deep-aubergine field.'
+            ),
+        },
+        'brief_examples': """
+Worked examples (guidance only; never copy them verbatim):
+
+A. Product introduction
+{"family":"platform_in_action","headline":"YOUR GAME DESERVES A RECORD","data_elements":[],"stage":"product_photo","composition":"lower_statement","energy":"confident_product","accent":"neon_photo","subject_scene":"A generic adult player seen from behind uses a wide monitor in a believable home gaming setup lit violet and mint; the screen holds one dark competitive profile card and a few abstract progress rows while the lower third remains visually quiet."}
+
+B. PvP challenge
+{"family":"versus_match","headline":"READY FOR THE NEXT RIVAL?","data_elements":[],"stage":"competition_photo","composition":"versus_split","energy":"high_tension","accent":"pink_mint","subject_scene":"Two generic adult competitors lean toward opposite sides of a real table-gaming setup, separated by one bright orange central junction while pink and mint edge light distinguishes the two sides."}
+
+C. Ranking explainer
+{"family":"feature_explainer","headline":"PLAY. SUBMIT. CLIMB.","data_elements":[{"value":"PLAY","label":""},{"value":"SUBMIT","label":""},{"value":"CLIMB","label":""}],"stage":"aubergine_graphic","composition":"connected_modules","energy":"clear_explainer","accent":"full_spectrum","subject_scene":"Three oversized modules connect a generic match tile to a confirmed-result card and then to a higher position on a game-specific ladder using a single white path across deep aubergine."}
+
+D. Tournament discovery
+{"family":"tournament_deck","headline":"FIND YOUR NEXT TOURNAMENT","data_elements":[],"stage":"aubergine_graphic","composition":"tilted_deck","energy":"playful_competitive","accent":"full_spectrum","subject_scene":"Four large tilted event cards overlap across a deep-aubergine field, framed in hot pink, mint, orange, and white and filled with generic scenes from a digital match, billiards table, football pitch, and chessboard."}
+
+E. Gaming history article containing the year 1972
+{"family":"fact_poster","headline":"THE MATCH THAT STARTED AN ERA","data_elements":[{"value":"1972","label":"ARCADE MILESTONE"}],"stage":"documentary_photo","composition":"fact_stack","energy":"editorial_energy","accent":"mint_field","subject_scene":"A moody archive-style row of early arcade cabinets fills the frame under a subtle aubergine wash, leaving a quiet upper-left region for one large mint date chip and a compact historical statement."}
+
+F. Physical and digital games
+{"family":"game_grid","headline":"ANY GAME. ONE COMPETITIVE RECORD.","data_elements":[],"stage":"photo_grid","composition":"quadrant_grid","energy":"clear_explainer","accent":"mint_orange","subject_scene":"A clean two-by-two grid combines a controller, chessboard, football, and billiards table, unified by one luminous white frame with subtle mint and orange edge light."}
+
+G. Official update
+{"family":"announcement","headline":"A PLATFORM UPDATE","data_elements":[],"stage":"aubergine_graphic","composition":"left_statement","energy":"editorial_calm","accent":"full_spectrum","subject_scene":"A spacious deep-aubergine field carries faint oversized linked-node linework and one small mint status tile, preserving broad uninterrupted space for the announcement."}
+""".strip(),
+        'extra_banned_subject_terms': [
+            'investment guarantee', 'guaranteed return', 'guaranteed profit', 'passive income',
+            'risk-free', 'get rich', 'moonshot', 'to the moon', 'cash pile', 'cash rain',
+            'bitcoin symbol', 'crypto coin', 'coin pile', 'trading chart', 'candlestick chart',
+            'line chart', 'bar chart', 'price chart', 'ethereum diamond', 'token symbol',
+            'wallet balance', 'wallet address', 'exchange screen', 'fake ranking', 'fake score',
+            'invented interface', 'fake logo', 'invented logo', 'third-party logo', 'game logo',
+            'public figure', 'celebrity likeness', 'professional player likeness',
+            'glowing humanoid robot', 'generic cyberpunk', 'blue glass cube', 'metal esports crest',
+        ],
+    }
+
+
+def _jewelry_profile():
+    """Reference-led Jewelry visual system: bright crystal luxury plus honest creator utility."""
+    profile = _rzwire_profile(
+        'Jewelry Coin',
+        (
+            'the Jewelry Token and planned Jewellery Game creator ecosystem, connecting virtual gem '
+            'extraction, digital jewelry design, NFT ownership, marketplace activity, and potential '
+            'physical production through bright crystal-led editorial design'
+        ),
+        (
+            'pearl white (#FAFAFF), frosted lavender (#ECECFE), soft lavender (#D2C0FD), blush crystal '
+            '(#EEC7FC), glass violet (#9979FF), electric violet (#552EEB), ink amethyst (#1A094F), '
+            'platinum chrome (#C3CEE4), and controlled orchid gemstone highlights (#C36ED6)'
+        ),
+        (
+            'clear crystal, faceted lilac gemstones, polished platinum, translucent glass capsules, '
+            'pearl surfaces, white satin, frosted acrylic plinths, and softly reflective chrome'
+        ),
+        (
+            'bright premium product photography, elegant 3D crystal illustration, and polished lifestyle '
+            'editorial imagery with realistic jewelry scale, clean typography, and abundant light'
+        ),
+        (
+            'pearl-white studios, pale lavender gradients, white satin tables, frosted display cases, '
+            'soft daylight lifestyle spaces, and precise glass diagram fields'
+        ),
+        {
+            'create': 'a faceted virtual gem becoming a designed jewelry silhouette',
+            'own': 'one finished design held in a clear authenticated display frame',
+            'trade': 'a curated row of distinct jewelry designs without exchange-interface clutter',
+            'digital to physical': 'a luminous wireframe piece paired with a crafted platinum counterpart',
+            'planned utility': 'short glass capsules connected around one unbranded crystal core',
+            'community': 'adult creators reviewing jewelry sketches and materials in a bright studio',
+        },
+        {
+            'family': 'hero_object', 'headline': 'Ideas become objects', 'layout': 'art_only',
+            'data_elements': [], 'stage': 'pearl_studio', 'composition': 'centered_plinth',
+            'energy': 'soft_luxury', 'accent': 'crystal_violet', 'art_style': '',
+            'subject_scene': (
+                'One original platinum ring with a faceted lilac gemstone rests on a frosted acrylic '
+                'plinth against a pearl-white to lavender gradient, with no token disc or invented mark.'
+            ),
+        },
+        ['jewelry coin', 'jewelry token', 'jewellery game', 'jewelry_token'],
+    )
+
+    profile.update({
+        'brand_name': 'Jewelry Coin',
+        'brand_tagline': (
+            'Jewelry Token for the proposed Jewellery Game creator platform: extract virtual materials, '
+            'design jewelry, mint eligible designs as NFTs, trade through a planned marketplace, and '
+            'potentially connect selected digital designs to physical production'
+        ),
+        'brand_keywords': [
+            'jewelry coin', 'jewelry token', 'jewellery game', 'jewelry_token',
+            'digital jewelry', 'virtual gems', 'jewelry nft',
+        ],
+        'core_axes': ('stage', 'composition', 'energy', 'accent'),
+        'headline_max_words': 7,
+        'headline_uppercase': False,
+        'meme_enabled': False,
+        'mood_accent_default': 'crystal_violet',
+        'mood_accent_restricted': {
+            'orchid_gem': {'families': ['hero_object', 'concept_photo', 'lockup', 'art_drop']},
+            'verified_green': {'families': ['big_number', 'stat_card']},
+        },
+        'axis_companion_field': {},
+        'passthrough_fields': ['art_style'],
+        'passthrough_field_schema': {
+            'art_style': '"" unless family is "art_drop" -- a short bright crystal-art treatment that must differ from recent values',
+        },
+        'no_text_mode': 'art_drop',
+        'no_text_line': 'No text, no letters, no numbers anywhere in the image.',
+        'data_numbers_must_appear_in_article': True,
+        'families_requiring_data': ['big_number', 'stat_card'],
+        'data_element_template': 'a clear glass capsule displaying "{value}"{label_part}',
+        'data_element_label_template': ' with the short descriptor "{label}"',
+        'legibility_line': (
+            'All visible words use a clean geometric sans-serif in ink amethyst or white, with generous '
+            'spacing, strong hierarchy, and no tiny interface text.'
+        ),
+        'anti_repetition_rules': (
+            'Do not repeat the same family twice in a row. Across any 6 posts, use at least one precious '
+            'object hero, one creator or wearer photograph, one diagram or verified information design, '
+            'and one digital-to-physical composition. Do not reuse the same ring, gemstone cut, satin '
+            'fold, glass capsule arrangement, hand pose, portrait crop, or plinth within 5 posts. '
+            'art_drop art_style must not repeat within 6 posts. big_number and stat_card each appear at '
+            'most twice in 6 posts. Alternate pearl-white, lavender-gradient, satin, lifestyle, and '
+            'frosted-glass stages.'
+        ),
+    })
+
+    profile['approved_directions'] = {
+        '01 precious object / hero_object': (
+            'one original silver, platinum, pearl, or lilac-gem jewelry piece on a frosted plinth, '
+            'photographed with clean luxury lighting and no token-disc clutter'
+        ),
+        '02 digital to physical / lockup': (
+            'one luminous wireframe jewelry design paired with one plausible crafted counterpart, '
+            'connected by a restrained glass-violet transformation path'
+        ),
+        '03 creator lifestyle / concept_photo': (
+            'an adult creator sketches or reviews a jewelry design in a bright modern studio, with '
+            'authentic materials and one subtle lavender brand field'
+        ),
+        '04 jewelry journey / flat_explainer': (
+            'three or four large crystal modules explain a source-supported path such as extract, '
+            'design, mint, and trade without pretending future platform features are live'
+        ),
+        '05 ecosystem utility / stat_card': (
+            'two to four clear glass capsules present only source-supported token facts or proposed '
+            'utility labels around one original gemstone or jewelry object'
+        ),
+        '06 gemstone number / big_number': (
+            'one source-verified supply, percentage, price, or milestone value dominates a pearl-lavender '
+            'poster with a single faceted crystal and no copied market interface'
+        ),
+        '07 capsule statement / type_led': (
+            'one concise ink-amethyst statement sits inside or beside a translucent rounded lavender '
+            'capsule, balanced by a single chrome or gemstone object'
+        ),
+        '08 soft-luxury portrait / duotone': (
+            'a tasteful adult wearer or anonymous hand is photographed in soft daylight with one real-scale '
+            'jewelry piece and a controlled lavender editorial wash'
+        ),
+        '09 crystal art / art_drop': (
+            'a zero-copy artwork explores one crystal, gemstone, pearl, satin fold, or chrome jewelry '
+            'silhouette through a rotating luminous fine-art treatment'
+        ),
+        '10 maker campaign / concept_photo': (
+            'adult artisan hands refine one physical jewelry piece beside its translucent wireframe concept '
+            'on a bright pearl-and-lavender worktable, emphasizing creativity and craft without claiming '
+            'that production is already live'
+        ),
+    }
+
+    profile['approved_reference_assets'] = {
+        '01 precious object / hero_object': 'brand_references/jewelry/approved/01-precious-object-hero.png',
+        '02 digital to physical / lockup': 'brand_references/jewelry/approved/02-digital-physical-pair.png',
+        '03 creator lifestyle / concept_photo': 'brand_references/jewelry/approved/03-creator-lifestyle.png',
+        '04 jewelry journey / flat_explainer': 'brand_references/jewelry/approved/04-jewelry-journey.png',
+        '05 ecosystem utility / stat_card': 'brand_references/jewelry/approved/05-utility-cards.png',
+        '06 gemstone number / big_number': 'brand_references/jewelry/approved/06-fixed-supply.png',
+        '07 capsule statement / type_led': 'brand_references/jewelry/approved/07-capsule-statement.png',
+        '08 soft-luxury portrait / duotone': 'brand_references/jewelry/approved/08-soft-luxury-portrait.png',
+        '09 crystal art / art_drop': 'brand_references/jewelry/approved/09-crystal-art-drop.png',
+        '10 maker campaign / concept_photo': 'brand_references/jewelry/approved/10-creativity-campaign.png',
+    }
+
+    profile['frozen_style'] = {
+        'format': (
+            'premium portrait 4:5 social editorial for Jewelry Token, composed for safe square cropping '
+            'with a bright, breathable layout and one immediate idea'
+        ),
+        'palette': (
+            'pearl white (#FAFAFF), frosted lavender (#ECECFE), soft lavender (#D2C0FD), blush crystal '
+            '(#EEC7FC), glass violet (#9979FF), electric violet (#552EEB), ink amethyst (#1A094F), '
+            'platinum chrome (#C3CEE4), and controlled orchid (#C36ED6); verified positive data alone '
+            'may use a restrained emerald-green accent'
+        ),
+        'materials': (
+            'clear crystal, faceted lilac gemstones, polished platinum, translucent glass capsules, '
+            'pearl surfaces, white satin, frosted acrylic, and softly reflective chrome'
+        ),
+        'rendering': (
+            'bright luxury product photography or refined photoreal 3D with physically plausible '
+            'refraction, jewelry-scale proportions, soft shadows, realistic skin, crisp silhouettes, '
+            'and clean modern editorial typography'
+        ),
+        'background_vocab': (
+            'pearl-white studio, pale lavender gradient, white satin, frosted display case, bright creator '
+            'workspace, soft daylight portrait, or clean glass-diagram field'
+        ),
+        'headline_zone': (
+            'reserve one broad quiet region for a concise headline; use rounded glass capsules as emphasis '
+            'devices rather than enclosing every line; leave the bottom-left corner clear for the real logo'
+        ),
+        'never': (
+            'never use dark cyberpunk ateliers, generic gold-coin piles, crowded floating token discs, '
+            'copied market or wallet screens, illegible dashboards, fake jewelry-brand marks, impossible '
+            'gem settings, plastic-looking skin, public figures, rainbow gradients, or unsupported utility'
+        ),
+    }
+
+    profile['metaphors'] = {
+        'virtual gem or creative raw material': 'one faceted lilac crystal or pearl-like luminous resource',
+        'design': 'a precise wireframe silhouette, jewelry sketch, or modular setting grid',
+        'digital ownership': 'one finished design inside a clear display frame with no invented seal',
+        'digital to physical': 'matching wireframe and crafted forms connected through a soft glass path',
+        'platform journey': 'three or four oversized crystal modules progressing across a clean field',
+        'planned utility': 'short labeled glass capsules orbiting one unbranded precious object',
+        'community creativity': 'adult creators handling sketches, gemstones, or jewelry tools in daylight',
+        'milestone': 'one gemstone number cut, crystal pedestal, or elevated jewelry plinth',
+    }
+
+    profile['families'] = {
+        'hero_object': {
+            'name': 'PRECIOUS OBJECT HERO',
+            'skeleton': (
+                'One original ring, pendant, earring, bracelet, faceted gem, pearl, or jewelry-design '
+                'object sits on a frosted acrylic or satin plinth. The silhouette is large, plausible, '
+                'and tactile, with platinum highlights and one controlled violet gemstone accent.'
+            ),
+            'text_policy': 'One short headline and at most one source-supported fact.',
+            'default_axes': {'stage': 'pearl_studio', 'composition': 'centered_plinth', 'energy': 'soft_luxury', 'accent': 'crystal_violet'},
+            'data_budget': 1,
+            'headline_treatment': 'ink-amethyst headline in a quiet upper or side region, never over the jewelry',
+            'headline_uppercase': False,
+        },
+        'lockup': {
+            'name': 'DIGITAL / PHYSICAL PAIR',
+            'skeleton': (
+                'Two clearly distinct but related forms share a bright field: a luminous digital wireframe '
+                'or gem model and a crafted jewelry counterpart, or two source-supported comparison '
+                'objects. One glass-violet path or rounded frame connects them without claiming a live integration.'
+            ),
+            'text_policy': 'One headline plus at most two short source-supported labels.',
+            'default_axes': {'stage': 'lavender_gradient', 'composition': 'split_transformation', 'energy': 'creator_confidence', 'accent': 'glass_violet'},
+            'data_budget': 2,
+            'headline_treatment': 'one concise ink-amethyst title above or beside the paired forms',
+            'data_value_max_len': 18,
+        },
+        'concept_photo': {
+            'name': 'CREATOR LIFESTYLE CAMPAIGN',
+            'skeleton': (
+                'A photoreal adult creator, collector, or wearer appears in a bright studio or soft '
+                'daylight setting, interacting naturally with a jewelry sketch, gemstone, tool, tablet, '
+                'or one correctly scaled piece. No identifiable public figure or fake app interface appears.'
+            ),
+            'text_policy': 'One concise campaign headline only.',
+            'default_axes': {'stage': 'lifestyle_photo', 'composition': 'portrait_editorial', 'energy': 'creator_confidence', 'accent': 'blush_crystal'},
+            'data_budget': 0,
+            'headline_treatment': 'large ink-amethyst or white type in a naturally quiet background region',
+            'headline_uppercase': False,
+        },
+        'flat_explainer': {
+            'name': 'JEWELRY JOURNEY EXPLAINER',
+            'skeleton': (
+                'Three or four large crystal, gemstone, jewelry, or frosted-glass modules connect along '
+                'one clear path. Each stage is visually distinct and source-supported; proposed features '
+                'remain outlined, translucent, or explicitly future-facing.'
+            ),
+            'text_policy': 'One headline plus at most four short stage labels.',
+            'default_axes': {'stage': 'glass_diagram', 'composition': 'process_path', 'energy': 'clear_explainer', 'accent': 'crystal_violet'},
+            'data_budget': 4,
+            'headline_treatment': 'clean ink-amethyst title above or beside the process path',
+        },
+        'stat_card': {
+            'name': 'GLASS UTILITY CARDS',
+            'skeleton': (
+                'Two to four large translucent capsules or frosted cards present source-verified token '
+                'facts, proposed utility labels, or roadmap phases around one premium jewelry or crystal '
+                'object. The layout is spacious and never resembles an exchange dashboard.'
+            ),
+            'text_policy': 'One headline plus 2-4 source-supported values or short labels.',
+            'default_axes': {'stage': 'glass_diagram', 'composition': 'card_grid', 'energy': 'clear_explainer', 'accent': 'glass_violet'},
+            'data_budget': 4,
+            'headline_treatment': 'bold ink-amethyst title with large readable glass capsules beneath',
+        },
+        'big_number': {
+            'name': 'GEMSTONE NUMBER POSTER',
+            'skeleton': (
+                'One source-verified value dominates a pearl-to-lavender field as if cut from a gemstone. '
+                'A single faceted crystal, chrome arc, or frosted plinth supports it; no third-party chart '
+                'or copied market interface is shown.'
+            ),
+            'text_policy': 'One verified value plus one short context line.',
+            'default_axes': {'stage': 'lavender_gradient', 'composition': 'number_showcase', 'energy': 'milestone', 'accent': 'crystal_violet'},
+            'data_budget': 1,
+            'headline_treatment': 'the verified value is the largest element, with a short ink-amethyst descriptor',
+        },
+        'type_led': {
+            'name': 'CRYSTAL CAPSULE STATEMENT',
+            'skeleton': (
+                'Typography leads on a pearl-white or lavender field. One phrase sits inside a translucent '
+                'rounded capsule while one small gemstone, chrome jewelry silhouette, or glass wave '
+                'anchors the composition. The page remains bright and uncluttered.'
+            ),
+            'text_policy': 'One concise headline plus at most one short supporting sentence.',
+            'default_axes': {'stage': 'lavender_gradient', 'composition': 'left_capsule', 'energy': 'soft_luxury', 'accent': 'blush_crystal'},
+            'data_budget': 1,
+            'headline_treatment': 'bold ink-amethyst geometric type with one lavender capsule emphasis',
+        },
+        'duotone': {
+            'name': 'SOFT-LUXURY PORTRAIT',
+            'skeleton': (
+                'A tasteful photoreal close-up of an adult wearer, anonymous hand, ear, wrist, or neckline '
+                'shows one correctly scaled jewelry piece under soft daylight. A restrained lavender wash '
+                'or rounded glass copy panel occupies the quiet side of the frame.'
+            ),
+            'text_policy': 'One short headline only.',
+            'default_axes': {'stage': 'lifestyle_photo', 'composition': 'portrait_editorial', 'energy': 'soft_luxury', 'accent': 'blush_crystal'},
+            'data_budget': 0,
+            'headline_treatment': 'one large high-contrast statement in the clean editorial panel',
+            'headline_uppercase': False,
+        },
+        'art_drop': {
+            'name': 'CRYSTAL ART DROP',
+            'skeleton': (
+                'A standalone zero-copy artwork explores one faceted crystal, pearl, platinum ribbon, '
+                'jewelry silhouette, glass capsule, or satin fold in a rotating luminous fine-art '
+                'treatment such as macro refraction, translucent sculpture, or pearl-chrome still life.'
+            ),
+            'text_policy': 'Zero in-image text; all context lives in social copy.',
+            'default_axes': {'stage': 'crystal_art', 'composition': 'centered_plinth', 'energy': 'soft_luxury', 'accent': 'orchid_gem'},
+            'data_budget': 0,
+        },
+    }
+
+    profile['axes'] = {
+        'stage': {
+            'pearl_studio': 'A high-key pearl-white studio uses a barely visible lavender floor, soft contact shadows, and frosted acrylic display surfaces.',
+            'lavender_gradient': 'A smooth pearl-white to pale-lavender gradient carries gentle blush light without banding or rainbow color.',
+            'satin_macro': 'White or pale-lavender satin creates large clean folds with realistic fiber texture and controlled platinum reflections.',
+            'lifestyle_photo': 'A bright modern studio, fitting room, creator desk, or soft daylight portrait setting feels authentic and premium.',
+            'glass_diagram': 'A clean frosted-white information field uses translucent capsules, thin lavender paths, and large distinct modules.',
+            'crystal_art': 'A luminous macro world of crystal, pearl, chrome, and satin supports a single abstract precious-form artwork.',
+        },
+        'composition': {
+            'centered_plinth': 'Center one precious object on a frosted plinth with generous pearl-white breathing room.',
+            'split_transformation': 'Balance a digital form and a physical counterpart across two clean halves linked by one restrained transformation path.',
+            'portrait_editorial': 'Place the adult subject or jewelry close-up on one side and reserve the opposite side for a simple editorial statement.',
+            'process_path': 'Arrange three or four large stages along one clear horizontal, vertical, or gently curved path.',
+            'card_grid': 'Arrange two to four oversized glass capsules or cards around one small jewelry or crystal anchor.',
+            'number_showcase': 'Let one verified value dominate while one gemstone-cut object or chrome arc establishes depth.',
+            'left_capsule': 'Build a disciplined left or upper-left headline block with one translucent capsule emphasis and one object balancing the opposite side.',
+        },
+        'energy': {
+            'soft_luxury': 'The mood is polished, light, tactile, and calm, with restrained sparkle and no ostentatious wealth cues.',
+            'creator_confidence': 'The mood is optimistic and participatory, emphasizing design agency and craft rather than investment.',
+            'clear_explainer': 'The mood is simple, instructive, and spacious, with obvious hierarchy and no tiny labels.',
+            'milestone': 'The mood marks a verified fact or chapter through elevated scale and crystalline focus without forecasting performance.',
+            'playful_precision': 'The mood uses floating glass and faceted forms with controlled movement while keeping the layout disciplined.',
+        },
+        'accent': {
+            'crystal_violet': 'Glass violet and electric violet define one main crystal, capsule, or path while pearl white remains dominant.',
+            'blush_crystal': 'Blush pink-lilac light softens the scene around one jewelry object or portrait without becoming candy-colored.',
+            'platinum_chrome': 'Cool platinum and pale blue-silver define polished metal edges and reflective jewelry surfaces.',
+            'glass_violet': 'A translucent lavender-violet glass treatment connects modules or paired objects with soft refraction.',
+            'orchid_gem': 'Orchid appears only inside one faceted gemstone or art object, never as a full-frame saturated wash.',
+            'verified_green': 'A restrained emerald highlight appears only beside source-verified positive historical data.',
+        },
+    }
+
+    profile['routing_table'] = """
+Story category -> Primary family (fallback):
+- Product identity, gemstone, ring, pendant, wearable craft -> hero_object (fallback: type_led)
+- Digital design to potential physical production -> lockup (fallback: hero_object)
+- Creator, wearer, community, accessible luxury -> concept_photo (fallback: duotone)
+- Extract, design, mint, trade, platform flow, how it works -> flat_explainer (fallback: stat_card)
+- Token facts, proposed utility, tokenomics, roadmap phases -> stat_card (fallback: type_led)
+- Verified supply, percentage, price, or single milestone -> big_number (fallback: stat_card)
+- Brand statement, official update, short educational statement -> type_led (fallback: hero_object)
+- Wearer close-up, jewelry detail, personal creativity -> duotone (fallback: concept_photo)
+- Source-supported comparison or paired concepts -> lockup (fallback: flat_explainer)
+- Evergreen visual identity with no in-image copy -> art_drop (fallback: hero_object)
+- Anything ambiguous -> hero_object
+
+Hard routing rules:
+1. The workspace label is Jewelry Coin; the whitepaper calls the token Jewelry Token or Jewelry, while Jewellery Game is the platform context.
+2. The game, marketplace, physical production, mobile app, AR, AI, staking, DAO governance, merchant tools, and multi-chain features must appear as planned, intended, proposed, conceptual, or incomplete unless a newer source confirms they are live.
+3. big_number and stat_card may use only figures present in the supplied source. Never invent allocation percentages, APY, prices, deadlines, users, revenue, listing data, or adoption statistics.
+4. Do not depict a named production partner, exchange, wallet, app screen, or jewelry brand unless the supplied source explicitly verifies it.
+5. Prefer a family, stage, jewelry type, gemstone cut, and composition not used in the last 3 posts.
+""".strip()
+
+    profile['text_rules'] = """
+1. Headline: 7 words or fewer, sentence case, imaginative but factual. Emphasize creation, ownership, craft, participation, and the bridge between digital design and possible physical form.
+2. Text budget: hero_object, concept_photo, duotone, and lockup use one headline; big_number uses one verified value plus context; flat_explainer allows four stage labels; type_led allows headline plus one sentence; stat_card allows 2-4 source-supported facts or labels; art_drop uses zero copy.
+3. Every visible price, percentage, supply figure, date, phase number, rate, comparison, and milestone must appear in the supplied article. Never use remembered market data.
+4. Use "planned," "intended," "proposed," "designed to," "potential," or equivalent visual incompleteness for unconfirmed platform functions. Do not show a polished live app or operational production pipeline as current fact.
+5. Do not promise investment returns, price appreciation, passive income, guaranteed rewards, authentication, liquidity, security, compliance, production, delivery, or marketplace activity.
+6. Do not place a contract address, wallet address, QR code, buy button, exchange logo, market chart, or third-party interface in generated artwork. Add official assets separately.
+7. Never invent the Jewelry Token interlocking-gem emblem or wordmark. Leave the protected bottom-left corner as a seamless continuation of the artwork for the real logo added after generation.
+""".strip()
+
+    profile['fallback_brief'] = {
+        'family': 'hero_object',
+        'headline': 'Ideas become objects',
+        'layout': 'art_only',
+        'data_elements': [],
+        'stage': 'pearl_studio',
+        'composition': 'centered_plinth',
+        'energy': 'soft_luxury',
+        'accent': 'crystal_violet',
+        'art_style': '',
+        'subject_scene': (
+            'One original platinum ring with a faceted lilac gemstone rests on a frosted acrylic plinth '
+            'against a pearl-white to lavender gradient, with no token disc or invented mark.'
+        ),
+    }
+
+    profile['brief_examples'] = """
+Worked examples (guidance only; never copy them verbatim):
+
+A. Precious object campaign
+{"family":"hero_object","headline":"Your idea, set in light","data_elements":[],"stage":"pearl_studio","composition":"centered_plinth","energy":"soft_luxury","accent":"orchid_gem","art_style":"","subject_scene":"One original platinum ring with a faceted orchid-lilac gemstone sits on a frosted acrylic plinth under soft daylight, surrounded by broad pearl-white space."}
+
+B. Digital to physical possibility
+{"family":"lockup","headline":"From pixels to precious","data_elements":[],"stage":"lavender_gradient","composition":"split_transformation","energy":"creator_confidence","accent":"glass_violet","art_style":"","subject_scene":"A luminous wireframe pendant and a plausible crafted platinum pendant face each other across a pale lavender field, joined by one incomplete translucent path that communicates potential physical production."}
+
+C. Creator lifestyle
+{"family":"concept_photo","headline":"Design what you want to wear","data_elements":[],"stage":"lifestyle_photo","composition":"portrait_editorial","energy":"creator_confidence","accent":"blush_crystal","art_style":"","subject_scene":"An adult jewelry creator in a bright studio sketches a pendant beside real tools, gemstones, and white satin while a quiet lavender panel holds the headline."}
+
+D. Source-supported journey
+{"family":"flat_explainer","headline":"One creative journey","data_elements":[{"value":"EXTRACT","label":""},{"value":"DESIGN","label":""},{"value":"MINT","label":""},{"value":"TRADE","label":""}],"stage":"glass_diagram","composition":"process_path","energy":"clear_explainer","accent":"crystal_violet","art_style":"","subject_scene":"Four large modules progress from a faceted virtual gem to a jewelry wireframe, a clear framed design, and a curated marketplace tile; later stages remain translucent to signal planned functionality."}
+
+E. Canonical fixed supply article
+{"family":"big_number","headline":"Fixed total supply","data_elements":[{"value":"100,000,000","label":"JEWELRY"}],"stage":"lavender_gradient","composition":"number_showcase","energy":"milestone","accent":"crystal_violet","art_style":"","subject_scene":"The verified supply figure is cut into a large crystal-like typographic form above one frosted plinth on a pearl-to-lavender field, with no chart or extra financial data."}
+
+F. Zero-copy identity artwork
+{"family":"art_drop","headline":"CRYSTAL IDENTITY","data_elements":[],"stage":"crystal_art","composition":"centered_plinth","energy":"soft_luxury","accent":"orchid_gem","art_style":"macro crystal refraction with pearl-chrome sculpture and white satin","subject_scene":"One abstract platinum ribbon bends through a faceted lilac crystal above a white satin fold, rendered as a luminous gallery still life."}
+""".strip()
+
+    profile['extra_banned_subject_terms'] = [
+        'guaranteed return', 'guaranteed profit', 'passive income', 'risk-free', 'unhackable',
+        'moonshot', 'to the moon', '100x', 'get rich', 'price prediction', 'guaranteed rewards',
+        'guaranteed authentication', 'guaranteed production', 'instant physical jewelry',
+        'live marketplace', 'active marketplace', 'finished game', 'live game platform',
+        'operational ar app', 'live ar try-on', 'active dao', 'live governance', 'active staking',
+        'confirmed partner', 'official jewelry partner', 'exchange listing', 'wallet screenshot',
+        'market chart', 'candlestick chart', 'trading dashboard', 'coin pile', 'gold coin',
+        'floating token swarm', 'public figure', 'celebrity likeness', 'fake jewelry logo',
+        'invented logo', 'third-party logo', 'crypto rocket', 'generic cyberpunk',
+    ]
+    return profile
+
+
+BRAND_IMAGE_PROFILES = {
+    'MGC Coin': _mgc_profile(),
+    'Ranking Platform': _ranking_profile(),
+    'Oasis Coin': _oasis_profile(),
+    'Jewelry Coin': _jewelry_profile(),
 }
+
+

@@ -82,7 +82,7 @@ TASK — do these three things in order:
 
 1. DEDUPLICATE: Find groups of articles that report the same underlying event (same story, different outlets or angles). For each group keep only the single best article (most authoritative source, most complete headline). List every removed duplicate's label in "duplicates".
 
-2. CLUSTER: Assign each surviving article to the brand(s) it genuinely serves (max {MAX_BRANDS_PER_ART} brands per article). Apply each brand's REJECTS rules strictly. Coin Hall's VALUE GATE is mandatory — no number/price/% = not Coin Hall. ChainReporter is the catch-all for any important crypto story that doesn't fit elsewhere. If an article fits no brand, omit it.
+2. CLUSTER: Assign each surviving article to the brand(s) it genuinely serves (max {MAX_BRANDS_PER_ART} brands per article). Apply each brand's REJECTS rules strictly. Keep Ranking classified as a platform, never a token. If an article fits no brand, omit it.
 
 3. RANK: Within each brand, order articles best-fit first (how well this article serves THAT brand's specific audience). Keep at most {TOP_N_PER_BRAND} per brand. For each kept article include a fit score 0-100 and a one-line reason.
 
@@ -90,10 +90,10 @@ Return ONLY this JSON (replace … with real data):
 {{
   "duplicates": [["a1","a3"], ["a5","a8","a12"]],
   "brands": {{
-    "RZ Prime":        [{{"id":"a2","fit":87,"reason":"..."}}],
-    "Coin Hall":       [...],
-    "ChainReporter":   [...],
-    "Meta Coin Guard": [...]
+    "MGC Coin":         [{{"id":"a2","fit":87,"reason":"..."}}],
+    "Ranking Platform": [...],
+    "Oasis Coin":       [...],
+    "Jewelry Coin":     [...]
   }}
 }}
 Omit any brand not in the PUBLICATIONS list above. If a brand has no suitable articles, set its value to [].
@@ -102,8 +102,8 @@ Omit any brand not in the PUBLICATIONS list above. If a brand has no suitable ar
 
 
 def _fallback(survivors: list[dict], selected_media: list[str]) -> list[dict]:
-    """Emergency fallback: route most-recent articles to ChainReporter (or first brand)."""
-    catchall = 'ChainReporter' if 'ChainReporter' in selected_media else selected_media[0]
+    """Emergency fallback: route most-recent articles to Oasis or the first brand."""
+    catchall = 'Oasis Coin' if 'Oasis Coin' in selected_media else selected_media[0]
     sorted_arts = sorted(survivors,
                          key=lambda a: a.get('pub_date', ''), reverse=True)
     shortlist = []

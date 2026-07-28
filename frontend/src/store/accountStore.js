@@ -9,6 +9,11 @@ export const useAccountStore = create((set, get) => ({
   error: '',
 
   setActiveSavedCard: (card) => set({ activeSavedCard: card }),
+  updateSavedCardLocal: (id, patch) => set(s => {
+    const savedCards = s.savedCards.map(c => c.id === id ? { ...c, ...patch } : c)
+    const activeSavedCard = s.activeSavedCard?.id === id ? { ...s.activeSavedCard, ...patch } : s.activeSavedCard
+    return { savedCards, activeSavedCard }
+  }),
 
   fetchSummary: async () => {
     set({ loading: true, error: '' })
@@ -48,11 +53,29 @@ export const useAccountStore = create((set, get) => ({
     }
   },
 
-  confirmScheduleSaved: async (id, scheduledDate, scheduledTime, copy, hashtags) => {
+  updateSavedCard: async (id, patch) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/account/saved/update`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...patch }),
+      })
+      if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error || `Update failed (${res.status})`) }
+      const data = await res.json()
+      const card = data.card || patch
+      get().updateSavedCardLocal(id, card)
+      return card
+    } catch (e) {
+      const msg = e.message || 'Failed to update saved card'
+      set({ error: msg })
+      throw new Error(msg)
+    }
+  },
+
+  confirmScheduleSaved: async (id, scheduledDate, scheduledTime, copy, hashtags, overrides = {}) => {
     try {
       const res = await fetch(`${API_BASE}/api/account/saved/confirm-schedule`, {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, scheduledDate, scheduledTime, copy, hashtags }),
+        body: JSON.stringify({ id, scheduledDate, scheduledTime, copy, hashtags, ...overrides }),
       })
       if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error || `Schedule failed (${res.status})`) }
       set({ savedCards: get().savedCards.filter(c => c.id !== id) })

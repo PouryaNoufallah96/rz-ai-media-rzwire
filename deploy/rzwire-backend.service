@@ -1,0 +1,16 @@
+[Unit]
+Description=RZWire backend
+After=network.target
+
+[Service]
+Type=simple
+User=rzwire
+Group=rzwire
+WorkingDirectory=/var/www/rzwire/backend
+ExecStart=/var/www/rzwire/.venv/bin/python server.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate } from '../router'
 import { useAuthStore } from '../store/authStore'
+import rzwireLogo from '../assets/brands/rzwire-logo.png'
 import './AuthPage.css'
 
 const FEATURES = [
@@ -52,6 +53,17 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
+  useEffect(() => {
+    const root = document.documentElement
+    const previous = { lang: root.lang, dir: root.dir }
+    root.lang = 'en'
+    root.dir = 'ltr'
+    return () => {
+      root.lang = previous.lang
+      root.dir = previous.dir
+    }
+  }, [])
+
   async function handleSubmit(e) {
     e.preventDefault()
     if (!identifier || !password || submitting) return
@@ -62,27 +74,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="auth-page">
+    <div className="auth-page" data-no-localize="true">
       <div aria-hidden="true" className="auth-glow"></div>
 
       <div className="auth-wrap">
       <div className="auth-left">
         <div className="auth-logo">
-          <div className="auth-logo-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#07090e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-            </svg>
-          </div>
-          <span className="auth-logo-text">
-            <span style={{ color: '#f0f2f8' }}>Chain</span><span style={{ color: '#f0a040' }}>Reporter</span>
-          </span>
+          <span className="auth-logo-crop"><img src={rzwireLogo} alt="RZWire" className="auth-logo-image" /></span>
         </div>
 
         <div>
           <h1 className="auth-headline">
             <span className="auth-headline-accent">AI-</span>Powered<br />
-            Multi Media Reporting
+            Multi-Brand Publishing
           </h1>
           <p className="auth-subtitle">Automate your content creation, scheduling, and analytics across multiple platforms with intelligent insights.</p>
         </div>
@@ -99,7 +103,7 @@ export default function LoginPage() {
           ))}
         </div>
 
-        <p className="auth-left-footer">© 2025 ChainReporter. All rights reserved.</p>
+        <p className="auth-left-footer">© 2026 RZWire. All rights reserved.</p>
       </div>
 
       <div className="auth-right">
@@ -178,7 +182,7 @@ export default function LoginPage() {
             {authError && <div className="auth-error">{authError}</div>}
 
             <button type="submit" className="btn-mint auth-submit" disabled={submitting}>
-              {submitting ? 'Signing In…' : 'Sign In'}
+              {submitting ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
         </div>
@@ -187,3 +191,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

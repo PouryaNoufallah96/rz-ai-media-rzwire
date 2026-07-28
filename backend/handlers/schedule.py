@@ -3,7 +3,7 @@ import time
 import sys
 
 import database
-from config import SCHEDULER_INTERVAL_SEC
+from config import PUBLISHING_ENABLED, SCHEDULER_INTERVAL_SEC
 from datetime import datetime as _datetime, timezone as _timezone
 from server_utils import _parse_iso_utc
 from handlers.social import handle_telegram_post, handle_twitter_post
@@ -11,6 +11,8 @@ from handlers.sheets import call_apps_script
 
 
 def handle_schedule_create(user_id, body):
+    if not PUBLISHING_ENABLED:
+        raise ValueError('RZWire publishing is disabled; scheduling will be available after integration setup')
     scheduled_at = body.get('scheduledAt')
     if not scheduled_at:
         raise ValueError('scheduledAt is required')
@@ -65,7 +67,7 @@ def execute_scheduled_post(row):
             handle_telegram_post({
                 'imageB64': image_b64, 'headline': row['headline'],
                 'copy': row.get('copy') or '', 'hashtags': hashtags,
-                'link': row.get('source_link') or '',
+                'link': row.get('source_link') or '', 'mediaBrand': row.get('brand') or '',
             })
         elif platform == 'X':
             handle_twitter_post({
@@ -105,8 +107,9 @@ def run_scheduler_loop():
     # the user must re-schedule it manually.
     while True:
         try:
-            for row in database.get_due_scheduled_posts(_datetime.now(_timezone.utc).isoformat()):
-                execute_scheduled_post(row)
+            if PUBLISHING_ENABLED:
+                for row in database.get_due_scheduled_posts(_datetime.now(_timezone.utc).isoformat()):
+                    execute_scheduled_post(row)
         except Exception as e:
             print(f'[scheduler] {e}', file=sys.stderr)
         time.sleep(SCHEDULER_INTERVAL_SEC)

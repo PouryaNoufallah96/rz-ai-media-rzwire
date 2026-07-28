@@ -1,20 +1,20 @@
 /* ============================================================
-   AuthPage.css  — ChainReporter login (ideal split layout)
+   AuthPage.css  — RZWire login
    Matches the class names already in LoginPage.jsx.
    Drop-in replacement. Tweak the --cr-* tokens to taste.
    ============================================================ */
 
 :root {
-  --cr-bg-0:     #05070d;   /* page base, near-black navy   */
-  --cr-bg-1:     #0a0f17;   /* card / input surface         */
-  --cr-bg-2:     #0e141d;   /* input fill                   */
-  --cr-border:   #1b2430;   /* hairline borders             */
+  --cr-bg-0:     #080717;
+  --cr-bg-1:     #100d27;
+  --cr-bg-2:     #15122e;
+  --cr-border:   #29234d;
   --cr-text:     #eaf2f8;   /* primary text                 */
   --cr-text-dim: #8b97a6;   /* secondary text               */
   --cr-text-mut: #5b6675;   /* footer / faint               */
-  --cr-cyan:     #2fe6d6;   /* primary accent (AI-, links)  */
-  --cr-cyan-2:   #22d3ee;   /* gradient partner             */
-  --cr-violet:   #8b7bff;   /* multi-platform icon          */
+  --cr-cyan:     #18c7cf;
+  --cr-cyan-2:   #4ee7df;
+  --cr-violet:   #7568f0;
 }
 
 /* ---------- page shell : full-height two-column split ---------- */
@@ -23,7 +23,8 @@
   min-height: 100vh;
   width: 100%;
   background:
-    radial-gradient(1200px 600px at 15% 85%, rgba(20,90,80,.18), transparent 60%),
+    radial-gradient(900px 620px at 12% 85%, rgba(24,199,207,.13), transparent 62%),
+    radial-gradient(820px 540px at 88% 10%, rgba(117,104,240,.12), transparent 64%),
     var(--cr-bg-0);
   color: var(--cr-text);
   overflow: hidden;
@@ -47,10 +48,13 @@
   z-index: 1;
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr);
   align-items: center;
-  gap: 2rem;
-  padding: 3rem 4rem;
+  gap: clamp(2.5rem, 6vw, 6rem);
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 2.5rem clamp(1.5rem, 4vw, 4rem);
+  box-sizing: border-box;
 }
 
 /* ---------- LEFT column ---------- */
@@ -58,38 +62,21 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2rem;
-  max-width: 620px;
+  gap: 1.4rem;
+  max-width: 560px;
   position: relative;
-  min-height: 70vh;
-  padding-left: 5cm;
 }
 
 .auth-logo {
   display: flex;
   align-items: center;
   gap: .65rem;
-  position: absolute;
-  top: 0;
-  left: 5cm;
 }
-.auth-logo-icon {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 9px;
-  background: linear-gradient(135deg, var(--cr-cyan), var(--cr-cyan-2));
-  box-shadow: 0 0 18px rgba(47,230,214,.35);
-}
-.auth-logo-text {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -.01em;
-}
+.auth-logo-crop { position: relative; display: block; width: 206px; height: 50px; overflow: hidden; border-radius: 11px; background: rgba(248,248,255,.97); box-shadow: 0 0 0 1px rgba(117,104,240,.25), 0 10px 26px rgba(0,0,0,.18); }
+.auth-logo-image { position: absolute; width: 236px; height: auto; left: -14.9px; top: -32.5px; max-width: none; }
 
 .auth-headline {
-  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-size: clamp(2.35rem, 4vw, 3.2rem);
   font-weight: 800;
   line-height: 1.08;
   letter-spacing: -.02em;
@@ -132,10 +119,7 @@
 .auth-feature-desc  { margin: 0; color: var(--cr-text-dim); font-size: .88rem; }
 
 .auth-left-footer {
-  position: absolute;
-  bottom: 0;
-  left: 5cm;
-  margin: 0;
+  margin: .25rem 0 0;
   color: var(--cr-text-mut);
   font-size: .8rem;
 }
@@ -145,7 +129,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-right: 4cm;
 }
 .auth-card {
   width: 100%;
@@ -162,6 +145,7 @@
   font-size: 1.7rem;
   font-weight: 700;
   margin: 0 0 .35rem;
+  color: var(--cr-text);
 }
 .auth-subtext {
   text-align: center;
@@ -296,8 +280,10 @@
     padding: 2rem 1.5rem;
     gap: 2.5rem;
   }
-  .auth-left { min-height: auto; max-width: 100%; padding-top: 3.5rem; padding-left: 0; }
-  .auth-logo { position: static; margin-bottom: 1rem; left: 0; }
-  .auth-left-footer { position: static; margin-top: 1rem; }
-  .auth-right { padding-right: 0; }
+  .auth-left { min-height: auto; max-width: 100%; }
+  .auth-logo { margin-bottom: .25rem; }
+  .auth-left-footer { margin-top: .5rem; }
 }
+html[dir='rtl'] .auth-wrap{direction:rtl;}
+html[dir='rtl'] .auth-left{order:2;}
+html[dir='rtl'] .auth-right{order:1;}

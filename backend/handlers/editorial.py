@@ -4,6 +4,15 @@ import sys
 from config import EDITORIAL_MODELS, OPENROUTER_KEY
 from llm import openrouter_chat, _repair_json, _editorial_call_one
 
+# Optional source-article enrichment (fetch + summarize). ImportError here just
+# disables enrichment; the editorial pipeline falls back to the RSS lede.
+try:
+    from article_enrich import enrich_shortlist as _enrich_shortlist
+    _ENRICH_AVAILABLE = True
+except Exception as _e:
+    print(f'[WARN] article_enrich not available: {_e}', file=sys.stderr)
+    _ENRICH_AVAILABLE = False
+
 try:
     from filtering.pipeline import run_pipeline as _run_pipeline
     _FILTERING_AVAILABLE = True
@@ -31,6 +40,8 @@ def handle_editorial_select(body):
     sel_plats      = body.get('selectedPlatforms', ['X', 'Telegram', 'Instagram'])
     topics         = body.get('topics', '').strip()
     test_mode      = body.get('testMode', False)
+    enrich         = body.get('enrichArticles', True) and _ENRICH_AVAILABLE
+    language       = body.get('language', 'en')
 
     if not shortlist:
         raise ValueError('shortlist is empty')
@@ -66,13 +77,25 @@ def handle_editorial_select(body):
                 yield fut.result()
         return
 
+    # Optional: fetch + summarize each source article so the model sees more
+    # than the RSS lede. Mutates items in place, adding '_enriched'. Falls back
+    # to the raised-cap lede when scraping fails — never worse than today.
+    if enrich and shortlist:
+        _enrich_shortlist(shortlist)
+
     # Build compact article list for the prompt
     lines = []
     for a in shortlist:
         s   = a.get('scores', {})
         r   = a.get('routing', {})
         idx = a.get('input_index', 0)
-        desc = (a.get('desc') or '')[:220].replace('\n', ' ')
+        # Raised cap 220 → 450: the model now sees the full RSS lede even when
+        # enrichment is off, and the fallback (when scraping fails) is richer.
+        desc = (a.get('desc') or '')[:450].replace('\n', ' ')
+        summary = (a.get('_enriched') or '').replace('\n', ' ')
+        # Only include the Summary line when enrichment actually produced text
+        # beyond the lede — otherwise omit it to keep the prompt tight.
+        summary_line = f'\n    Summary: {summary}' if summary else ''
         lines.append(
             f"[{idx}] {a.get('source','')} | "
             f"Score:{s.get('final',0)} Vir:{s.get('virality',0)} "
@@ -81,6 +104,7 @@ def handle_editorial_select(body):
             f"    \"{a.get('title','')}\"\n"
             f"    {a.get('link','')}\n"
             f"    {desc}"
+            f"{summary_line}"
         )
     article_text = '\n\n'.join(lines)
 
@@ -89,10 +113,10 @@ def handle_editorial_select(body):
     topic_line = f'Topic focus: {topics}' if topics else 'No specific topic filter — use your editorial judgment.'
 
     brand_descs = {
-        'RZ Prime':        'Token Access · BNB Chain · Smart Contracts · Retail Investors',
-        'Coin Hall':       'Luxury · Web3 Culture · High-End Experiences · Aspirational',
-        'ChainReporter':   'Full Spectrum Crypto · Markets · Policy · Technology · Culture',
-        'Meta Coin Guard': 'Security · DeFi Protection · Exploits · Wallet Safety · Risk Awareness',
+        'MGC Coin':         'Gaming Utility · Rewards · BNB Smart Chain · RZ Ecosystem',
+        'Ranking Platform': 'Competition · Profiles · Teams · Tournaments · Community',
+        'Oasis Coin':       'Metaverse · Gaming · Digital Worlds · Future Utility',
+        'Jewelry Coin':     'Digital Jewelry · NFTs · Marketplace · Physical Craft',
     }
     brand_descs_text = '\n'.join(
         f'  - {m}: {brand_descs.get(m, "Crypto media brand")}' for m in sel_media
@@ -127,6 +151,10 @@ def handle_editorial_select(body):
         '"<next_brand>":[...5 items]'
         '}}'
     )
+    if language == 'fa':
+        system_prompt += ('\nWrite all reader-facing fields in fluent Persian: title, selection_reason, copy, and hashtags. '
+                          'Use Persian digits. Keep only crypto tickers, project and brand names, source names, and URLs in English. '
+                          'The input_index and source_url values must remain exact.')
     user_prompt = f'{topic_line}\n\nShortlisted articles ({len(shortlist)} total):\n\n{article_text}'
 
     sel_models   = body.get('selectedModels', list(EDITORIAL_MODELS.keys()))

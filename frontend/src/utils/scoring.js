@@ -1,4 +1,4 @@
-// All pre-scoring logic — ported from multimedia.html
+// All pre-scoring logic Ã¢â‚¬â€ ported from multimedia.html
 
 export const SOURCE_AUTHORITY = {
   'CoinDesk':90,'Cointelegraph':88,'The Block':92,'Blockworks':82,
@@ -8,10 +8,10 @@ export const SOURCE_AUTHORITY = {
 }
 
 export const SOURCE_MEDIA_BIAS = {
-  'RZ Prime':        new Set(['BeInCrypto','Crypto.News','CryptoPotato','NewsBTC','U.Today']),
-  'Coin Hall':       new Set(['Decrypt','Cointelegraph','CoinDesk','BeInCrypto','The Block']),
-  'Meta Coin Guard': new Set(['The Block','Blockworks','The Defiant','CoinDesk']),
-  'ChainReporter':   new Set(['CoinDesk','Cointelegraph','The Block','Blockworks','Bitcoin Mag']),
+  'MGC Coin':         new Set(['Decrypt','Cointelegraph','BeInCrypto','Crypto.News']),
+  'Ranking Platform': new Set(['Decrypt','Cointelegraph','BeInCrypto']),
+  'Oasis Coin':       new Set(['Decrypt','Cointelegraph','The Block','Blockworks']),
+  'Jewelry Coin':     new Set(['Decrypt','Cointelegraph','BeInCrypto','CoinDesk']),
 }
 
 export const REJECT_THRESHOLDS = {
@@ -44,78 +44,57 @@ export const PLATFORM_FIT_RULES = {
   Instagram:{ positive: {'luxury':20,'visual':14,'art':14,'design':12,'lifestyle':18,'exclusive':16,'rare':14,'nft':14,'gaming':12,'milestone':14,'achievement':12,'stunning':15,'beautiful':12} },
 }
 
-// Extensive MEDIA_KEYWORDS object (same as multimedia.html)
+// Brand-fit keyword profiles.
 export const MEDIA_KEYWORDS = {
-  'RZ Prime': {
+  'MGC Coin': {
     strong: {
-      'bnb chain':25,'binance smart chain':20,'presale':22,'pre-sale':22,'non-custodial':22,
-      'no kyc':20,'token launch':20,'token sale':20,'reservation':20,'token reservation':22,
-      'private sale':16,'public sale':16,'bep20':16,'bep-20':16,'token access':18,
-      'token distribution':18,'launchpad':18,'ido':18,'decentralized access':15,'ico':15,
-      'ieo':15,'allocation':15,'tokenomics':14,'pancakeswap':14,'bnb':15,'bsc':15,
-      'seed round':12,'smart contract':12,'on-chain':12,'onchain':12,'vesting':12,
-      'liquidity pool':10,'kyc':10,'staking':8,'defi':8,'wallet':8,
-      'fair launch':20,'token generation event':20,'tge':20,'whitelist':18,
-      'soft cap':14,'hard cap':14,'raise':12,'fundraise':14,
-      'early access':16,'rz prime':25,
+      'meta games coin':32,'metagamescoin':32,'mgc':28,'gaming utility token':26,
+      'gaming rewards':24,'player rewards':24,'tournament rewards':22,'play-to-earn':20,
+      'play to earn':20,'gamefi':20,'gaming economy':22,'game economy':22,
+      'blockchain gaming':22,'web3 gaming':22,'gaming community':18,'creator rewards':18,
+      'player achievement':18,'digital ownership':16,'bnb smart chain':16,'bep-20':16,
+      'bep20':16,'ranking.game':24,'ranking game':22,'tournament':14,'esports':14,
     },
-    weak: {'luxury':-10,'lifestyle':-10,'gaming':-8,'watch':-8,'car':-8,'exploit':-5,'hack':-5,'rug pull':-5,'auction':-8,'jewelry':-8,'real estate':-6},
+    weak: {'bitcoin etf':-10,'macro':-8,'federal reserve':-10,'unrelated hack':-8,'luxury watch':-8},
   },
-  'Coin Hall': {
+  'Ranking Platform': {
     strong: {
-      'prediction market':25,'prediction':25,'forecast':22,'price target':22,
-      'oracle':20,'polymarket':22,'predict':22,'price prediction':22,
-      'value prediction':22,'settlement':18,'chainlink':18,'pyth':18,
-      'price feed':18,'analyst':15,'betting odds':18,'probability':16,
-      'token launch':22,'rally':18,'surge':18,'halving':20,'dappradar':20,
-      'unlock':18,'listing':18,'mint':18,'dapp':18,'market cap':16,
-      'all-time high':18,'ath':16,'breakout':16,'tvl':16,'total value locked':16,
-      'auction':22,'record sale':22,'rolex':20,'collectible':20,'nft marketplace':18,
-      'nft':18,'rare':18,'ferrari':22,'tokenized vehicle':22,'porsche':20,'lamborghini':20,
-      'luxury travel':22,'vip':20,'travel':18,'yacht':18,'resort':16,
-      'tokenized property':25,'tokenized real estate':25,'rwa':22,'real-world asset':22,
-      'real estate':22,'fractional ownership':20,'play-to-earn':20,'play to earn':20,
-      'gamefi':20,'gaming':18,'web3 gaming':22,'blockchain game':20,
+      'ranking.game':32,'ranking game':30,'competitive gaming':28,'player ranking':28,
+      'leaderboard':26,'pvp':24,'pvp match':26,'tournament':24,'esports':22,
+      'gaming team':22,'team competition':22,'match result':20,'player profile':20,
+      'tournament organizer':20,'referee':18,'gaming venue':20,'gaming center':20,
+      'sports club':18,'digital game':16,'physical game':16,'gaming community':18,
+      'league':14,'competition':14,'rankings':20,
     },
-    weak: {'sanctions':-12,'rug pull':-12,'exploit':-10,'phishing':-10,'malware':-10,'compliance':-8,'kyc':-8,'hack':-10,'breach':-10,'lawsuit':-6,'indicted':-8,'ponzi':-10,'drainer':-10},
+    weak: {'token price':-16,'price prediction':-12,'bitcoin etf':-12,'defi exploit':-10,'presale':-10},
   },
-  'Meta Coin Guard': {
+  'Oasis Coin': {
     strong: {
-      'exploit':32,'exploited':32,'hack':30,'hacked':30,'wallet drainer':28,'rug pull':28,
-      'flash loan attack':28,'defi attack':28,'breach':25,'oracle manipulation':25,
-      'exit scam':24,'phishing':24,'vulnerability':25,'scam':22,'stolen':22,
-      'malware':22,'withdrawal halt':22,'funds frozen':22,'insolvency':20,'insolvent':20,
-      'theft':20,'ofac':20,'ponzi':20,'audit':22,'sanctions':20,'aml':18,
-      'seed phrase':18,'non-custodial':18,'frozen':18,'wallet monitoring':18,
-      'flash loan':20,'attack':18,'private key':16,'social engineering':16,
-      'cold wallet':14,'hardware wallet':14,'security':18,'blacklisted':15,
-      'drainer':26,'reentrancy':24,'bridge exploit':26,'bridge hack':26,
-      'address poisoning':22,'sim swap':22,'zachxbt':20,'peckshield':20,'certik':18,
-      'exploiter':22,'stolen funds':24,'loss of funds':20,'security audit':20,
+      'rzoasis':32,'rzoasis galaxy':32,'oasis token':30,'oasis coin':30,
+      'metaverse':26,'metaverse gaming':28,'virtual world':24,'virtual land':22,
+      'web3 game':22,'blockchain game':20,'digital identity':20,'game asset':20,
+      'digital asset':16,'world building':22,'metaverse marketplace':20,
+      'gaming utility':18,'energy system':18,'rank progression':16,
+      'future utility':18,'bnb smart chain':16,'bep-20':16,'bep20':16,
+      'virtual economy':18,'planet':12,'galaxy':14,
     },
-    weak: {'luxury':-12,'lifestyle':-12,'lambo':-15,'token hype':-10,'gaming':-8,'presale':-5,'auction':-12,'jewelry':-12,'watch':-10,'prediction market':-8},
+    weak: {'utility is live':-12,'guaranteed return':-20,'bitcoin etf':-10,'macro':-8,'luxury auction':-8},
   },
-  'ChainReporter': {
+  'Jewelry Coin': {
     strong: {
-      'bitcoin etf':32,'etf approval':30,'bitcoin':28,'spot etf':28,'spot bitcoin':25,
-      'ethereum':24,'sec':24,'trump':22,'blackrock':22,'halving':22,'btc':22,
-      'eth':20,'regulation':20,'institutional':20,'cftc':18,'fidelity':18,
-      'bankruptcy':18,'indicted':18,'grayscale':16,'regulated':16,'liquidation':18,
-      'mica':16,'binance':16,'lawsuit':16,'xrp':14,'ripple':14,'solana':14,
-      'whale':14,'stablecoin':15,'layoff':15,'coinbase':15,'federal reserve':15,
-      'fed':15,'macro':14,'inflation':14,'altseason':12,'altcoin':12,
-      'usdt':12,'usdc':12,'policy':12,'treasury':12,'defi':10,
-      'spot ethereum etf':28,'etf inflows':22,'etf outflows':22,'ibit':22,
-      'institutional adoption':20,'microstrategy':18,'goldman sachs':18,'jpmorgan':18,
-      'sec approval':24,'crypto regulation':20,'stablecoin bill':20,
-      'rate cut':16,'rate hike':16,'fomc':16,'market crash':18,'all-time high':18,
-      'bitcoin reserve':20,'strategic reserve':20,'cbdc':16,'digital dollar':16,
+      'jewelry token':32,'jewelry coin':30,'jewellery game':30,'digital jewelry':28,
+      'virtual jewelry':26,'jewelry design':26,'gem extraction':24,'gem mining':22,
+      'gemstone':20,'nft minting':22,'nft marketplace':22,'digital collectible':20,
+      'creator marketplace':20,'physical jewelry':22,'digital-to-physical':24,
+      'augmented reality':20,'ar try-on':22,'luxury craft':18,'jeweler':18,
+      'merchant':14,'bep-20':16,'bep20':16,'binance smart chain':16,
+      'nft':14,'marketplace':14,'crafting':18,
     },
-    weak: {'presale':-3,'token reservation':-5,'gaming culture':-5,'play-to-earn':-5,'nft art':-4,'metaverse land':-5,'watch auction':-6,'jewelry':-6,'yacht':-5,'rug pull':-3},
+    weak: {'bitcoin etf':-12,'macro':-10,'defi exploit':-10,'price prediction':-10,'presale':-8},
   },
 }
 
-// ── Utility functions ────────────────────────────────────────────────────────
+// Utility functions
 export function normText(t) {
   return (t || '').toLowerCase().replace(/[^\w\s-]/g,' ').replace(/\s+/g,' ').trim()
 }
@@ -330,3 +309,6 @@ export function preScore(articles, selectedMedia, topics) {
   clusteredPassed.filter(a=>!shortlistedSet.has(a.title)).forEach(a=>allTracked.push({...a,_pipelineStatus:'cap_exceeded'}))
   return { shortlisted, rejected, total:articles.length, passed:passed.length, allTracked }
 }
+
+
+

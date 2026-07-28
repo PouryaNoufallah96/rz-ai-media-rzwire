@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '../router'
 import { useAuthStore } from '../store/authStore'
 import { useAccountStore } from '../store/accountStore'
 import NavBar from '../components/NavBar'
@@ -9,6 +9,7 @@ import ActivityHistory from '../components/account/ActivityHistory'
 import RecentKeywords from '../components/account/RecentKeywords'
 import SavedForLater, { SavedCardDetail } from '../components/account/SavedForLater'
 import ScheduledPosts from '../components/account/ScheduledPosts'
+import ChatWidget from '../components/chat/ChatWidget'
 import './AccountPage.css'
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -97,6 +98,7 @@ export default function AccountPage() {
           </div>
         </div>
       </div>
+      <ChatWidget />
     </>
   )
 }

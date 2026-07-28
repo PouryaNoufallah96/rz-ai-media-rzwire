@@ -1,5 +1,5 @@
 """
-ChainReporter — password hashing & session cookie helpers.
+RZWire — password hashing and session cookie helpers.
 
 Closed system: accounts are created via create_account.py, not over HTTP.
 """
@@ -11,7 +11,7 @@ from http.cookies import SimpleCookie
 
 import database
 
-SESSION_COOKIE_NAME = 'cr_session'
+SESSION_COOKIE_NAME = 'rzwire_session'
 PBKDF2_ITERATIONS = 200_000
 
 

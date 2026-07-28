@@ -1,11 +1,11 @@
-# ── Tunables ───────────────────────────────────────────────────────────────────
-DEDUP_COSINE        = 0.92   # cosine ≥ this → same event
+# ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Tunables ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+DEDUP_COSINE        = 0.92   # cosine ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¥ this ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ same event
 DEFAULT_THRESHOLD   = 0.32   # min routing cosine for normal brands
-CATCHALL_THRESHOLD  = 0.24   # lower threshold for ChainReporter catch-all
-TOP_N_PER_BRAND     = 20     # survivors sent to the AI stage per brand
+CATCHALL_THRESHOLD  = 0.24   # lower threshold for broad ecosystem stories
+TOP_N_PER_BRAND     = 10     # survivors sent to the AI stage per brand
 EMBED_BATCH         = 128    # texts per OpenAI embeddings API request
 
-# ── Source authority scores (0-100; unknown → 55) ──────────────────────────────
+# ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Source authority scores (0-100; unknown ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ 55) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 SOURCE_AUTHORITY = {
     'The Block':       92,
     'CoinDesk':        90,
@@ -26,67 +26,65 @@ SOURCE_AUTHORITY = {
 }
 DEFAULT_AUTHORITY = 55
 
-# ── Brand configurations ───────────────────────────────────────────────────────
+# ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Brand configurations ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 BRAND_CONFIGS = {
-    'rz_prime': {
-        'name':       'RZ Prime',
+    'mgc_coin': {
+        'name':       'MGC Coin',
         'threshold':  DEFAULT_THRESHOLD,
         'value_gate': False,
-        'source_bias': {'BeInCrypto', 'Crypto.News', 'CryptoPotato', 'NewsBTC', 'U.Today'},
-        'anchor_phrases': [
-            'presale', 'IDO', 'BNB Chain', 'non-custodial', 'no KYC',
-            'token reservation', 'launchpad', 'smart contract audit',
-            'DEX listing', 'PancakeSwap', 'early investor', 'vesting',
-            'BEP20', 'token distribution', 'fair launch', 'TGE',
-        ],
-    },
-    'coin_hall': {
-        'name':       'Coin Hall',
-        'threshold':  DEFAULT_THRESHOLD,
-        'value_gate': True,   # requires a number / price / forecast signal
         'source_bias': {'Decrypt', 'Cointelegraph', 'CoinDesk', 'BeInCrypto', 'The Block'},
         'anchor_phrases': [
-            'prediction market', 'luxury prize', 'oracle-confirmed outcome',
-            'blockchain entertainment', 'NFT auction', "Sotheby's", 'Rolex',
-            'Ferrari', 'tokenized real estate', 'play-to-earn',
-            'DeFi TVL', 'price prediction',
+            'gaming utility token', 'play to earn', 'player rewards',
+            'game economy', 'gaming community', 'BNB Smart Chain', 'BEP-20',
+            'tournament reward', 'gaming achievement', 'creator rewards',
+            'blockchain gaming', 'digital ownership', 'Meta Games Coin', 'MGC',
         ],
     },
-    'chain_reporter': {
-        'name':       'ChainReporter',
-        'threshold':  CATCHALL_THRESHOLD,
-        'value_gate': False,
-        'source_bias': {'CoinDesk', 'Cointelegraph', 'The Block', 'Blockworks', 'Bitcoin Mag'},
-        'anchor_phrases': [
-            'Bitcoin ETF approval', 'Ethereum SEC regulation',
-            'institutional crypto investment', 'BlackRock Bitcoin fund',
-            'stablecoin', 'Federal Reserve rate decision',
-            'crypto regulation policy', 'altcoin market',
-            'Binance Coinbase exchange news', 'halving',
-        ],
-    },
-    'meta_coin_guard': {
-        'name':       'Meta Coin Guard',
+    'ranking_platform': {
+        'name':       'Ranking Platform',
         'threshold':  DEFAULT_THRESHOLD,
         'value_gate': False,
-        'source_bias': {'The Block', 'Blockworks', 'The Defiant', 'CoinDesk'},
+        'source_bias': {'Decrypt', 'Cointelegraph', 'BeInCrypto', 'The Block'},
         'anchor_phrases': [
-            'crypto security', 'DeFi exploit', 'protocol hack', 'wallet drainer',
-            'rug pull', 'smart contract vulnerability', 'phishing attack',
-            'flash loan attack', 'on-chain forensics', 'security audit',
-            'exit scam', 'private key compromise', 'bridge exploit',
-            'ZachXBT', 'PeckShield', 'Certik',
+            'competitive gaming', 'esports tournament', 'player ranking',
+            'leaderboard', 'PvP match', 'gaming team', 'tournament organizer',
+            'match result', 'gaming venue', 'sports club', 'gaming profile',
+            'community competition', 'digital games', 'physical games',
+        ],
+    },
+    'oasis_coin': {
+        'name':       'Oasis Coin',
+        'threshold':  CATCHALL_THRESHOLD,
+        'value_gate': False,
+        'source_bias': {'Decrypt', 'Cointelegraph', 'The Block', 'Blockworks'},
+        'anchor_phrases': [
+            'metaverse gaming', 'virtual world', 'virtual land', 'digital identity',
+            'game asset', 'metaverse marketplace', 'world building', 'web3 game',
+            'game energy system', 'rank progression', 'future utility',
+            'BNB Smart Chain', 'BEP-20', 'OASIS token', 'RZOASIS Galaxy',
+        ],
+    },
+    'jewelry_coin': {
+        'name':       'Jewelry Coin',
+        'threshold':  DEFAULT_THRESHOLD,
+        'value_gate': False,
+        'source_bias': {'Decrypt', 'Cointelegraph', 'BeInCrypto', 'CoinDesk'},
+        'anchor_phrases': [
+            'digital jewelry', 'virtual jewelry', 'gem mining', 'gem extraction',
+            'jewelry design', 'NFT minting', 'NFT marketplace', 'digital collectible',
+            'physical jewelry', 'augmented reality try on', 'luxury craft',
+            'creator marketplace', 'BEP-20 utility token', 'Jewelry Token',
         ],
     },
 }
 
 # Ordered list used for consistent iteration
-BRAND_KEYS = ['rz_prime', 'coin_hall', 'chain_reporter', 'meta_coin_guard']
+BRAND_KEYS = ['mgc_coin', 'ranking_platform', 'oasis_coin', 'jewelry_coin']
 
-# Brand display-name → key lookup (for incoming selectedMedia strings)
+# Brand display-name ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ key lookup (for incoming selectedMedia strings)
 BRAND_NAME_TO_KEY = {cfg['name']: key for key, cfg in BRAND_CONFIGS.items()}
 
-# ── Virality power words ───────────────────────────────────────────────────────
+# ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Virality power words ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 VIRALITY_POWER_WORDS = [
     'breaking', 'urgent', 'alert', 'crash', 'surges', 'explodes', 'collapses',
     'massive', 'historic', 'record', 'first ever', 'all-time high', 'ath',
@@ -101,72 +99,57 @@ VIRALITY_ENTITIES = [
     'federal reserve', 'elon musk', 'michael saylor', 'vitalik',
 ]
 
-# ── Brand editorial descriptions (passed verbatim to DeepSeek) ────────────────
+# ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Brand editorial descriptions (passed verbatim to DeepSeek) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 # Each string covers: identity, audience, what it covers, what it rejects.
 BRAND_EDITORIAL_DESCS = {
-    'RZ Prime': (
-        'IDENTITY: RZ Prime is a crypto token access platform built on BNB Chain. It enables '
-        'non-custodial, no-KYC token reservation and decentralised launch participation.\n'
-        'AUDIENCE: First-time token investors, retail users who want transparency, people '
-        'interested in decentralised launch mechanics, BEP-20/DEX ecosystems, and early '
-        'access to token projects.\n'
-        'COVERS: Token presales, IDOs, launchpad platforms (PinkSale, DAO Maker, Binance '
-        'Launchpad), smart contract audits, wallet-based access, BNB Chain ecosystem news, '
-        'vesting schedules, tokenomics, DEX listings, regulatory developments that affect '
-        'token availability, DeFi metrics that show market health.\n'
-        'REJECTS: Luxury lifestyle, gaming culture, security incidents unrelated to token '
-        'access mechanics, pure DeFi exploits with no access angle, content requiring '
-        'heavy technical knowledge with no user-facing angle.'
+    'MGC Coin': (
+        'IDENTITY: MGC Coin is the reward and utility token of the RZ gaming ecosystem, born '
+        'alongside Ranking.Game and designed around participation, performance, and contribution.\n'
+        'AUDIENCE: Gamers, creators, tournament communities, and Web3 users interested in '
+        'transparent reward systems and connected digital economies.\n'
+        'COVERS: Blockchain gaming, play-and-earn mechanics, player and creator rewards, game '
+        'economies, gaming communities, BNB Smart Chain utility, digital ownership, tournaments, '
+        'and ecosystem participation.\n'
+        'REJECTS: General market speculation with no gaming or utility connection, unrelated '
+        'security incidents, and promises of guaranteed returns or price appreciation.'
     ),
-    'Coin Hall': (
-        'IDENTITY: Coin Hall is a Web3 prediction and entertainment platform. Users predict '
-        'crypto prices and outcomes across five themed Halls (Jewelry, Trip, Car, Industrial, '
-        'Real Estate), with outcomes settled by oracle-confirmed data.\n'
-        'AUDIENCE: Crypto-native users who follow markets daily and want to turn that knowledge '
-        'into a skill-based competition. They value prestige, aesthetics, and proving foresight.\n'
-        'COVERS: Almost any crypto news that contains a price, number, percentage, forecast, '
-        'or uncertain outcome. Price movements and analyst targets (Industrial Hall). Token '
-        'launches, mints, listings, NFTs, rare collectibles (Jewelry/Industrial Hall). '
-        'Oracle/data-feed news — Chainlink, Pyth (all halls). Luxury cars, EVs, tokenized '
-        'vehicles (Car Hall). Travel, hospitality, VIP access, event tokens (Trip Hall). '
-        'Tokenized real estate, RWA (Real Estate Hall). Play-to-earn, Web3 gaming (theme hall).\n'
-        'REJECTS: Stories with NO number, price, value, forecast, or uncertain outcome at all. '
-        'Pure legal or regulatory text with no market angle. Security/hack reporting with no '
-        'value or entertainment hook. Deep technical infrastructure with no user-facing narrative.\n'
-        'VALUE GATE: Every article routed to Coin Hall MUST contain at least one of: a price, '
-        'a number, a percentage, a dollar/euro/pound sign, or a word such as forecast, predict, '
-        'target, or value. If none of these are present, do NOT route to Coin Hall.'
+    'Ranking Platform': (
+        'IDENTITY: Ranking is a competitive gaming and community platform, not a token. It '
+        'connects players, teams, organizers, referees, fans, communities, and partner venues.\n'
+        'AUDIENCE: Casual and competitive players, esports participants, tournament organizers, '
+        'teams, streamers, gaming centers, sports clubs, and fans.\n'
+        'COVERS: PvP competition, digital and physical games, rankings, leaderboards, match '
+        'results, player profiles, teams, tournaments, refereeing, gaming communities, and venues.\n'
+        'REJECTS: Token-price speculation with no platform connection, general crypto policy, '
+        'and language that incorrectly describes Ranking itself as a coin or investment product.'
     ),
-    'ChainReporter': (
-        'IDENTITY: ChainReporter is the general-purpose crypto newsroom. Full-spectrum coverage '
-        '— markets, regulation, technology, culture. The default brand when a story matters to '
-        'the crypto world but does not fit a niche.\n'
-        'AUDIENCE: Anyone who follows crypto seriously: traders, builders, investors, policy '
-        'watchers, DeFi users, crypto-curious people. They want to be informed, not sold to.\n'
-        'COVERS: Everything that matters in crypto. Bitcoin/Ethereum price and ETF news. '
-        'Exchange news (Binance, Coinbase, Kraken). DeFi protocol updates. Global regulatory '
-        'actions (SEC, CFTC, MiCA, FATF). Government crypto policy. Macro economics affecting '
-        'crypto (Fed rate decisions, CPI). Institutional adoption (BlackRock, Fidelity, '
-        'MicroStrategy). Legal cases, on-chain data, security incidents, geopolitical events '
-        'moving crypto markets. Halving. Stablecoin legislation.\n'
-        'REJECTS: Pure luxury lifestyle with no crypto connection. Token reservation mechanics '
-        'with no broader market relevance. Content with no meaningful connection to crypto.\n'
-        'NOTE: ChainReporter is the catch-all. Any clearly-crypto story that does not fit '
-        'another brand strongly belongs here.'
+    'Oasis Coin': (
+        'IDENTITY: OASIS is the planned utility, gaming, and metaverse token for the long-term '
+        'RZOASIS Galaxy. The complete metaverse is not ready and active ecosystem utility is '
+        'not yet live, so future features must be described as planned or intended.\n'
+        'AUDIENCE: Web3 gamers, metaverse builders, digital creators, and communities interested '
+        'in long-horizon virtual-world development.\n'
+        'COVERS: Metaverse worlds, Web3 games, digital identity, virtual land, game assets, '
+        'marketplaces, world-building, rank and energy systems, BNB Smart Chain, and modular '
+        'ecosystem development.\n'
+        'REJECTS: Claims that planned worlds or utilities are already live, short-term price hype, '
+        'guaranteed returns, and unrelated general-market reporting.'
     ),
-    'Meta Coin Guard': (
-        'IDENTITY: Meta Coin Guard is a security-focused crypto protection platform. '
-        'Non-custodial, rule-based, automated asset protection. Appeals to users who trust '
-        'code over people.\n'
-        'AUDIENCE: Security-conscious DeFi users, people who have been exploited or rug-pulled, '
-        'users who distrust custodial platforms. They want verifiable, automated protection.\n'
-        'COVERS: DeFi exploits and post-mortems. Smart contract vulnerabilities. Rug pulls and '
-        'exit scams. Wallet drainer malware. Phishing campaigns. Centralised exchange '
-        'insolvencies (showing why non-custodial matters). Sanctions enforcement. Oracle '
-        'reliability. Bridge exploits. Address poisoning. SIM swaps. On-chain forensics '
-        '(ZachXBT, PeckShield, Certik). Regulatory pressure on custodial platforms. Bug '
-        'bounties. Emergency protocol pauses.\n'
-        'REJECTS: Luxury lifestyle. Token presale mechanics. Pure market price commentary '
-        'with no risk or security angle. Gaming culture stories with no wallet safety relevance.'
+    'Jewelry Coin': (
+        'IDENTITY: Jewelry Token is the proposed BEP-20 utility token for a blockchain gaming '
+        'platform centered on gem extraction, jewelry design, NFT ownership, and marketplace use.\n'
+        'AUDIENCE: Players, digital designers, collectors, creators, jewelers, merchants, and '
+        'users interested in digital-to-physical craft.\n'
+        'COVERS: Virtual gemstones, jewelry design, NFT minting, creator marketplaces, digital '
+        'collectibles, luxury craft, merchant tools, physical production, mobile experiences, '
+        'and augmented-reality try-on.\n'
+        'REJECTS: Claims that proposed partnerships or features are already operational, invented '
+        'token allocations or APY, guaranteed investment returns, and unrelated market news.'
     ),
 }
+
+
+
+
+
+

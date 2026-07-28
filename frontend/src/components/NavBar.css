@@ -1,9 +1,13 @@
+.rzwire-nav-logo{position:relative;display:block;width:140px;height:32px;overflow:hidden;flex:0 0 auto;border-radius:8px;background:rgba(248,248,255,.96);box-shadow:0 0 0 1px rgba(117,104,240,.22)}
+.rzwire-nav-logo img{position:absolute;width:160px;height:auto;left:-10px;top:-23.1px;max-width:none}
 .nav-link{font-size:13px;font-weight:500;color:#7a8499;padding:6px 14px;border-radius:8px;text-decoration:none;transition:color .18s,background .18s}
 .nav-link:hover{color:#f0f2f8;background:rgba(255,255,255,.05)}
-.nav-link.active{color:#00d4a0;background:rgba(0,212,160,.08);border:1px solid rgba(0,212,160,.22)}
+.nav-link.active{color:#18c7cf;background:rgba(24,199,207,.08);border:1px solid rgba(24,199,207,.24)}
+.language-toggle{height:32px;min-width:48px;border-radius:8px;border:1px solid rgba(24,199,207,.28);background:rgba(24,199,207,.08);color:#18c7cf;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:700;font-family:inherit}
+.language-toggle:hover{background:rgba(24,199,207,.16)}
 
 @media (max-width: 768px) {
   #mob-menu-btn{display:flex !important;}
-  #mob-nav-links{display:none !important;flex-direction:column !important;padding:8px 16px 12px;gap:2px;background:rgba(7,9,14,.98);border-bottom:1px solid rgba(255,255,255,.06);}
+  #mob-nav-links{display:none !important;flex-direction:column !important;padding:8px 16px 12px;gap:2px;background:rgba(9,8,25,.98);border-bottom:1px solid rgba(117,104,240,.14);}
   #mob-nav-links.open{display:flex !important;}
 }

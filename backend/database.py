@@ -1,5 +1,5 @@
 """
-ChainReporter — SQLite persistence for user accounts & sessions.
+RZWire — SQLite persistence for user accounts and sessions.
 
 Opens a fresh connection per call (safe for ThreadingHTTPServer). Database file
 lives at backend/data/app.db (gitignored).
@@ -14,12 +14,14 @@ from pathlib import Path
 DB_PATH = Path(__file__).parent / 'data' / 'app.db'
 
 SESSION_TTL_DAYS = 30
+CHAT_INACTIVITY_MINUTES = 60
 
 
 def _connect():
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA busy_timeout = 5000')
     return conn
 
 
@@ -133,6 +135,23 @@ def init_db():
         ''')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_scheduled_posts_due ON scheduled_posts (status, scheduled_at)')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_scheduled_posts_user ON scheduled_posts (user_id, created_at)')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS chat_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                role TEXT NOT NULL,
+                content TEXT NOT NULL,
+                metadata_json TEXT,
+                created_at TEXT NOT NULL
+            )
+        ''')
+        chat_message_columns = {
+            row['name']
+            for row in conn.execute('PRAGMA table_info(chat_messages)').fetchall()
+        }
+        if 'metadata_json' not in chat_message_columns:
+            conn.execute('ALTER TABLE chat_messages ADD COLUMN metadata_json TEXT')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_chat_messages_user_time ON chat_messages (user_id, created_at)')
         conn.commit()
     finally:
         conn.close()
@@ -421,6 +440,38 @@ def update_saved_card_status(saved_id, user_id, status):
         conn.close()
 
 
+def update_saved_card(saved_id, user_id, data):
+    fields = {
+        'brand': data.get('media') or data.get('brand'),
+        'platform': data.get('platform'),
+        'model_display': data.get('modelDisplay'),
+        'model_color': data.get('modelColor'),
+        'headline': data.get('headline'),
+        'copy': data.get('copy'),
+        'hashtags': json.dumps(data.get('hashtags', [])) if 'hashtags' in data else None,
+        'variants': json.dumps(data.get('variants', [])) if 'variants' in data else None,
+    }
+    updates = [(k, v) for k, v in fields.items() if v is not None]
+    if not updates:
+        return get_saved_card(saved_id, user_id)
+
+    conn = _connect()
+    try:
+        set_clause = ', '.join(f'{k} = ?' for k, _ in updates)
+        values = [v for _, v in updates] + [saved_id, user_id]
+        cur = conn.execute(
+            f'UPDATE saved_cards SET {set_clause} WHERE id = ? AND user_id = ?',
+            values,
+        )
+        conn.commit()
+        if cur.rowcount == 0:
+            return None
+        row = conn.execute('SELECT * FROM saved_cards WHERE id = ? AND user_id = ?', (saved_id, user_id)).fetchone()
+        return _saved_card_to_dict(row) if row else None
+    finally:
+        conn.close()
+
+
 def get_saved_card(saved_id, user_id):
     conn = _connect()
     try:
@@ -530,5 +581,145 @@ def reschedule_scheduled_post(post_id, user_id, scheduled_at):
         )
         conn.commit()
         return cur.rowcount > 0
+    finally:
+        conn.close()
+
+
+# ── Chat assistant persistence ────────────────────────────────────────────────
+
+def add_chat_message(user_id, role, content):
+    """role: 'user' or 'assistant'."""
+    conn = _connect()
+    try:
+        created_at = _now_iso()
+        conn.execute(
+            'INSERT INTO chat_messages (user_id, role, content, created_at) VALUES (?, ?, ?, ?)',
+            (user_id, role, content, created_at)
+        )
+        conn.commit()
+        return created_at
+    finally:
+        conn.close()
+
+
+def add_chat_turn(user_id, user_content, assistant_content, assistant_metadata=None):
+    """Persist a complete chat turn in one transaction and return its expiry."""
+    conn = _connect()
+    try:
+        user_created_at = _now_iso()
+        assistant_created_at = _now_iso()
+        conn.executemany(
+            'INSERT INTO chat_messages '
+            '(user_id, role, content, metadata_json, created_at) VALUES (?, ?, ?, ?, ?)',
+            (
+                (user_id, 'user', user_content, None, user_created_at),
+                (
+                    user_id, 'assistant', assistant_content,
+                    json.dumps(assistant_metadata, ensure_ascii=False)
+                    if assistant_metadata else None,
+                    assistant_created_at,
+                ),
+            ),
+        )
+        conn.commit()
+        expires_at = _chat_expiry(assistant_created_at)
+        return {
+            'lastMessageAt': assistant_created_at,
+            'expiresAt': expires_at.isoformat() if expires_at else None,
+        }
+    finally:
+        conn.close()
+
+
+def _chat_expiry(last_message_at, inactivity_minutes=CHAT_INACTIVITY_MINUTES):
+    if not last_message_at:
+        return None
+    last_message = datetime.fromisoformat(last_message_at)
+    if last_message.tzinfo is None:
+        last_message = last_message.replace(tzinfo=timezone.utc)
+    return last_message.astimezone(timezone.utc) + timedelta(minutes=inactivity_minutes)
+
+
+def get_chat_state(user_id, limit=15, inactivity_minutes=CHAT_INACTIVITY_MINUTES):
+    """Return recent messages and delete the conversation after inactivity."""
+    conn = _connect()
+    try:
+        latest = conn.execute(
+            'SELECT MAX(created_at) AS last_message_at FROM chat_messages WHERE user_id = ?',
+            (user_id,)
+        ).fetchone()
+        last_message_at = latest['last_message_at'] if latest else None
+        expires_at = _chat_expiry(last_message_at, inactivity_minutes)
+
+        if expires_at and datetime.now(timezone.utc) >= expires_at:
+            conn.execute('DELETE FROM chat_messages WHERE user_id = ?', (user_id,))
+            conn.commit()
+            return {'messages': [], 'lastMessageAt': None, 'expiresAt': None}
+
+        rows = conn.execute(
+            'SELECT role, content, metadata_json, created_at '
+            'FROM chat_messages WHERE user_id = ? '
+            'ORDER BY created_at DESC, id DESC LIMIT ?',
+            (user_id, limit)
+        ).fetchall()
+        messages = []
+        for row in reversed(rows):
+            message = {
+                'role': row['role'],
+                'content': row['content'],
+                'createdAt': row['created_at'],
+            }
+            if row['metadata_json']:
+                try:
+                    metadata = json.loads(row['metadata_json'])
+                    if isinstance(metadata, dict):
+                        message.update(metadata)
+                except (TypeError, ValueError):
+                    pass
+            messages.append(message)
+        return {
+            'messages': messages,
+            'lastMessageAt': last_message_at,
+            'expiresAt': expires_at.isoformat() if expires_at else None,
+        }
+    finally:
+        conn.close()
+
+
+def get_recent_chat(user_id, limit=15):
+    """Most recent turns, oldest-first (so they read in order into the API).
+    Returns list of {'role','content'}."""
+    state = get_chat_state(user_id, limit=limit)
+    return [{'role': message['role'], 'content': message['content']} for message in state['messages']]
+
+
+def clear_expired_chats(inactivity_minutes=CHAT_INACTIVITY_MINUTES):
+    """Delete inactive conversations for all users; returns deleted row count."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(minutes=inactivity_minutes)).isoformat()
+    conn = _connect()
+    try:
+        cursor = conn.execute(
+            '''
+            DELETE FROM chat_messages
+            WHERE user_id IN (
+                SELECT user_id
+                FROM chat_messages
+                GROUP BY user_id
+                HAVING MAX(created_at) <= ?
+            )
+            ''',
+            (cutoff,)
+        )
+        conn.commit()
+        return cursor.rowcount
+    finally:
+        conn.close()
+
+
+def clear_chat(user_id):
+    conn = _connect()
+    try:
+        conn.execute('DELETE FROM chat_messages WHERE user_id = ?', (user_id,))
+        conn.commit()
     finally:
         conn.close()
