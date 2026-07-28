@@ -1,0 +1,8 @@
+DEPLOYMENT_TARGET.lock text eol=lf
+.gitlab-ci.yml text eol=lf
+deploy/*.sh text eol=lf
+deploy/*.service text eol=lf
+deploy/*.conf text eol=lf
+deploy/*.env.example text eol=lf
+*.ps1 text eol=crlf
+
