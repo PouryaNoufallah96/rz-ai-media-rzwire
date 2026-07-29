@@ -100,9 +100,9 @@ export const SRC_COLORS = {
   'Decrypt News':'#ef4455','Lookonchain':'#22d3ee','Whale Alert':'#9b72f5',
   'CoinMarketCap Announcements':'#f0b90b','CoinMarketCap':'#3861fb',
   'Watcher Guru':'#00d4a0','Wu Blockchain':'#22d3ee','Binance Announcements':'#f0b90b',
-  'OKX Announcements':'#f0f2f8','CryptoQuant':'#4ade80','Glassnode':'#3d8ef0','Crypto News':'#9b72f5',
+  'OKX Announcements':'#eeeae2','CryptoQuant':'#4ade80','Glassnode':'#3d8ef0','Crypto News':'#9b72f5',
   'CryptoDiffer':'#7c6cff','CryptoRank News':'#f0a040','DWF Labs':'#ff6b6b','Gamee':'#00d4a0',
-  'Polymarket Now':'#f0f2f8','InnMind':'#9b72f5','Chainalysis':'#375bd2','Hacken':'#4ade80',
+  'Polymarket Now':'#eeeae2','InnMind':'#9b72f5','Chainalysis':'#375bd2','Hacken':'#4ade80',
   'DHL Logistics':'#f0b90b','MultiBank Group':'#00a6e8','Coins.ph Announcements':'#00d4a0',
   'Gram':'#22d3ee','Unfolded':'#ef4455',
 }

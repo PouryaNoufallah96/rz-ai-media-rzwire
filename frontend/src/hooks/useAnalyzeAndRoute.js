@@ -318,7 +318,7 @@ export function useAnalyzeAndRoute() {
           editorialBrands.forEach(brand => {
             lanes[brand] = [];
             (brands[brand]||[]).forEach((a,rank) => {
-              const src = lastShortlist[a.input_index]||{}, srcCol=SRC_COLORS[a.source]||'#7a8499'
+              const src = lastShortlist[a.input_index]||{}, srcCol=SRC_COLORS[a.source]||'#a7abb2'
               const init=(a.source||'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()
               lanes[brand].push({
                 id:`${key}-${mkey(brand)}-${a.input_index}-${rank}`,

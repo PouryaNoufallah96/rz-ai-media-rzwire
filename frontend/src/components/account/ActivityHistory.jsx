@@ -24,7 +24,7 @@ export default function ActivityHistory({ activity }) {
     <div className="acct-activity-list">
       {rows.map((row, i) => {
         const isOpen = expanded === i
-        const color = MEDIA_COLORS[row.brand] || '#7a8499'
+        const color = MEDIA_COLORS[row.brand] || '#a7abb2'
         return (
           <div key={i} className="acct-activity-row" onClick={() => setExpanded(isOpen ? null : i)}>
             <div className="acct-activity-main">
@@ -33,7 +33,7 @@ export default function ActivityHistory({ activity }) {
               <span className="acct-activity-model">{row.modelDisplay}</span>
               <div className="acct-activity-platforms">
                 {row.platforms.map(p => (
-                  <span key={p} className="acct-activity-platform-icon" style={{ color: PLAT_COLORS[p] || '#7a8499' }}>{PLAT_ICONS[p]}</span>
+                  <span key={p} className="acct-activity-platform-icon" style={{ color: PLAT_COLORS[p] || '#a7abb2' }}>{PLAT_ICONS[p]}</span>
                 ))}
               </div>
               <span className="acct-activity-count">{row.count} {row.count === 1 ? 'post' : 'posts'}</span>
@@ -42,7 +42,7 @@ export default function ActivityHistory({ activity }) {
             {isOpen && (
               <div className="acct-activity-detail">
                 <p>{row.headline}</p>
-                <p style={{ marginTop: 6, color: '#7a8499', fontSize: 11, textTransform: 'capitalize' }}>{row.actions.join(', ')}</p>
+                <p style={{ marginTop: 6, color: '#a7abb2', fontSize: 11, textTransform: 'capitalize' }}>{row.actions.join(', ')}</p>
               </div>
             )}
           </div>

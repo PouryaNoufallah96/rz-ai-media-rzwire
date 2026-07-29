@@ -7,10 +7,10 @@ import rankingLogo from '../../assets/brands/ranking-platform-logo.png'
 import oasisLogo from '../../assets/brands/oasis-coin-logo.png'
 import jewelryLogo from '../../assets/brands/jewelry-coin-logo.png'
 
-const CHECK_SVG = <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#07090e" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+const CHECK_SVG = <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#171c26" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
 const CHECK_SVG_W = <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
 
-const LABEL_STYLE = { display:'block', fontSize:11, fontWeight:600, letterSpacing:'.1em', textTransform:'uppercase', color:'#7a8499', marginBottom:8 }
+const LABEL_STYLE = { display:'block', fontSize:11, fontWeight:600, letterSpacing:'.1em', textTransform:'uppercase', color:'#a7abb2', marginBottom:8 }
 
 const SOURCE_CATEGORY_VISUALS = {
   news: { icon:Newspaper, color:'#5ea1ff', label:'Newsroom' },
@@ -77,7 +77,7 @@ function TelegramSourceChip({ label, channel, selected, onClick }) {
         <div className="telegram-source-brands">
           <span>Best fit</span>
           {profile.brands.map(brand => (
-            <i key={brand} title={brand} style={{'--brand-color':MEDIA_COLORS[brand] || '#7a8499'}}>{BRAND_ABBREVIATIONS[brand] || brand.slice(0, 2)}</i>
+            <i key={brand} title={brand} style={{'--brand-color':MEDIA_COLORS[brand] || '#a7abb2'}}>{BRAND_ABBREVIATIONS[brand] || brand.slice(0, 2)}</i>
           ))}
         </div>
       </div>
@@ -94,8 +94,8 @@ function ToggleRow({ on, color, label, sub, abbr, logo, onClick, checkWhite, fil
         {logo ? <img src={logo} alt="" style={{width:'100%',height:'100%',objectFit:'contain'}} /> : abbr}
       </div>
       <div className="toggle-copy" style={{flex:1,minWidth:0}}>
-        <div style={{fontSize:12,fontWeight:600,color:'#f0f2f8'}}>{label}</div>
-        <div style={{fontSize:10,color:'#7a8499'}}>{sub}</div>
+        <div style={{fontSize:12,fontWeight:600,color:'#eeeae2'}}>{label}</div>
+        <div style={{fontSize:10,color:'#a7abb2'}}>{sub}</div>
       </div>
       <div style={{width:14,height:14,borderRadius:4,flexShrink:0,background:on?color:'rgba(255,255,255,.1)',display:'flex',alignItems:'center',justifyContent:'center'}}>
         {on ? (checkWhite ? CHECK_SVG_W : CHECK_SVG) : null}
@@ -185,10 +185,10 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
 
         {/* Title */}
         <div>
-          <h1 style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:17,color:'#f0f2f8',letterSpacing:'-.02em',marginBottom:4}}>
-            {isPersian ? <span style={{color:'#ff7168'}}>چند رسانه‌ای</span> : <><span style={{color:'#ff7168'}}>Multi</span> Media</>}
+          <h1 style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:17,color:'#eeeae2',letterSpacing:'-.02em',marginBottom:4}}>
+            {isPersian ? <span style={{color:'#c9877f'}}>چند رسانه‌ای</span> : <><span style={{color:'#c9877f'}}>Multi</span> Media</>}
           </h1>
-          <p style={{fontSize:11,color:'#7a8499',lineHeight:1.55}}>{tr('Route the right news to the right media brand and platform.')}</p>
+          <p style={{fontSize:11,color:'#a7abb2',lineHeight:1.55}}>{tr('Route the right news to the right media brand and platform.')}</p>
         </div>
 
         {/* ① Media */}
@@ -208,9 +208,9 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
                     onClick={e => { e.stopPropagation(); togglePromoMode(m) }}
                     style={{marginLeft:12,marginTop:4,display:'flex',alignItems:'center',gap:7,cursor:'pointer',userSelect:'none'}}
                   >
-                    <span style={{fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:promoMode[m]?color:'#4a5568',transition:'color .2s'}}>{tr('Promo Copy')}</span>
+                    <span style={{fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:promoMode[m]?color:'#777e88',transition:'color .2s'}}>{tr('Promo Copy')}</span>
                     <div style={{width:28,height:15,borderRadius:8,flexShrink:0,background:promoMode[m]?color+'33':'rgba(255,255,255,.07)',border:`1px solid ${promoMode[m]?color+'88':'rgba(255,255,255,.11)'}`,position:'relative',transition:'background .2s, border-color .2s'}}>
-                      <div style={{position:'absolute',top:2,left:promoMode[m]?13:2,width:9,height:9,borderRadius:'50%',background:promoMode[m]?color:'#4a5568',transition:'left .18s ease, background .2s'}}/>
+                      <div style={{position:'absolute',top:2,left:promoMode[m]?13:2,width:9,height:9,borderRadius:'50%',background:promoMode[m]?color:'#777e88',transition:'left .18s ease, background .2s'}}/>
                     </div>
                   </div>
                 )}
@@ -222,7 +222,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
                     placeholder={isPersian ? `برای ${m} چه پستی می‌خواهید؟` : `What post do you want for ${m}?`}
                     rows={2}
                     className="cr-input"
-                    style={{width:'calc(100% - 12px)',marginLeft:12,marginTop:4,padding:'6px 8px',fontSize:10,resize:'vertical',minHeight:32,borderColor:'rgba(240,160,64,.25)',color:'#f0f2f8'}}
+                    style={{width:'calc(100% - 12px)',marginLeft:12,marginTop:4,padding:'6px 8px',fontSize:10,resize:'vertical',minHeight:32,borderColor:'rgba(240,160,64,.25)',color:'#eeeae2'}}
                   />
                 )}
               </div>
@@ -233,7 +233,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
         {/* ② Platforms */}
         <div>
           <label style={{...LABEL_STYLE,marginBottom:4}}>② {tr('Destination Platforms')}</label>
-          <p style={{fontSize:10,color:'#4a5568',marginBottom:8}}>{tr('Creates columns. Drag news cards into them after analysis.')}</p>
+          <p style={{fontSize:10,color:'#777e88',marginBottom:8}}>{tr('Creates columns. Drag news cards into them after analysis.')}</p>
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
             <ToggleRow on={selectedPlatforms.includes('X')} color='#00d4ff' label='X (Twitter)' sub={tr('Short viral · 280 chars')} abbr={
               <svg width="11" height="11" viewBox="0 0 24 24" fill="#00d4ff"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.81l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -285,7 +285,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
                   ))}
                 </div>
                 <div>
-                  <p style={{fontSize:10,color:'#7a8499',marginBottom:5}}>{tr('How do you want to sort the news?')}</p>
+                  <p style={{fontSize:10,color:'#a7abb2',marginBottom:5}}>{tr('How do you want to sort the news?')}</p>
                   <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
                     <button className={`time-chip${telegramSortMode==='views'?' on':''}`} onClick={()=>setTelegramSortMode('views')}>{tr('By view count')}</button>
                     <button className={`time-chip${telegramSortMode==='latest'?' on':''}`} onClick={()=>setTelegramSortMode('latest')}>{tr('Latest news')}</button>
@@ -295,7 +295,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
                   </div>
                 </div>
                 <div>
-                  <p style={{fontSize:10,color:'#7a8499',marginBottom:5}}>{tr('How many top articles?')}</p>
+                  <p style={{fontSize:10,color:'#a7abb2',marginBottom:5}}>{tr('How many top articles?')}</p>
                   <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
                     {[5,7,10,15,20].map(n => (
                       <button key={n} className={`time-chip${telegramTopN===n?' on':''}`} onClick={()=>setTelegramTopN(n)}>{isPersian ? `${toPersianDigits(n)} خبر برتر` : `Top ${n}`}</button>
@@ -313,7 +313,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
           <div style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.10)',borderRadius:10,padding:'8px 10px',marginBottom:8,cursor:'text'}}>
             <input type="text" placeholder={tr('Type keyword, press Enter…')} value={topicInput}
               onChange={handleTopicInput} onKeyDown={handleTopicKey}
-              style={{background:'none',border:'none',outline:'none',width:'100%',fontSize:11.5,color:'#fff9f2',caretColor:'#ff7168',padding:0}} />
+              style={{background:'none',border:'none',outline:'none',width:'100%',fontSize:11.5,color:'#eeeae2',caretColor:'#c9877f',padding:0}} />
           </div>
           <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:6}}>
             {topicChips.map(w => (
@@ -348,7 +348,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
         {/* AI Editorial Models */}
         <div>
           <label style={{...LABEL_STYLE,marginBottom:4}}>⑦ {tr('AI Editorial Models')}</label>
-          <p style={{fontSize:10,color:'#4a5568',marginBottom:8}}>{tr(telegramOnly ? 'Choose one model for copy generation after a Telegram card is routed.' : 'Choose 1–5 models. Each picks 5 articles per brand independently.')}</p>
+          <p style={{fontSize:10,color:'#777e88',marginBottom:8}}>{tr(telegramOnly ? 'Choose one model for copy generation after a Telegram card is routed.' : 'Choose 1–5 models. Each picks 5 articles per brand independently.')}</p>
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
             {modelOptions.map(m => (
               <div key={m.key}>
@@ -374,7 +374,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
         {telegramChoiceOpen && (
           <div role="dialog" aria-modal="true" style={{position:'fixed',inset:0,zIndex:50,background:'rgba(3,5,10,.72)',display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
             <div className="glass" style={{width:'min(390px,100%)',padding:20,borderRadius:10,boxShadow:'0 20px 60px rgba(0,0,0,.45)'}}>
-              <h2 style={{fontSize:16,fontWeight:700,color:'#f0f2f8',marginBottom:7}}>{tr('Use website sources too?')}</h2>
+              <h2 style={{fontSize:16,fontWeight:700,color:'#eeeae2',marginBottom:7}}>{tr('Use website sources too?')}</h2>
               <p style={{fontSize:11,color:'#aab3c5',lineHeight:1.55,marginBottom:16}}>{tr('Choose both to keep RSS website news alongside Telegram. Choose Telegram only to search Telegram posts by keywords and pick one AI model for copy after routing a card.')}</p>
               <div style={{display:'flex',gap:8,justifyContent:'flex-end',flexWrap:'wrap'}}>
                 <button className="time-chip" onClick={()=>setTelegramChoiceOpen(false)}>{tr('Cancel')}</button>
@@ -395,7 +395,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
         {/* Analyze button */}
         <button className={`btn-analyze${analyzing ? ' is-analyzing' : ''}`} disabled={analyzing} onClick={onAnalyze}>
           {analyzing ? (
-            <><span className="spinner" style={{borderColor:'rgba(7,9,14,.3)',borderTopColor:'#07090e'}}></span>&nbsp;{tr(progress.label||'Analyzing...')}</>
+            <><span className="spinner" style={{borderColor:'rgba(7,9,14,.3)',borderTopColor:'#171c26'}}></span>&nbsp;{tr(progress.label||'Analyzing...')}</>
           ) : (
             <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> {tr('Analyze & Route News')}</>
           )}
@@ -405,21 +405,21 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
         {analyzing && (
           <div>
             <div style={{height:2,background:'rgba(255,255,255,.06)',borderRadius:1,overflow:'hidden'}}>
-              <div style={{height:'100%',width:`${progress.pct}%`,background:'linear-gradient(to right,#ff7168,#57d8c7)',borderRadius:1,transition:'width .4s ease'}}></div>
+              <div style={{height:'100%',width:`${progress.pct}%`,background:'linear-gradient(to right,#c9877f,#87ab9f)',borderRadius:1,transition:'width .4s ease'}}></div>
             </div>
-            <p style={{fontSize:10,color:'#7a8499',marginTop:4,textAlign:'center'}}>{tr(progress.label)}</p>
+            <p style={{fontSize:10,color:'#a7abb2',marginTop:4,textAlign:'center'}}>{tr(progress.label)}</p>
           </div>
         )}
 
         {/* Legend */}
         <div style={{borderTop:'1px solid rgba(255,255,255,.06)',paddingTop:12}}>
-          <p style={{fontSize:10,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#4a5568',marginBottom:8}}>{tr('Legend')}</p>
+          <p style={{fontSize:10,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#777e88',marginBottom:8}}>{tr('Legend')}</p>
           <div style={{display:'flex',flexDirection:'column',gap:5}}>
-            {[{c:'#57d8c7',l:tr('Ready'),d:tr('Ready to review')},{c:'#f0a040',l:tr('Needs Image'),d:tr('Image required')},{c:'#ff9b94',l:tr('Approved'),d:tr('Ready to publish')},{c:'#5ea1ff',l:tr('Scheduled'),d:tr('Queued to publish')}].map(({c,l,d})=>(
+            {[{c:'#87ab9f',l:tr('Ready'),d:tr('Ready to review')},{c:'#f0a040',l:tr('Needs Image'),d:tr('Image required')},{c:'#d9a29b',l:tr('Approved'),d:tr('Ready to publish')},{c:'#5ea1ff',l:tr('Scheduled'),d:tr('Queued to publish')}].map(({c,l,d})=>(
               <div key={l} style={{display:'flex',alignItems:'center',gap:7}}>
                 <div style={{width:8,height:8,borderRadius:'50%',background:c,flexShrink:0}}></div>
                 <span style={{fontSize:10.5,fontWeight:600,color:c,width:72}}>{l}</span>
-                <span style={{fontSize:10,color:'#7a8499'}}>{d}</span>
+                <span style={{fontSize:10,color:'#a7abb2'}}>{d}</span>
               </div>
             ))}
           </div>

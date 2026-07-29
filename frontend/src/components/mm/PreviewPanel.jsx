@@ -115,7 +115,7 @@ async function applyMediaLogo(imageB64, mediaBrand) {
 }
 
 function ButtonSpinner() {
-  return <span className="spinner" aria-hidden="true" style={{width:12,height:12,border:'1.5px solid rgba(7,9,14,.3)',borderTopColor:'#07090e'}} />
+  return <span className="spinner" aria-hidden="true" style={{width:12,height:12,border:'1.5px solid rgba(7,9,14,.3)',borderTopColor:'#171c26'}} />
 }
 
 async function callAppsScript(payload) {
@@ -341,9 +341,9 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
 
   const liveHeadline = headlineText.trim() || card.headline || ''
   const actionCard = liveHeadline === card.headline ? card : { ...card, headline: liveHeadline }
-  const mc = MEDIA_COLORS[card.media] || '#7a8499'
-  const pc = PLAT_COLORS[card.platform] || '#7a8499'
-  const sentColor = card.sentiment==='Bullish'?'#00d4a0':card.sentiment==='Bearish'?'#ef4455':'#7a8499'
+  const mc = MEDIA_COLORS[card.media] || '#a7abb2'
+  const pc = PLAT_COLORS[card.platform] || '#a7abb2'
+  const sentColor = card.sentiment==='Bullish'?'#00d4a0':card.sentiment==='Bearish'?'#ef4455':'#a7abb2'
   const isPersian = language === 'fa'
   const displayStatus = mode === 'saved' ? (savedStatus || card.status) : card.status
   const isApprovalBusy = actionBusy && approveLabel.startsWith('Saving')
@@ -836,12 +836,12 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
           <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
             <div style={{padding:'2px 8px',borderRadius:5,fontSize:9,fontWeight:700,letterSpacing:'.05em',background:mc+'20',color:mc,border:`1px solid ${mc}35`}}>{card.media}</div>
             <div style={{width:22,height:22,borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',background:pc+'1a',color:pc}}>{PLAT_ICONS[card.platform]}</div>
-            <span style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:13,color:'#f0f2f8'}}>{card.platform}</span>
+            <span style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:13,color:'#eeeae2'}}>{card.platform}</span>
             <span className={`sbadge`} style={{fontSize:9,background:sentColor+'15',color:sentColor,border:`1px solid ${sentColor}35`}}>{card.sentiment}</span>
           </div>
-          <button onClick={handleClose} style={{background:'none',border:'none',cursor:'pointer',color:'#7a8499',padding:4,borderRadius:6,transition:'color .18s,background .18s'}}
-            onMouseEnter={e=>{e.currentTarget.style.color='#f0f2f8';e.currentTarget.style.background='rgba(255,255,255,.07)'}}
-            onMouseLeave={e=>{e.currentTarget.style.color='#7a8499';e.currentTarget.style.background='none'}}>
+          <button onClick={handleClose} style={{background:'none',border:'none',cursor:'pointer',color:'#a7abb2',padding:4,borderRadius:6,transition:'color .18s,background .18s'}}
+            onMouseEnter={e=>{e.currentTarget.style.color='#eeeae2';e.currentTarget.style.background='rgba(255,255,255,.07)'}}
+            onMouseLeave={e=>{e.currentTarget.style.color='#a7abb2';e.currentTarget.style.background='none'}}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
@@ -856,14 +856,14 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
           {/* Source */}
           <div style={{display:'flex',alignItems:'center',gap:8}}>
             <div style={{width:20,height:20,borderRadius:5,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,fontWeight:700,background:card.srcColor+'1a',color:card.srcColor,border:`1px solid ${card.srcColor}30`}}>{card.initials}</div>
-            <span style={{fontSize:12,color:'#7a8499'}}>{card.source}</span>
-            <span style={{fontSize:10,color:'#4a5568',marginLeft:'auto'}}>{card.timeAgo}</span>
+            <span style={{fontSize:12,color:'#a7abb2'}}>{card.source}</span>
+            <span style={{fontSize:10,color:'#777e88',marginLeft:'auto'}}>{card.timeAgo}</span>
           </div>
 
           {/* Headline */}
           <div>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
-              <p style={{fontSize:10,fontWeight:600,color:'#7a8499',letterSpacing:0,textTransform:'uppercase'}}>Headline</p>
+              <p style={{fontSize:10,fontWeight:600,color:'#a7abb2',letterSpacing:0,textTransform:'uppercase'}}>Headline</p>
               <button type="button" onClick={editingHeadline ? commitHeadline : ()=>setEditingHeadline(true)}
                 style={{fontSize:10,fontWeight:600,color:'#00d4a0',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',borderRadius:5,transition:'background .18s'}}
                 onMouseEnter={e=>e.currentTarget.style.background='rgba(0,212,160,.1)'} onMouseLeave={e=>e.currentTarget.style.background='none'}>
@@ -872,9 +872,9 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
             </div>
             {editingHeadline
               ? <textarea autoFocus dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} value={headlineText} onChange={e=>handleHeadlineChange(e.target.value)} rows={2}
-                  style={{width:'100%',minHeight:58,background:'rgba(0,212,160,.05)',border:'1px solid rgba(0,212,160,.45)',borderRadius:8,padding:'8px 10px',fontSize:15,fontWeight:700,color:'#f0f2f8',lineHeight:1.4,fontFamily:isPersian?"'Vazirmatn','Inter',sans-serif":"'Space Grotesk',sans-serif",resize:'vertical',boxShadow:'0 0 0 3px rgba(0,212,160,.08)',outline:'none',letterSpacing:0}}/>
+                  style={{width:'100%',minHeight:58,background:'rgba(0,212,160,.05)',border:'1px solid rgba(0,212,160,.45)',borderRadius:8,padding:'8px 10px',fontSize:15,fontWeight:700,color:'#eeeae2',lineHeight:1.4,fontFamily:isPersian?"'Vazirmatn','Inter',sans-serif":"'Space Grotesk',sans-serif",resize:'vertical',boxShadow:'0 0 0 3px rgba(0,212,160,.08)',outline:'none',letterSpacing:0}}/>
               : <h3 dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''}
-                  style={{fontFamily:isPersian?"'Vazirmatn','Inter',sans-serif":"'Space Grotesk',sans-serif",fontWeight:700,fontSize:15,color:'#f0f2f8',lineHeight:1.4,letterSpacing:0}}>{liveHeadline}</h3>
+                  style={{fontFamily:isPersian?"'Vazirmatn','Inter',sans-serif":"'Space Grotesk',sans-serif",fontWeight:700,fontSize:15,color:'#eeeae2',lineHeight:1.4,letterSpacing:0}}>{liveHeadline}</h3>
             }
           </div>
 
@@ -887,23 +887,23 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
 
           {mode === 'saved' && (
             <div style={{display:'flex',flexDirection:'column',gap:8,padding:'10px 12px',borderRadius:8,background:'rgba(255,255,255,.035)',border:'1px solid rgba(255,255,255,.08)'}}>
-              <p style={{fontSize:10,fontWeight:700,color:'#7a8499',letterSpacing:'.06em',textTransform:'uppercase'}}>Retarget Saved Article</p>
+              <p style={{fontSize:10,fontWeight:700,color:'#a7abb2',letterSpacing:'.06em',textTransform:'uppercase'}}>Retarget Saved Article</p>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
                 <label style={{display:'flex',flexDirection:'column',gap:4}}>
-                  <span style={{fontSize:9.5,fontWeight:600,color:'#7a8499',letterSpacing:'.05em',textTransform:'uppercase'}}>Media</span>
+                  <span style={{fontSize:9.5,fontWeight:600,color:'#a7abb2',letterSpacing:'.05em',textTransform:'uppercase'}}>Media</span>
                   <select value={retargetBrand} onChange={e=>{setRetargetBrand(e.target.value); setRetargetMsg(null)}} className="cr-input" style={{width:'100%',padding:'7px 9px',fontSize:11}}>
                     {MEDIA_LIST.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </label>
                 <label style={{display:'flex',flexDirection:'column',gap:4}}>
-                  <span style={{fontSize:9.5,fontWeight:600,color:'#7a8499',letterSpacing:'.05em',textTransform:'uppercase'}}>Platform</span>
+                  <span style={{fontSize:9.5,fontWeight:600,color:'#a7abb2',letterSpacing:'.05em',textTransform:'uppercase'}}>Platform</span>
                   <select value={retargetPlatform} onChange={e=>{setRetargetPlatform(e.target.value); setRetargetMsg(null)}} className="cr-input" style={{width:'100%',padding:'7px 9px',fontSize:11}}>
                     {PLAT_LIST.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </label>
               </div>
               <label style={{display:'flex',flexDirection:'column',gap:4}}>
-                <span style={{fontSize:9.5,fontWeight:600,color:'#7a8499',letterSpacing:'.05em',textTransform:'uppercase'}}>AI Editor</span>
+                <span style={{fontSize:9.5,fontWeight:600,color:'#a7abb2',letterSpacing:'.05em',textTransform:'uppercase'}}>AI Editor</span>
                 <select value={retargetModel} onChange={e=>{setRetargetModel(e.target.value); setRetargetMsg(null)}} className="cr-input" style={{width:'100%',padding:'7px 9px',fontSize:11}}>
                   {Object.entries(EDITORIAL_MODEL_META).map(([key, meta]) => (
                     <option key={key} value={key}>{meta.display}</option>
@@ -927,11 +927,11 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
           {mode === 'multimedia' && (
             <div style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:10,padding:'10px 12px',display:'flex',flexDirection:'column',gap:9}}>
               <div>
-                <p dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} style={{fontSize:10,fontWeight:600,color:'#7a8499',marginBottom:4,letterSpacing:'.06em',textTransform:'uppercase'}}>Why this media brand?</p>
+                <p dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} style={{fontSize:10,fontWeight:600,color:'#a7abb2',marginBottom:4,letterSpacing:'.06em',textTransform:'uppercase'}}>Why this media brand?</p>
                 <p dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} style={{fontSize:13,color:'#c8cdd8',lineHeight:1.55}}>{card.mediaReason||'—'}</p>
               </div>
               <div style={{borderTop:'1px solid rgba(255,255,255,.06)',paddingTop:9}}>
-                <p dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} style={{fontSize:10,fontWeight:600,color:'#7a8499',marginBottom:4,letterSpacing:'.06em',textTransform:'uppercase'}}>Why this platform?</p>
+                <p dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} style={{fontSize:10,fontWeight:600,color:'#a7abb2',marginBottom:4,letterSpacing:'.06em',textTransform:'uppercase'}}>Why this platform?</p>
                 <p dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} style={{fontSize:13,color:'#c8cdd8',lineHeight:1.55}}>{card.platReason||'—'}</p>
               </div>
             </div>
@@ -940,7 +940,7 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
           {/* Copy */}
           <div>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
-              <p style={{fontSize:10,fontWeight:600,color:'#7a8499',letterSpacing:'.06em',textTransform:'uppercase'}}>Generated Copy</p>
+              <p style={{fontSize:10,fontWeight:600,color:'#a7abb2',letterSpacing:'.06em',textTransform:'uppercase'}}>Generated Copy</p>
               <button onClick={()=>{ setEditing(e=>!e) }} style={{fontSize:10,fontWeight:600,color:'#00d4a0',background:'none',border:'none',cursor:'pointer',padding:'2px 6px',borderRadius:5,transition:'background .18s'}}
                 onMouseEnter={e=>e.currentTarget.style.background='rgba(0,212,160,.1)'} onMouseLeave={e=>e.currentTarget.style.background='none'}>
                 {editing ? 'Done' : 'Edit'}
@@ -956,11 +956,11 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
                   <div style={{height:6,borderRadius:4,background:'rgba(255,255,255,.06)',overflow:'hidden'}}>
                     <div style={{height:'100%',width:`${genPct}%`,borderRadius:4,background:'linear-gradient(90deg,#9b72f5,#00d4a0)',transition:'width .25s ease-out'}}/>
                   </div>
-                  <div style={{marginTop:6,fontSize:10.5,color:'#7a8499',textAlign:'right'}}>{genPct}%</div>
+                  <div style={{marginTop:6,fontSize:10.5,color:'#a7abb2',textAlign:'right'}}>{genPct}%</div>
                 </div>
               )
               : editing
-              ? <textarea dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} value={copyText} onChange={e=>{ setSelectedVariant(null); setCopyText(e.target.value) }} style={{width:'100%',minHeight:80,background:'rgba(0,212,160,.05)',border:'1px solid rgba(0,212,160,.45)',borderRadius:8,padding:'8px 10px',fontSize:13,color:'#f0f2f8',lineHeight:1.65,fontFamily:isPersian?"'Vazirmatn','Inter',sans-serif":'Inter,sans-serif',resize:'vertical',boxShadow:'0 0 0 3px rgba(0,212,160,.08)',outline:'none'}}/>
+              ? <textarea dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} value={copyText} onChange={e=>{ setSelectedVariant(null); setCopyText(e.target.value) }} style={{width:'100%',minHeight:80,background:'rgba(0,212,160,.05)',border:'1px solid rgba(0,212,160,.45)',borderRadius:8,padding:'8px 10px',fontSize:13,color:'#eeeae2',lineHeight:1.65,fontFamily:isPersian?"'Vazirmatn','Inter',sans-serif":'Inter,sans-serif',resize:'vertical',boxShadow:'0 0 0 3px rgba(0,212,160,.08)',outline:'none'}}/>
               : <div id="preview-copy" ref={copyRef} dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} style={{fontSize:13,color:'#c8cdd8',lineHeight:1.65}}>{selectedCopy}</div>
             }
           </div>
@@ -968,7 +968,7 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
           {/* Variant picker */}
           {(card.variants||[]).length > 1 && (
             <div>
-              <p style={{fontSize:10,fontWeight:600,color:'#7a8499',letterSpacing:'.06em',textTransform:'uppercase',marginBottom:6}}>Variants — pick one</p>
+              <p style={{fontSize:10,fontWeight:600,color:'#a7abb2',letterSpacing:'.06em',textTransform:'uppercase',marginBottom:6}}>Variants — pick one</p>
               <div style={{display:'flex',flexDirection:'column',gap:6}}>
                 {card.variants.map((v,i)=>(
                   <button key={i} type="button" onClick={()=>chooseVariant(v, i)}
@@ -979,11 +979,11 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
                     {v.label && (
                       <span style={{display:'inline-block',fontSize:8.5,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',
                         padding:'1.5px 6px',borderRadius:4,marginBottom:4,
-                        background:(i===selectedVariant?pc:'#7a8499')+'1f',
-                        color:i===selectedVariant?pc:'#7a8499',
-                        border:`1px solid ${(i===selectedVariant?pc:'#7a8499')}40`}}>{v.label}</span>
+                        background:(i===selectedVariant?pc:'#a7abb2')+'1f',
+                        color:i===selectedVariant?pc:'#a7abb2',
+                        border:`1px solid ${(i===selectedVariant?pc:'#a7abb2')}40`}}>{v.label}</span>
                     )}
-                    <div dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} style={{fontSize:12,lineHeight:1.5,color:i===selectedVariant?'#f0f2f8':'#7a8499',
+                    <div dir={isPersian?'rtl':'ltr'} className={isPersian?'persian-content':''} style={{fontSize:12,lineHeight:1.5,color:i===selectedVariant?'#eeeae2':'#a7abb2',
                       display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>
                       {v.copy}
                     </div>
@@ -1002,13 +1002,13 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
 
           {/* Source link */}
           <div style={{display:'flex',alignItems:'center',gap:6}}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7a8499" strokeWidth="1.8" strokeLinecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a7abb2" strokeWidth="1.8" strokeLinecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
             <a href={card.link||'#'} target="_blank" rel="noreferrer" style={{fontSize:11,color:'#3d8ef0',textDecoration:'none',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{card.link&&card.link!=='#'?'View source article →':'No link available'}</a>
           </div>
 
           {/* Status */}
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-            <span style={{fontSize:11,color:'#7a8499'}}>Status:</span>
+            <span style={{fontSize:11,color:'#a7abb2'}}>Status:</span>
             <span className={`sbadge ${STATUS_CLASSES[displayStatus]||'sb-ready'}`}>{STATUS_LABELS[displayStatus]||'Ready'}</span>
           </div>
         </div>
@@ -1055,9 +1055,9 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
           {/* Image section */}
           {showImage && (
             <div ref={imageSectionRef} style={{display:'flex',flexDirection:'column',gap:8,borderTop:'1px solid rgba(255,255,255,.06)',paddingTop:10}}>
-              <p style={{fontSize:10,fontWeight:600,color:'#7a8499',marginBottom:4,letterSpacing:'.06em',textTransform:'uppercase'}}>Image Direction <span style={{fontWeight:400,textTransform:'none',letterSpacing:0}}>(optional)</span></p>
+              <p style={{fontSize:10,fontWeight:600,color:'#a7abb2',marginBottom:4,letterSpacing:'.06em',textTransform:'uppercase'}}>Image Direction <span style={{fontWeight:400,textTransform:'none',letterSpacing:0}}>(optional)</span></p>
               <textarea value={imagePrompt} onChange={e=>setImagePrompt(e.target.value)} placeholder={tr('Describe what you want in the image… e.g. show the wolf mascot, use a comparison table layout')} rows={2} className="cr-input" style={{width:'100%',padding:'7px 10px',fontSize:11,resize:'vertical',minHeight:36}} />
-              <p style={{fontSize:10,fontWeight:600,color:'#7a8499',marginBottom:4,letterSpacing:'.06em',textTransform:'uppercase',marginTop:4}}>Reference Images <span style={{fontWeight:400,textTransform:'none',letterSpacing:0}}>(optional, max {maxReferenceImages})</span></p>
+              <p style={{fontSize:10,fontWeight:600,color:'#a7abb2',marginBottom:4,letterSpacing:'.06em',textTransform:'uppercase',marginTop:4}}>Reference Images <span style={{fontWeight:400,textTransform:'none',letterSpacing:0}}>(optional, max {maxReferenceImages})</span></p>
               <label style={{display:'inline-flex',alignItems:'center',gap:5,padding:'6px 12px',fontSize:10,fontWeight:600,borderRadius:8,border:'1px solid rgba(155,114,245,.35)',background:'rgba(155,114,245,.08)',color:'#9b72f5',cursor:'pointer',letterSpacing:'.04em'}}>
                 + Add Images
                 <input type="file" accept="image/*" multiple style={{display:'none'}} onChange={e=>{
@@ -1077,7 +1077,7 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
                   ))}
                 </div>
               )}
-              <p style={{fontSize:10,fontWeight:600,color:'#7a8499',marginBottom:7,letterSpacing:'.06em',textTransform:'uppercase',marginTop:4}}>Image Generation Model</p>
+              <p style={{fontSize:10,fontWeight:600,color:'#a7abb2',marginBottom:7,letterSpacing:'.06em',textTransform:'uppercase',marginTop:4}}>Image Generation Model</p>
               <select value={imageModel} onChange={e=>{
                 const nextModel = IMAGE_MODEL_OPTIONS.find(option => option.value === e.target.value)
                 setImageModel(e.target.value)
@@ -1090,7 +1090,7 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
                 <span>{selectedImageModel.description}</span>
               </div>
               <button onClick={handleGenerateImage} disabled={imgLoading} aria-busy={imgLoading}
-                style={{width:'100%',padding:9,fontSize:11,fontWeight:700,letterSpacing:'.06em',textTransform:'uppercase',border:'none',borderRadius:9,cursor:imgLoading?'wait':'pointer',background:'linear-gradient(135deg,#f0a040,#e08030)',color:'#07090e',opacity:imgLoading?0.6:1,transition:'opacity .18s'}}>
+                style={{width:'100%',padding:9,fontSize:11,fontWeight:700,letterSpacing:'.06em',textTransform:'uppercase',border:'none',borderRadius:9,cursor:imgLoading?'wait':'pointer',background:'linear-gradient(135deg,#f0a040,#e08030)',color:'#171c26',opacity:imgLoading?0.6:1,transition:'opacity .18s'}}>
                 {imgLoading ? 'Generating...' : 'Create Image'}
               </button>
               {imageGenError && (
@@ -1124,11 +1124,11 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
                   {showAiBrief && (
                     <div style={{display:'flex',flexDirection:'column',gap:8}}>
                       <div>
-                        <p style={{fontSize:10,fontWeight:600,color:'#7a8499',marginBottom:5,letterSpacing:'.06em',textTransform:'uppercase'}}>Visual Brief (JSON)</p>
+                        <p style={{fontSize:10,fontWeight:600,color:'#a7abb2',marginBottom:5,letterSpacing:'.06em',textTransform:'uppercase'}}>Visual Brief (JSON)</p>
                         <pre style={{margin:0,padding:'8px 10px',fontSize:10,lineHeight:1.5,color:'#c8cdd8',background:'rgba(0,0,0,.3)',border:'1px solid rgba(255,255,255,.08)',borderRadius:8,overflowX:'auto',whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{JSON.stringify(aiBrief.brief, null, 2)}</pre>
                       </div>
                       <div>
-                        <p style={{fontSize:10,fontWeight:600,color:'#7a8499',marginBottom:5,letterSpacing:'.06em',textTransform:'uppercase'}}>Assembled Prompt</p>
+                        <p style={{fontSize:10,fontWeight:600,color:'#a7abb2',marginBottom:5,letterSpacing:'.06em',textTransform:'uppercase'}}>Assembled Prompt</p>
                         <pre style={{margin:0,padding:'8px 10px',fontSize:10,lineHeight:1.5,color:'#c8cdd8',background:'rgba(0,0,0,.3)',border:'1px solid rgba(255,255,255,.08)',borderRadius:8,overflowX:'auto',whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{aiBrief.prompt}</pre>
                       </div>
                     </div>
@@ -1141,7 +1141,7 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
           {/* Schedule section */}
           {showSchedule && (
             <div style={{display:'flex',flexDirection:'column',gap:8,borderTop:'1px solid rgba(255,255,255,.06)',paddingTop:10}}>
-              <p style={{fontSize:10,fontWeight:600,color:'#7a8499',marginBottom:7,letterSpacing:'.06em',textTransform:'uppercase'}}>Schedule Post</p>
+              <p style={{fontSize:10,fontWeight:600,color:'#a7abb2',marginBottom:7,letterSpacing:'.06em',textTransform:'uppercase'}}>Schedule Post</p>
               {generatedImg && (
                 <div style={{display:'flex',alignItems:'center',gap:8,padding:'6px 8px',borderRadius:8,background:'rgba(0,212,160,.06)',border:'1px solid rgba(0,212,160,.2)'}}>
                   <img src={`data:image/png;base64,${generatedImg}`} alt="Generated" style={{width:44,height:44,borderRadius:6,objectFit:'cover',flexShrink:0}} />

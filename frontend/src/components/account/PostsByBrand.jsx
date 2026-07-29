@@ -8,7 +8,7 @@ export default function PostsByBrand({ postsByBrand }) {
     <div className="acct-brand-list">
       {MEDIA_LIST.map(brand => {
         const stats = data[brand] || { generated: 0, scheduled: 0 }
-        const color = MEDIA_COLORS[brand] || '#7a8499'
+        const color = MEDIA_COLORS[brand] || '#a7abb2'
         const pct = Math.round((stats.generated / max) * 100)
         return (
           <div key={brand} className="acct-brand-row">

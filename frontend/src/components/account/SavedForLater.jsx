@@ -3,7 +3,7 @@ import { MEDIA_COLORS, PLAT_COLORS } from '../../store/mmStore'
 import { PLAT_ICONS } from '../../utils/platformIcons'
 import PreviewPanel from '../mm/PreviewPanel'
 
-const SENTIMENT_COLORS = { Bullish: '#00d4a0', Bearish: '#ef4455', Neutral: '#7a8499' }
+const SENTIMENT_COLORS = { Bullish: '#00d4a0', Bearish: '#ef4455', Neutral: '#a7abb2' }
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 function formatSavedDate(iso) {
@@ -24,9 +24,9 @@ export default function SavedForLater() {
   return (
     <div className="acct-saved-list">
       {savedCards.map(card => {
-        const color = MEDIA_COLORS[card.brand] || '#7a8499'
-        const pc = PLAT_COLORS[card.platform] || '#7a8499'
-        const sentColor = SENTIMENT_COLORS[card.sentiment] || '#7a8499'
+        const color = MEDIA_COLORS[card.brand] || '#a7abb2'
+        const pc = PLAT_COLORS[card.platform] || '#a7abb2'
+        const sentColor = SENTIMENT_COLORS[card.sentiment] || '#a7abb2'
         const isActive = activeSavedCard?.id === card.id
 
         return (

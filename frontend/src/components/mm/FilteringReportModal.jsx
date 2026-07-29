@@ -31,7 +31,7 @@ function FunnelStat({ label, value, color }) {
   return (
     <div style={{ textAlign: 'center', minWidth: 70 }}>
       <div style={{ fontSize: 20, fontWeight: 800, color }}>{value}</div>
-      <div style={{ fontSize: 9, color: '#7a8499', fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', marginTop: 2 }}>{label}</div>
+      <div style={{ fontSize: 9, color: '#a7abb2', fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', marginTop: 2 }}>{label}</div>
     </div>
   )
 }
@@ -58,16 +58,16 @@ function ScoreDrawer({ article, onClose }) {
   return (
     <div id="score-drawer" className="open">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: '#f0f2f8' }}>Score Detail</span>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#7a8499', cursor: 'pointer', fontSize: 16, padding: 4 }}>✕</button>
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#eeeae2' }}>Score Detail</span>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#a7abb2', cursor: 'pointer', fontSize: 16, padding: 4 }}>✕</button>
       </div>
 
       <div style={{ fontSize: 12, fontWeight: 600, color: '#c8cdd8', lineHeight: 1.4 }}>{article.title}</div>
-      <div style={{ fontSize: 10, color: '#7a8499' }}>{article.source} · {article._pipelineStatus}</div>
+      <div style={{ fontSize: 10, color: '#a7abb2' }}>{article.source} · {article._pipelineStatus}</div>
 
       {scores.final != null && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-          <span style={{ fontSize: 10, color: '#7a8499', fontWeight: 600, width: 70 }}>FINAL</span>
+          <span style={{ fontSize: 10, color: '#a7abb2', fontWeight: 600, width: 70 }}>FINAL</span>
           <ScoreBar value={scores.final} color="#00d4a0" />
           <span style={{ fontSize: 10, color: '#c8cdd8' }}>{(scores.final * 100).toFixed(0)}</span>
         </div>
@@ -75,7 +75,7 @@ function ScoreDrawer({ article, onClose }) {
 
       {subScores.filter(s => s.val != null).map(s => (
         <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 10, color: '#7a8499', fontWeight: 600, width: 70 }}>{s.label}</span>
+          <span style={{ fontSize: 10, color: '#a7abb2', fontWeight: 600, width: 70 }}>{s.label}</span>
           <ScoreBar value={s.val} />
           <span style={{ fontSize: 10, color: '#c8cdd8' }}>{(s.val * 100).toFixed(0)}</span>
         </div>
@@ -83,10 +83,10 @@ function ScoreDrawer({ article, onClose }) {
 
       {Object.keys(mediaFit).length > 0 && (
         <>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#7a8499', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 6 }}>Brand Fit</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#a7abb2', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 6 }}>Brand Fit</div>
           {Object.entries(mediaFit).map(([brand, val]) => (
             <div key={brand} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 10, color: '#7a8499', fontWeight: 600, width: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{brand}</span>
+              <span style={{ fontSize: 10, color: '#a7abb2', fontWeight: 600, width: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{brand}</span>
               <ScoreBar value={val / 100} color="#3d8ef0" />
               <span style={{ fontSize: 10, color: '#c8cdd8' }}>{typeof val === 'number' ? val.toFixed(0) : val}</span>
             </div>
@@ -96,7 +96,7 @@ function ScoreDrawer({ article, onClose }) {
 
       {keywords.length > 0 && (
         <>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#7a8499', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 6 }}>Keywords</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#a7abb2', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 6 }}>Keywords</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
             {keywords.map((kw, i) => {
               const kwStr = typeof kw === 'string' ? kw : kw.word || kw.keyword || ''
@@ -110,15 +110,15 @@ function ScoreDrawer({ article, onClose }) {
 
       {article._dupOf && (
         <div style={{ marginTop: 6 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#7a8499', letterSpacing: '.06em', textTransform: 'uppercase' }}>Duplicate Of</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#a7abb2', letterSpacing: '.06em', textTransform: 'uppercase' }}>Duplicate Of</div>
           <div style={{ fontSize: 10, color: '#c8cdd8', marginTop: 2 }}>{article._dupOf}</div>
-          {article._dupReason && <div style={{ fontSize: 10, color: '#7a8499', marginTop: 1 }}>{article._dupReason}</div>}
+          {article._dupReason && <div style={{ fontSize: 10, color: '#a7abb2', marginTop: 1 }}>{article._dupReason}</div>}
         </div>
       )}
 
       {article._routing && (
         <div style={{ marginTop: 6 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#7a8499', letterSpacing: '.06em', textTransform: 'uppercase' }}>Routing</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#a7abb2', letterSpacing: '.06em', textTransform: 'uppercase' }}>Routing</div>
           <div style={{ fontSize: 10, color: '#c8cdd8', marginTop: 2 }}>
             {Object.entries(article._routing).map(([brand, conf]) => (
               <div key={brand}>{brand}: {typeof conf === 'number' ? conf.toFixed(0) : JSON.stringify(conf)}</div>
@@ -163,20 +163,20 @@ export default function FilteringReportModal() {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px 10px', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#f0f2f8' }}>Filtering Report</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#eeeae2' }}>Filtering Report</span>
             {mmReport.filterMode && (
               <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: 'rgba(155,114,245,.12)', color: '#9b72f5', border: '1px solid rgba(155,114,245,.25)', letterSpacing: '.04em' }}>
                 {mmReport.filterMode.toUpperCase().replace(/_/g, ' ')}
               </span>
             )}
-            {ts && <span style={{ fontSize: 10, color: '#7a8499' }}>{ts}</span>}
+            {ts && <span style={{ fontSize: 10, color: '#a7abb2' }}>{ts}</span>}
           </div>
-          <button onClick={() => { setReportOpen(false); setDrawerArticle(null) }} style={{ background: 'none', border: 'none', color: '#7a8499', cursor: 'pointer', fontSize: 18, padding: 4 }}>✕</button>
+          <button onClick={() => { setReportOpen(false); setDrawerArticle(null) }} style={{ background: 'none', border: 'none', color: '#a7abb2', cursor: 'pointer', fontSize: 18, padding: 4 }}>✕</button>
         </div>
 
         {/* Funnel summary */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
-          <FunnelStat label="Fetched" value={mmReport.fetchedTotal} color="#f0f2f8" />
+          <FunnelStat label="Fetched" value={mmReport.fetchedTotal} color="#eeeae2" />
           <FunnelArrow />
           <FunnelStat label="Recent" value={mmReport.afterRecency} color="#f0a040" />
           <FunnelArrow />
@@ -189,7 +189,7 @@ export default function FilteringReportModal() {
           {Object.entries(perMedia).map(([brand, count]) => (
             <div key={brand} style={{ textAlign: 'center', minWidth: 50 }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: '#9b72f5' }}>{count}</div>
-              <div style={{ fontSize: 8, color: '#7a8499', fontWeight: 600, maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{brand}</div>
+              <div style={{ fontSize: 8, color: '#a7abb2', fontWeight: 600, maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{brand}</div>
             </div>
           ))}
         </div>
@@ -225,7 +225,7 @@ export default function FilteringReportModal() {
                       {art._scores?.final != null ? (
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                           <ScoreBar value={art._scores.final} color="#00d4a0" />
-                          <span style={{ fontSize: 10, color: '#7a8499' }}>{(art._scores.final * 100).toFixed(0)}</span>
+                          <span style={{ fontSize: 10, color: '#a7abb2' }}>{(art._scores.final * 100).toFixed(0)}</span>
                         </span>
                       ) : (
                         <span style={{ fontSize: 10, color: '#3a3f4e' }}>—</span>
@@ -259,7 +259,7 @@ export default function FilteringReportModal() {
                         <tr key={i} onClick={() => setDrawerArticle(drawerArticle === art ? null : art)} style={{ cursor: 'pointer', background: drawerArticle === art ? 'rgba(155,114,245,.06)' : undefined }}>
                           <td style={{ maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{art.title}</td>
                           <td>{art.source || ''}</td>
-                          <td style={{ fontSize: 10, color: '#7a8499' }}>
+                          <td style={{ fontSize: 10, color: '#a7abb2' }}>
                             {status === 'duplicate' && art._dupOf ? `dup of: ${art._dupOf.slice(0, 40)}…` : ''}
                             {status === 'low_score' && art._scores?.final != null ? `score: ${(art._scores.final * 100).toFixed(0)}` : ''}
                             {status === 'no_media_fit' ? 'no brand match' : ''}
@@ -274,7 +274,7 @@ export default function FilteringReportModal() {
                 </div>
               ))}
               {Object.keys(rejectionGroups).length === 0 && (
-                <div style={{ textAlign: 'center', color: '#7a8499', fontSize: 12, padding: 20 }}>No rejected articles</div>
+                <div style={{ textAlign: 'center', color: '#a7abb2', fontSize: 12, padding: 20 }}>No rejected articles</div>
               )}
             </div>
           )}

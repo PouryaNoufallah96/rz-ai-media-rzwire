@@ -46,8 +46,8 @@ export default function ScheduledPosts() {
   return (
     <div className="acct-saved-list">
       {scheduledPosts.map(p => {
-        const mc = MEDIA_COLORS[p.brand] || '#7a8499'
-        const pc = PLAT_COLORS[p.platform] || '#7a8499'
+        const mc = MEDIA_COLORS[p.brand] || '#a7abb2'
+        const pc = PLAT_COLORS[p.platform] || '#a7abb2'
         return (
           <div key={p.id} className="acct-saved-card" style={{cursor:'default'}}>
             <div className="acct-saved-header">
