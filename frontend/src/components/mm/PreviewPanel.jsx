@@ -417,6 +417,7 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
           sentiment:card.sentiment || 'Neutral',
           modelKey:retargetModel,
           language:card.language || useLanguageStore.getState().language,
+          promoMode:Boolean(card._isPromo || card.promoMode || card.source === 'Promo'),
           variantCount:3,
         })
       })
