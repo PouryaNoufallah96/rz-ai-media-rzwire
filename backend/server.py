@@ -90,7 +90,8 @@ class Handler(BaseHTTPRequestHandler):
             user = auth.get_current_user(self)
             if user is None:
                 return self._error(401, 'Not authenticated')
-            params = parse_qs(urlparse(self.path).query)
+            import urllib.parse as url_tools
+            params = url_tools.parse_qs(url_tools.urlparse(self.path).query)
             try:
                 self._json(handle_market_history(params))
             except ValueError as exc:
