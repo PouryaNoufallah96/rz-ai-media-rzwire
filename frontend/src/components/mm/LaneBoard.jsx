@@ -94,12 +94,15 @@ function TelegramLane({ brand }) {
 }
 
 function BrandSection({ brand }) {
-  const { selectedModels, selectedPlatforms, modelLanes, telegramLanes, platformLanes, editorial } = useMmStore()
-  const hasEditorial = !!editorial
+  const { selectedModels, selectedPlatforms, modelLanes, telegramLanes, platformLanes, editorial, telegramMode } = useMmStore()
+  // In Telegram-only mode the selected model is a copy writer, not a source
+  // lane. Keep the model metadata on Telegram cards for platform copy
+  // generation, while showing only Telegram News + publishing platforms.
+  const showModelLanes = telegramMode !== 'telegram_only' && !!editorial
   const col = MEDIA_COLORS[brand] || '#a7abb2'
   const abbrs = {'MGC Coin':'MGC','Ranking Platform':'RK','Oasis Coin':'OAS','Jewelry Coin':'JWL'}
   const tags  = {'MGC Coin':'Gaming Utility · Rewards · BNB Smart Chain · RZ Ecosystem','Ranking Platform':'Competition · Profiles · Teams · Tournaments · Community','Oasis Coin':'Metaverse · Gaming · Digital Worlds · Future Utility','Jewelry Coin':'Digital Jewelry · NFTs · Marketplace · Physical Craft'}
-  const totalCards = (hasEditorial ? selectedModels.reduce((s,k) => s+(modelLanes[k]?.[brand]?.length||0), 0) : 0)
+  const totalCards = (showModelLanes ? selectedModels.reduce((s,k) => s+(modelLanes[k]?.[brand]?.length||0), 0) : 0)
     + (telegramLanes[brand]?.length || 0)
     + selectedPlatforms.reduce((s,p) => s+(platformLanes[brand]?.[p]?.length||0), 0)
   const lanesRowRef = useRef(null)
@@ -129,7 +132,7 @@ function BrandSection({ brand }) {
       resizers.push(() => r.removeEventListener('mousedown', onDown))
     })
     return () => resizers.forEach(fn => fn())
-  }, [selectedModels.join(), selectedPlatforms.join(), (telegramLanes[brand] || []).length])
+  }, [telegramMode, selectedModels.join(), selectedPlatforms.join(), (telegramLanes[brand] || []).length])
 
   return (
     <div className="media-section fade-up" style={{borderTop:`2px solid ${col}55`}}>
@@ -143,7 +146,7 @@ function BrandSection({ brand }) {
       </div>
       <div className="lanes-row" ref={lanesRowRef}>
         {!!(telegramLanes[brand]?.length) && <TelegramLane brand={brand} />}
-        {hasEditorial && selectedModels.map(key => <ModelLane key={key} modelKey={key} brand={brand} />)}
+        {showModelLanes && selectedModels.map(key => <ModelLane key={key} modelKey={key} brand={brand} />)}
         {selectedPlatforms.map(p => <PlatformLane key={p} brand={brand} plat={p} />)}
       </div>
     </div>
