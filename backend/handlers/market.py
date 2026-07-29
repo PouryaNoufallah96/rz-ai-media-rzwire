@@ -50,8 +50,10 @@ PERIOD_CONFIG = {
     "24h": {"gecko": ("hour", 1, 25), "binance": ("1h", 25)},
     "7d": {"gecko": ("hour", 4, 43), "binance": ("4h", 43)},
     "30d": {"gecko": ("day", 1, 31), "binance": ("1d", 31)},
-    "90d": {"gecko": ("day", 3, 31), "binance": ("3d", 31)},
-    "1y": {"gecko": ("day", 7, 53), "binance": ("1w", 53)},
+    # GeckoTerminal only supports aggregate=1 for daily OHLCV candles.
+    # Request the complete daily range instead of unsupported 3/7-day aggregates.
+    "90d": {"gecko": ("day", 1, 91), "binance": ("3d", 31)},
+    "1y": {"gecko": ("day", 1, 366), "binance": ("1w", 53)},
     "Custom": {"gecko": ("day", 1, 31), "binance": ("1d", 31)},
 }
 

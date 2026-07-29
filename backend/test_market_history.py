@@ -48,6 +48,23 @@ class MarketHistoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'token must be'):
             market.handle_market_history({'token': ['unknown']})
 
+    @patch('handlers.market.requests.get')
+    def test_long_ranges_use_supported_daily_aggregate(self, get):
+        get.return_value = _Response({'data': {'attributes': {'ohlcv_list': [
+            [2, 11, 12, 10, 12, 200],
+            [1, 9, 11, 8, 10, 100],
+        ]}}})
+
+        market._gecko_history(market.TOKEN_CONFIG['mgc'], '90d')
+        ninety_day_params = get.call_args.kwargs['params']
+        self.assertEqual(ninety_day_params['aggregate'], 1)
+        self.assertEqual(ninety_day_params['limit'], 91)
+
+        market._gecko_history(market.TOKEN_CONFIG['mgc'], '1y')
+        one_year_params = get.call_args.kwargs['params']
+        self.assertEqual(one_year_params['aggregate'], 1)
+        self.assertEqual(one_year_params['limit'], 366)
+
 
 if __name__ == '__main__':
     unittest.main()
