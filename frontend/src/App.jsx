@@ -3,6 +3,7 @@ import MultimediaPage from './pages/MultimediaPage'
 import AboutPage from './pages/AboutPage'
 import LoginPage from './pages/LoginPage'
 import AccountPage from './pages/AccountPage'
+import AnalyticsPage from './pages/AnalyticsPage'
 import { RequireAuth, GuestOnly } from './components/RequireAuth'
 import { useAuthStore } from './store/authStore'
 import { useLanguageStore, localizeDocument } from './store/languageStore'
@@ -27,6 +28,7 @@ export default function App() {
   let page
   if (pathname === '/login') page = <GuestOnly><LoginPage /></GuestOnly>
   else if (pathname === '/multimedia') page = <RequireAuth><MultimediaPage /></RequireAuth>
+  else if (pathname === '/analytics') page = <RequireAuth><AnalyticsPage /></RequireAuth>
   else if (pathname === '/about') page = <RequireAuth><AboutPage /></RequireAuth>
   else if (pathname === '/account') page = <RequireAuth><AccountPage /></RequireAuth>
   else page = <RequireAuth><Redirect to="/multimedia" replace /></RequireAuth>

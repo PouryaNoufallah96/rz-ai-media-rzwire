@@ -28,6 +28,7 @@ export default function NavBar({ onToggleNav, navOpen: navOpenProp }) {
 
         <div id="mob-nav-links" style={{display:'flex',alignItems:'center',gap:2}} className={navOpen?'open':''}>
           <Link to="/multimedia" className={linkClass('/multimedia')}>{t(language, 'Multi Media')}</Link>
+          <Link to="/analytics" className={linkClass('/analytics')}>{t(language, 'Market Analytics')}</Link>
           <Link to="/about" className={linkClass('/about')}>{t(language, 'About Us')}</Link>
           <Link to="/account" className={linkClass('/account')}>{t(language, 'Account')}</Link>
         </div>
