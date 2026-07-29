@@ -16,13 +16,13 @@ export default function NavBar({ onToggleNav, navOpen: navOpenProp }) {
   const initial = user?.username ? user.username[0].toUpperCase() : '?'
 
   return (
-    <nav style={{background:'rgba(9,8,25,0.88)',backdropFilter:'blur(18px)',WebkitBackdropFilter:'blur(18px)',borderBottom:'1px solid rgba(117,104,240,.16)',position:'sticky',top:0,zIndex:50,width:'100%'}}>
+    <nav style={{background:'rgba(6,21,54,0.9)',backdropFilter:'blur(18px)',WebkitBackdropFilter:'blur(18px)',borderBottom:'1px solid rgba(126,161,218,.25)',position:'sticky',top:0,zIndex:50,width:'100%'}}>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 24px',height:56}}>
         <Link to="/multimedia" style={{textDecoration:'none',display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
           <span className="rzwire-nav-logo"><img src={rzwireLogo} alt="RZWire" /></span>
-          <div style={{display:'flex',alignItems:'center',gap:5,padding:'3px 9px',borderRadius:100,background:'rgba(24,199,207,.1)',border:'1px solid rgba(24,199,207,.3)'}}>
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="#18c7cf"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke="#18c7cf" strokeWidth="1.5" strokeLinecap="round" fill="none"/></svg>
-            <span style={{fontSize:11,fontWeight:700,color:'#18c7cf',letterSpacing:'.04em'}}>AI</span>
+          <div style={{display:'flex',alignItems:'center',gap:5,padding:'3px 9px',borderRadius:100,background:'rgba(87,216,199,.1)',border:'1px solid rgba(87,216,199,.34)'}}>
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="#57d8c7"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke="#57d8c7" strokeWidth="1.5" strokeLinecap="round" fill="none"/></svg>
+            <span style={{fontSize:11,fontWeight:700,color:'#57d8c7',letterSpacing:'.04em'}}>AI</span>
           </div>
         </Link>
 
@@ -52,7 +52,7 @@ export default function NavBar({ onToggleNav, navOpen: navOpenProp }) {
               <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
             </svg>
           </button>
-          <Link to="/account" title={user?.username || 'Account'} style={{width:32,height:32,borderRadius:'50%',background:'linear-gradient(135deg,#18c7cf,#7568f0)',display:'flex',alignItems:'center',justifyContent:'center',color:'#07090e',fontWeight:700,fontSize:13,fontFamily:"'Space Grotesk',sans-serif",textDecoration:'none',flexShrink:0}}>
+          <Link to="/account" title={user?.username || 'Account'} style={{width:32,height:32,borderRadius:'50%',background:'linear-gradient(135deg,#ff7168,#ff9b94)',display:'flex',alignItems:'center',justifyContent:'center',color:'#061536',fontWeight:700,fontSize:13,fontFamily:"'Space Grotesk',sans-serif",textDecoration:'none',flexShrink:0}}>
             {initial}
           </Link>
         </div>

@@ -186,7 +186,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
         {/* Title */}
         <div>
           <h1 style={{fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:17,color:'#f0f2f8',letterSpacing:'-.02em',marginBottom:4}}>
-            {isPersian ? <span style={{color:'#00d4a0'}}>چند رسانه‌ای</span> : <><span style={{color:'#00d4a0'}}>Multi</span> Media</>}
+            {isPersian ? <span style={{color:'#ff7168'}}>چند رسانه‌ای</span> : <><span style={{color:'#ff7168'}}>Multi</span> Media</>}
           </h1>
           <p style={{fontSize:11,color:'#7a8499',lineHeight:1.55}}>{tr('Route the right news to the right media brand and platform.')}</p>
         </div>
@@ -313,7 +313,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
           <div style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.10)',borderRadius:10,padding:'8px 10px',marginBottom:8,cursor:'text'}}>
             <input type="text" placeholder={tr('Type keyword, press Enter…')} value={topicInput}
               onChange={handleTopicInput} onKeyDown={handleTopicKey}
-              style={{background:'none',border:'none',outline:'none',width:'100%',fontSize:11.5,color:'#f0f2f8',caretColor:'#00d4a0',padding:0}} />
+              style={{background:'none',border:'none',outline:'none',width:'100%',fontSize:11.5,color:'#fff9f2',caretColor:'#ff7168',padding:0}} />
           </div>
           <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:6}}>
             {topicChips.map(w => (
@@ -405,7 +405,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
         {analyzing && (
           <div>
             <div style={{height:2,background:'rgba(255,255,255,.06)',borderRadius:1,overflow:'hidden'}}>
-              <div style={{height:'100%',width:`${progress.pct}%`,background:'linear-gradient(to right,#00d4a0,#9b72f5)',borderRadius:1,transition:'width .4s ease'}}></div>
+              <div style={{height:'100%',width:`${progress.pct}%`,background:'linear-gradient(to right,#ff7168,#57d8c7)',borderRadius:1,transition:'width .4s ease'}}></div>
             </div>
             <p style={{fontSize:10,color:'#7a8499',marginTop:4,textAlign:'center'}}>{tr(progress.label)}</p>
           </div>
@@ -415,7 +415,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
         <div style={{borderTop:'1px solid rgba(255,255,255,.06)',paddingTop:12}}>
           <p style={{fontSize:10,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#4a5568',marginBottom:8}}>{tr('Legend')}</p>
           <div style={{display:'flex',flexDirection:'column',gap:5}}>
-            {[{c:'#00d4a0',l:tr('Ready'),d:tr('Ready to review')},{c:'#f0a040',l:tr('Needs Image'),d:tr('Image required')},{c:'#9b72f5',l:tr('Approved'),d:tr('Ready to publish')},{c:'#3d8ef0',l:tr('Scheduled'),d:tr('Queued to publish')}].map(({c,l,d})=>(
+            {[{c:'#57d8c7',l:tr('Ready'),d:tr('Ready to review')},{c:'#f0a040',l:tr('Needs Image'),d:tr('Image required')},{c:'#ff9b94',l:tr('Approved'),d:tr('Ready to publish')},{c:'#5ea1ff',l:tr('Scheduled'),d:tr('Queued to publish')}].map(({c,l,d})=>(
               <div key={l} style={{display:'flex',alignItems:'center',gap:7}}>
                 <div style={{width:8,height:8,borderRadius:'50%',background:c,flexShrink:0}}></div>
                 <span style={{fontSize:10.5,fontWeight:600,color:c,width:72}}>{l}</span>

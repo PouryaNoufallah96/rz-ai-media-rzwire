@@ -7,6 +7,7 @@ import { RequireAuth, GuestOnly } from './components/RequireAuth'
 import { useAuthStore } from './store/authStore'
 import { useLanguageStore, localizeDocument } from './store/languageStore'
 import { Redirect, usePathname } from './router'
+import './theme.css'
 
 export default function App() {
   const language = useLanguageStore(s => s.language)

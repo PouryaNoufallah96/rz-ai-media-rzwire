@@ -114,7 +114,7 @@ export default function MultimediaPage() {
 
   return (
     <>
-      <div aria-hidden="true" style={{position:'fixed',inset:0,zIndex:0,pointerEvents:'none',background:'radial-gradient(ellipse 60% 40% at 50% 0%,rgba(0,212,160,.07) 0%,transparent 70%),radial-gradient(ellipse 50% 50% at 80% 80%,rgba(155,114,245,.07) 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 20% 70%,rgba(240,160,64,.05) 0%,transparent 70%)'}}></div>
+      <div aria-hidden="true" style={{position:'fixed',inset:0,zIndex:0,pointerEvents:'none',background:'radial-gradient(ellipse 60% 40% at 50% 0%,rgba(17,51,115,.34) 0%,transparent 70%),radial-gradient(ellipse 50% 50% at 88% 8%,rgba(255,113,104,.055) 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 18% 82%,rgba(87,216,199,.045) 0%,transparent 70%)'}}></div>
       <div id="mob-backdrop" className={navOpen?'open':''} onClick={()=>setNavOpen(false)}></div>
       <NavBar onToggleNav={()=>setNavOpen(o=>!o)} navOpen={navOpen} />
       <div id="mm-layout" style={{position:'relative',zIndex:10}}>
