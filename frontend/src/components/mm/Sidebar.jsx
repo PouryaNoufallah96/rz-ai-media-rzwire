@@ -85,11 +85,11 @@ function TelegramSourceChip({ label, channel, selected, onClick }) {
   )
 }
 
-function ToggleRow({ on, color, label, sub, abbr, logo, onClick, checkWhite, filterEngine }) {
+function ToggleRow({ on, color, label, sub, abbr, logo, onClick, checkWhite, filterEngine, fixed }) {
   const active = { borderColor: color + '88', background: color + '1a' }
   const inactive = { borderColor:'rgba(255,255,255,.08)', background:'rgba(255,255,255,.03)' }
   return (
-    <div onClick={onClick} className="toggle-row" style={on ? active : {}}>
+    <div onClick={fixed ? undefined : onClick} className="toggle-row" style={{...(on ? active : {}), ...(fixed ? {cursor:'default'} : {})}}>
       <div style={{width:32,height:24,borderRadius:6,background:logo?'rgba(255,255,255,.94)':color+'22',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:filterEngine?9:7,fontWeight:800,color,overflow:'hidden'}}>
         {logo ? <img src={logo} alt="" style={{width:'100%',height:'100%',objectFit:'contain'}} /> : abbr}
       </div>
@@ -108,10 +108,10 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
   const language = useLanguageStore(state => state.language)
   const tr = text => t(language, text)
   const isPersian = language === 'fa'
-  const { selectedMedia, selectedPlatforms, selectedSources, recencyHours, filterMode,
+  const { selectedMedia, selectedPlatforms, selectedSources, recencyHours,
           selectedModels, analyzing, progress, errorMsg, promoMode, promoPrompts,
           enrichArticles, useTelegramSources, telegramMode, selectedTelegramSources, telegramSortMode, telegramTopN,
-          toggleMedia, togglePlatform, toggleSource, toggleModel, setRecencyHours, setFilterMode,
+          toggleMedia, togglePlatform, toggleSource, toggleModel, setRecencyHours,
           setEnrichArticles, setUseTelegramSources, setTelegramMode, toggleTelegramSource, setTelegramSortMode, setTelegramTopN,
           togglePromoMode, setPromoPrompt } = useMmStore()
 
@@ -163,14 +163,6 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
     v.split(',').forEach((p,i,a) => { if(i<a.length-1 && p.trim()) addChip(p) })
     setTopicInput(v.split(',').pop().replace(/^\s+/,''))
   }
-
-  // Filter engine options
-  const filterOptions = [
-    { key:'preprocess',         color:'#00d4a0', abbr:'PP', label:tr('Pre-Process'),         sub:tr('Local ML model · no API cost') },
-    { key:'openai_embedding',   color:'#10a37f', abbr:'OA', label:'OpenAI Embedding',        sub:tr('text-embedding-3-small · backend') },
-    { key:'deepseek_preprocess',color:'#22d3ee', abbr:'DS', label:'DeepSeek Pre-Process',    sub:tr('DeepSeek V4 Flash · routing AI') },
-    { key:'test',               color:'#f0a040', abbr:'⚡', label:tr('Test Version'),         sub:tr('Verify API + models · minimal tokens') },
-  ]
 
   const modelOptions = [
     { key:'gpt',      color:'#10a37f', abbr:'OP', label:'GPT-5.5',              badge:'OpenAI',    sub:tr('Best general-purpose editorial AI') },
@@ -338,11 +330,15 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
           {(promoActive || telegramOnly) && (
             <p style={{fontSize:10,color:telegramOnly?'#24a1de':'#f0a040',marginBottom:8}}>{tr(telegramOnly ? 'Telegram-only mode: keyword matching ranks the posts.' : 'Promo mode: no filtering needed.')}</p>
           )}
-          <div style={{display:'flex',flexDirection:'column',gap:6}}>
-            {filterOptions.map(f => (
-              <ToggleRow key={f.key} on={filterMode===f.key} color={f.color} abbr={f.abbr} label={f.label} sub={f.sub} onClick={()=>setFilterMode(f.key)} filterEngine />
-            ))}
-          </div>
+          <ToggleRow
+            on
+            color="#10a37f"
+            abbr="OA"
+            label="OpenAI Embedding"
+            sub={tr('Always on for RSS website feeds · text-embedding-3-small')}
+            filterEngine
+            fixed
+          />
         </div>
 
         {/* AI Editorial Models */}

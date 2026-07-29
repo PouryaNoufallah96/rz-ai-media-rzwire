@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 import { useMmStore, API_BASE, MM_SOURCES, SRC_COLORS, EDITORIAL_MODEL_META, mkey, anyPromoOn } from '../store/mmStore'
 import { useLanguageStore } from '../store/languageStore'
 import { fetchRSS, parseRSS, filterByRecency, timeAgo } from '../utils/rss'
-import { preScore } from '../utils/scoring'
 
 // Gzip-compress the JSON body before sending (mirrors the gzip the backend
 // already applies to its responses) — large filter payloads (100s of KB of
@@ -33,7 +32,7 @@ export function useAnalyzeAndRoute() {
 
   const run = useCallback(async (topics) => {
     const { selectedSources, selectedMedia, selectedPlatforms, selectedModels,
-            recencyHours, filterMode, testMode, enrichArticles, setProgress, setAnalyzing,
+            recencyHours, enrichArticles, setProgress, setAnalyzing,
             setErrorMsg, setModelLanes, setPlatformLanes, setLastShortlist,
             setEditorial, setMmReport, promoMode, promoPrompts,
             useTelegramSources, selectedTelegramSources, telegramSortMode, telegramTopN,
@@ -235,65 +234,24 @@ export function useAnalyzeAndRoute() {
         }
 
         if (recent.length) {
-        // Phase 2: Filter
-        if (filterMode === 'openai_embedding') {
-          setProgress(48, `Running OpenAI Embedding pipeline on ${recent.length} articles…`)
-          const r = await postJSON(`${API_BASE}/api/filter/pipeline`, { articles:recent, selectedMedia:editorialBrands, topics, recencyHours })
-          if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error||`Filter failed (${r.status})`) }
-          const fd = await r.json()
-          if (!fd.shortlist?.length) throw new Error('OpenAI Embedding: no articles passed. Try wider range.')
-          shortlistPayload = fd.shortlist; allTracked = fd.all_tracked||[]
-          setLastShortlist(shortlistPayload)
-          preResult = { rejected:{duplicate:(fd.stats?.dropped_dup_cheap||0)+(fd.stats?.dropped_clustered||0),noMediaFit:fd.stats?.no_media_fit||0,lowScore:fd.stats?.cap_exceeded||0}, passed:fd.stats?.embedded||0, shortlisted:shortlistPayload, allTracked }
-
-        } else if (filterMode === 'deepseek_preprocess') {
-          setProgress(48, `Sending ${recent.length} articles to DeepSeek V4 Flash…`)
-          const r = await postJSON(`${API_BASE}/api/filter/deepseek`, { articles:recent, selectedMedia:editorialBrands, topics, recencyHours })
-          if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error||`DeepSeek filter failed (${r.status})`) }
-          const fd = await r.json()
-          if (!fd.shortlist?.length) throw new Error('DeepSeek Pre-Process: no articles passed.')
-          shortlistPayload = fd.shortlist; allTracked = fd.all_tracked||[]
-          setLastShortlist(shortlistPayload)
-          preResult = { rejected:{duplicate:fd.stats?.dropped_dup_cheap||0,noMediaFit:0,lowScore:0}, passed:fd.stats?.sent_to_deepseek||0, shortlisted:shortlistPayload, allTracked }
-
-        } else {
-          if (filterMode !== 'test') {
-            setProgress(45, 'Loading semantic model…')
-            if (window._semRouter?._initPromise) await window._semRouter._initPromise
-            setProgress(50, `Embedding ${recent.length} articles…`)
-            if (window._semRouter?.embedArticles) await window._semRouter.embedArticles(recent)
-          }
-          setProgress(58, `Pre-scoring ${recent.length} articles…`)
-          await new Promise(r => setTimeout(r, 20))
-          preResult = preScore(recent, editorialBrands, topics)
-          allTracked = preResult.allTracked
-          const { shortlisted } = preResult
-          if (!shortlisted.length) throw new Error('All articles filtered. Try wider range or more sources.')
-
-          const isTest = testMode
-          let articlesForAI = shortlisted
-          if (isTest) {
-            const seen=new Set(), picked=[]
-            for (const brand of editorialBrands) {
-              shortlisted.filter(a=>a._routing?.primary_media===brand).slice(0,3)
-                .forEach(a=>{ if(!seen.has(a.title)){seen.add(a.title);picked.push(a)} })
-            }
-            articlesForAI = picked.length ? picked : shortlisted.slice(0, 3)
-          }
-          shortlistPayload = articlesForAI.map((a,i) => ({
-            input_index: i,
-            title:   isTest ? a.title.split(' ').slice(0,6).join(' ') : a.title,
-            source:  a.source, link: a.link||'',
-            desc:    isTest ? (a.desc||'').split(' ').slice(0,10).join(' ') : (a.desc||'').slice(0,220),
-            pubDate: a.pubDate||'',
-            scores: {
-              final:      Math.round(a._scores?.final||0),  virality: Math.round(a._scores?.virality||0),
-              freshness:  Math.round(a._scores?.freshness||0), authority: Math.round(a._scores?.authority||0),
-              userTopic:  Math.round(a._scores?.userTopic||0), confidence: Math.round(a._scores?.confidence||0),
-            },
-            routing: { primary_media:a._routing?.primary_media||'', secondary_media:a._routing?.secondary_media||'' },
-          }))
-          setLastShortlist(preResult.shortlisted)
+        // Phase 2: RSS website feeds always use the OpenAI Embedding pipeline.
+        setProgress(48, `Running OpenAI Embedding pipeline on ${recent.length} articles…`)
+        const r = await postJSON(`${API_BASE}/api/filter/pipeline`, { articles:recent, selectedMedia:editorialBrands, topics, recencyHours })
+        if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error||`Filter failed (${r.status})`) }
+        const fd = await r.json()
+        if (!fd.shortlist?.length) throw new Error('OpenAI Embedding: no articles passed. Try wider range.')
+        shortlistPayload = fd.shortlist
+        allTracked = fd.all_tracked||[]
+        setLastShortlist(shortlistPayload)
+        preResult = {
+          rejected: {
+            duplicate: (fd.stats?.dropped_dup_cheap||0) + (fd.stats?.dropped_clustered||0),
+            noMediaFit: fd.stats?.no_media_fit||0,
+            lowScore: fd.stats?.cap_exceeded||0,
+          },
+          passed: fd.stats?.embedded||0,
+          shortlisted: shortlistPayload,
+          allTracked,
         }
 
         if (window.innerWidth <= 768) {
@@ -306,7 +264,7 @@ export function useAnalyzeAndRoute() {
         // Phase 3: Editorial AI (streamed)
         // Source cards stay in their original English form. Persian is applied on
         // demand with the card's Translate button and is mandatory after routing.
-        const editRes = await postJSON(`${API_BASE}/api/ai/editorial-select`, { shortlist:shortlistPayload, selectedMedia:editorialBrands, selectedPlatforms, selectedModels, topics, testMode, enrichArticles, language:'en' })
+        const editRes = await postJSON(`${API_BASE}/api/ai/editorial-select`, { shortlist:shortlistPayload, selectedMedia:editorialBrands, selectedPlatforms, selectedModels, topics, testMode:false, enrichArticles, language:'en' })
         if (!editRes.ok) { const e = await editRes.json().catch(()=>({})); throw new Error(e?.error||`Editorial AI failed (${editRes.status})`) }
 
         const lastShortlist = useMmStore.getState().lastShortlist
@@ -396,7 +354,7 @@ export function useAnalyzeAndRoute() {
         telegramSortMode, telegramErrors,
         recencyHours, sourceCounts, fetchedTotal:allArticles.length + telegramFetchedTotal, tooOld:tooOldCount,
         afterRecency:recent.length, rejected:preResult?.rejected||{duplicate:0,noMediaFit:0,lowScore:0},
-        shortlistedCount:shortlistPayload.length + actualPromoTotal + actualTelegramTotal, perMedia, filterMode,
+        shortlistedCount:shortlistPayload.length + actualPromoTotal + actualTelegramTotal, perMedia, filterMode:'openai_embedding',
         allArticles:[...tooOldArticles,...allTracked,...trackedTelegram],
       })
 

@@ -151,8 +151,6 @@ export const useMmStore = create((set, get) => ({
   selectedPlatforms: [...PLAT_LIST],
   selectedSources:   ['CoinDesk','Cointelegraph','The Block'],
   recencyHours:      24,
-  filterMode:        'preprocess',   // 'preprocess' | 'openai_embedding' | 'deepseek_preprocess' | 'test'
-  testMode:          false,
   enrichArticles:    true,   // fetch + summarize source articles for richer AI picks
   routed:            buildEmptyRouted(),
   activeCard:        null,
@@ -183,7 +181,6 @@ export const useMmStore = create((set, get) => ({
   setSelectedPlatforms: v  => set({ selectedPlatforms: v }),
   setSelectedSources:   v  => set(s => s.telegramMode === 'telegram_only' ? {} : { selectedSources: v }),
   setRecencyHours:      h  => set({ recencyHours: h }),
-  setFilterMode:        (mode) => set({ filterMode: mode, testMode: mode === 'test' }),
   setEnrichArticles:    v  => set({ enrichArticles: typeof v === 'boolean' ? v : !get().enrichArticles }),
   setSelectedModels:    v  => set(s => s.telegramMode === 'telegram_only' ? { selectedModels: [v?.[0] || 'gpt'] } : { selectedModels: v }),
   setActiveCard:        c  => set({ activeCard: c }),
