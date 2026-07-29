@@ -47,6 +47,7 @@ from handlers.chat import (
     start_chat_indexer,
 )
 from handlers.translation import handle_translate_cards
+from handlers.market import handle_market_history
 from telegram_public import DEFAULT_TELEGRAM_SOURCES, fetch_many_telegram_public_posts, rank_telegram_posts
 
 
@@ -85,6 +86,17 @@ class Handler(BaseHTTPRequestHandler):
                 'publishing': {'enabled': PUBLISHING_ENABLED},
                 'sheets': {'enabled': SHEETS_ENABLED},
             })
+        elif self.path.startswith('/api/market/history'):
+            user = auth.get_current_user(self)
+            if user is None:
+                return self._error(401, 'Not authenticated')
+            params = parse_qs(urlparse(self.path).query)
+            try:
+                self._json(handle_market_history(params))
+            except ValueError as exc:
+                self._error(400, str(exc))
+            except Exception as exc:
+                self._error(502, f'Market data extraction failed: {exc}')
         elif self.path == '/api/auth/me':
             user = auth.get_current_user(self)
             if user is None:

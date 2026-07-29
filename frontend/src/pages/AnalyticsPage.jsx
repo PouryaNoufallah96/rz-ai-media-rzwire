@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ArrowRight, CalendarDays, Check, ImageIcon, LineChart, Sparkles } from 'lucide-react'
+import { ArrowRight, CalendarDays, Check, CircleCheck, Database, ImageIcon, LineChart, RefreshCw, Sparkles } from 'lucide-react'
 import NavBar from '../components/NavBar'
 import ChatWidget from '../components/chat/ChatWidget'
 import { API_BASE, IMAGE_MODEL_OPTIONS } from '../store/mmStore'
@@ -21,7 +21,7 @@ const COMPARE_TOKENS = [
   { symbol:'BNB', name:'BNB', change:5.12, price:'$612.64' },
 ]
 
-const PERIODS = ['24h', '7d', '30d', '90d', '1y', 'Custom']
+const PERIODS = ['24h', '7d', '30d', '90d', '1y']
 
 const TEMPLATES = [
   { id:'phone', name:'Phone comparison', description:'Two indexed price lines inside a mobile market view.', icon:'phone' },
@@ -47,6 +47,67 @@ function points(values, width=620, height=220, pad=18) {
   }).join(' ')
 }
 
+function percentValues(series) {
+  if (!series?.length) return []
+  const start = Number(series[0].close) || 1
+  return series.map(item => ((Number(item.close) - start) / start) * 100)
+}
+
+function domainPoints(values, min, max, width=620, height=220, pad=18) {
+  if (!values.length) return ''
+  const range = Math.max(.000001, max - min)
+  return values.map((value, index) => {
+    const x = pad + index * ((width - pad * 2) / Math.max(1, values.length - 1))
+    const y = height - pad - ((value - min) / range) * (height - pad * 2)
+    return `${x.toFixed(1)},${y.toFixed(1)}`
+  }).join(' ')
+}
+
+function formatPrice(value) {
+  const amount = Number(value)
+  if (!Number.isFinite(amount)) return 'Unavailable'
+  const digits = amount < 1 ? 6 : amount < 100 ? 4 : 2
+  return amount.toLocaleString('en-US', {style:'currency', currency:'USD', maximumFractionDigits:digits})
+}
+
+function VerifiedChart({ data, token }) {
+  const primary = percentValues(data.primary.points)
+  const comparison = data.comparison ? percentValues(data.comparison.points) : []
+  const allValues = [...primary, ...comparison, 0]
+  const min = Math.min(...allValues)
+  const max = Math.max(...allValues)
+  const firstDate = new Date(data.primary.points[0].timestamp * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric'})
+  const lastDate = new Date(data.primary.points.at(-1).timestamp * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric'})
+
+  return (
+    <div className="analytics-verified-chart">
+      <div className="analytics-verified-status">
+        <span><CircleCheck size={16} />Live extraction verified</span>
+        <time>{new Date(data.fetchedAt).toLocaleString()}</time>
+      </div>
+      <div className="analytics-verified-summary">
+        <div><small>{data.primary.symbol} start</small><strong>{formatPrice(data.primary.startPrice)}</strong></div>
+        <div><small>{data.primary.symbol} latest</small><strong>{formatPrice(data.primary.endPrice)}</strong></div>
+        <div><small>Period change</small><strong className={data.primary.changePercent >= 0 ? 'positive' : 'negative'}>{data.primary.changePercent >= 0 ? '+' : ''}{data.primary.changePercent.toFixed(2)}%</strong></div>
+      </div>
+      <svg viewBox="0 0 620 220" role="img" aria-label={`Verified ${data.primary.symbol} price chart`}>
+        <path className="analytics-chart-grid" d="M18 40H602M18 95H602M18 150H602M18 202H602" />
+        <line className="analytics-chart-zero" x1="18" y1={220 - 18 - ((0 - min) / Math.max(.000001, max - min)) * 184} x2="602" y2={220 - 18 - ((0 - min) / Math.max(.000001, max - min)) * 184} />
+        <polyline className="analytics-series" style={{stroke:token.color}} points={domainPoints(primary, min, max)} />
+        {comparison.length > 0 && <polyline className="analytics-series analytics-series--compare" points={domainPoints(comparison, min, max)} />}
+      </svg>
+      <div className="analytics-verified-axis"><span>{firstDate}</span><span>Indexed change from 0%</span><span>{lastDate}</span></div>
+      <div className="analytics-chart-legend">
+        <span><i style={{background:token.color}} />{data.primary.symbol}</span>
+        {data.comparison && <span><i className="compare-dot" />{data.comparison.symbol}</span>}
+      </div>
+      <div className="analytics-source-list">
+        {data.sources.map(source => <a key={`${source.provider}-${source.poolAddress || source.pair}`} href={source.attributionUrl} target="_blank" rel="noreferrer"><Database size={13} /><span><strong>{source.provider}</strong><small>{source.poolName || source.pair}</small></span></a>)}
+      </div>
+    </div>
+  )
+}
+
 function TemplateMiniature({ type }) {
   return (
     <div className={`analytics-template-mini analytics-template-mini--${type}`} aria-hidden="true">
@@ -59,17 +120,23 @@ function TemplateMiniature({ type }) {
   )
 }
 
-function ChartPreview({ token, compare, compareEnabled, period, metric, template, generatedBackground }) {
-  const primaryPoints = points(SERIES[token.id])
-  const comparisonPoints = points(SERIES.compare)
+function ChartPreview({ token, compare, compareEnabled, period, metric, template, generatedBackground, marketData }) {
+  const livePrimary = marketData ? percentValues(marketData.primary.points) : null
+  const liveComparison = marketData?.comparison ? percentValues(marketData.comparison.points) : null
+  const primaryPoints = livePrimary ? points(livePrimary) : points(SERIES[token.id])
+  const comparisonPoints = liveComparison ? points(liveComparison) : points(SERIES.compare)
+  const primaryChange = marketData?.primary.changePercent ?? token.change
+  const comparisonChange = marketData?.comparison?.changePercent ?? compare.change
+  const startPrice = marketData?.primary.startPrice ?? token.start
+  const endPrice = marketData?.primary.endPrice ?? token.end
   const title = compareEnabled ? `${token.symbol} vs ${compare.symbol}` : `${token.symbol} price journey`
   const result = compareEnabled
-    ? `${token.symbol} ${token.change >= 0 ? 'rose' : 'fell'} ${Math.abs(token.change).toFixed(2)}% while ${compare.symbol} ${compare.change >= 0 ? 'rose' : 'fell'} ${Math.abs(compare.change).toFixed(2)}%`
-    : `${token.symbol} moved from $${token.start} to $${token.end}`
+    ? `${token.symbol} ${primaryChange >= 0 ? 'rose' : 'fell'} ${Math.abs(primaryChange).toFixed(2)}% while ${compare.symbol} ${comparisonChange >= 0 ? 'rose' : 'fell'} ${Math.abs(comparisonChange).toFixed(2)}%`
+    : `${token.symbol} moved from ${formatPrice(startPrice)} to ${formatPrice(endPrice)}`
 
   return (
     <div className={`analytics-poster analytics-poster--${template}`} style={generatedBackground ? {backgroundImage:`linear-gradient(rgba(17,22,31,.68),rgba(17,22,31,.86)),url(data:image/png;base64,${generatedBackground})`} : undefined}>
-      <div className="analytics-poster-topline"><span>Sample preview</span><span>Live market feed pending</span></div>
+      <div className="analytics-poster-topline"><span>{marketData ? 'Verified market data' : 'Sample preview'}</span><span>{marketData ? marketData.sources[0]?.provider : 'Live market feed pending'}</span></div>
       <header>
         <div>
           <p>{period === '30d' ? '1 month' : period} {compareEnabled ? 'comparison' : 'movement'}</p>
@@ -91,13 +158,13 @@ function ChartPreview({ token, compare, compareEnabled, period, metric, template
           {compareEnabled && <polyline className="analytics-series analytics-series--compare" points={comparisonPoints} />}
         </svg>
         <div className="analytics-chart-legend">
-          <span><i style={{background:token.color}} />{token.symbol} {token.change >= 0 ? '+' : ''}{token.change.toFixed(2)}%</span>
-          {compareEnabled && <span><i className="compare-dot" />{compare.symbol} {compare.change >= 0 ? '+' : ''}{compare.change.toFixed(2)}%</span>}
+          <span><i style={{background:token.color}} />{token.symbol} {primaryChange >= 0 ? '+' : ''}{primaryChange.toFixed(2)}%</span>
+          {compareEnabled && <span><i className="compare-dot" />{compare.symbol} {comparisonChange >= 0 ? '+' : ''}{comparisonChange.toFixed(2)}%</span>}
         </div>
       </div>
 
       <div className="analytics-poster-result">{result}</div>
-      <footer><span>RZWire Market Analytics</span><span>Source added after live connection</span></footer>
+      <footer><span>RZWire Market Analytics</span><span>{marketData ? 'Verified public market feed' : 'Source added after live connection'}</span></footer>
     </div>
   )
 }
@@ -115,6 +182,9 @@ export default function AnalyticsPage() {
   const [generatedBackground, setGeneratedBackground] = useState('')
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
+  const [marketData, setMarketData] = useState(null)
+  const [verifying, setVerifying] = useState(false)
+  const [verificationError, setVerificationError] = useState('')
 
   const token = TOKENS.find(item => item.id === tokenId) || TOKENS[0]
   const compare = COMPARE_TOKENS.find(item => item.symbol === compareSymbol) || COMPARE_TOKENS[0]
@@ -124,8 +194,40 @@ export default function AnalyticsPage() {
     : `${token.symbol}, ${period}, ${metric.toLowerCase()}`,
   [token, compare, compareEnabled, period, metric])
 
+  function invalidateMarketData() {
+    setMarketData(null)
+    setVerificationError('')
+    setGeneratedBackground('')
+  }
+
+  async function verifyMarketData() {
+    if (verifying) return
+    setVerifying(true)
+    setVerificationError('')
+    setMarketData(null)
+    setGeneratedBackground('')
+    try {
+      const params = new URLSearchParams({token:tokenId, period})
+      if (compareEnabled) params.set('compare', compareSymbol)
+      const response = await fetch(`${API_BASE}/api/market/history?${params.toString()}`, {credentials:'include'})
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.verified || !data.primary?.points?.length) {
+        throw new Error(data.error || 'The public market feed did not return a verified chart.')
+      }
+      setMarketData(data)
+    } catch (err) {
+      setVerificationError(err.message || 'Price extraction failed.')
+    } finally {
+      setVerifying(false)
+    }
+  }
+
   async function generateBackground() {
     if (generating) return
+    if (!marketData?.verified) {
+      setError('Verify the chart data before generating the image background.')
+      return
+    }
     setGenerating(true)
     setError('')
     setGeneratedBackground('')
@@ -139,7 +241,7 @@ export default function AnalyticsPage() {
           mediaBrand:token.brand,
           sentiment:token.change >= 0 ? 'Bullish' : 'Bearish',
           model:imageModel,
-          copy:`Create the decorative art layer for a verified market analytics post about ${summary}.`,
+          copy:`Create the decorative art layer for a verified market analytics post about ${summary}. Verified change: ${marketData.primary.changePercent.toFixed(2)}%.`,
           imageDirection:`${direction} Generate background artwork only. Leave generous uncluttered space for an exact data chart, token logo, headline, dates, and statistics that will be overlaid later by RZWire. Do not render charts, interfaces, devices, logos, letters, numbers, prices, percentages, tickers, watermarks, or captions.`,
         }),
       })
@@ -164,7 +266,7 @@ export default function AnalyticsPage() {
             <p>Choose the market data first, select a reusable design, then let an image model create only the decorative art layer around an accurate RZWire chart.</p>
           </div>
           <div className="analytics-steps" aria-label="Analytics post workflow">
-            <span className="active"><b>1</b>Data</span><i /><span><b>2</b>Design</span><i /><span><b>3</b>Generate</span>
+            <span className="active"><b>1</b>Data</span><i /><span><b>2</b>Design</span><i /><span><b>3</b>Verify</span><i /><span><b>4</b>Generate</span>
           </div>
         </section>
 
@@ -174,7 +276,7 @@ export default function AnalyticsPage() {
               <div className="analytics-section-heading"><span>01</span><div><h2>Select a token</h2><p>Three RZWire coins are ready for initial setup.</p></div></div>
               <div className="analytics-token-grid">
                 {TOKENS.map(item => (
-                  <button key={item.id} type="button" className={tokenId === item.id ? 'selected' : ''} onClick={() => setTokenId(item.id)}>
+                  <button key={item.id} type="button" className={tokenId === item.id ? 'selected' : ''} onClick={() => { setTokenId(item.id); invalidateMarketData() }}>
                     <img src={item.logo} alt="" /><span><strong>{item.symbol}</strong><small>{item.name}</small></span>{tokenId === item.id && <Check size={15} />}
                   </button>
                 ))}
@@ -183,15 +285,15 @@ export default function AnalyticsPage() {
 
             <section className="analytics-control-section">
               <div className="analytics-section-heading"><span>02</span><div><h2>Define the market view</h2><p>Choose the period, metric, and optional comparison.</p></div></div>
-              <label className="analytics-switch"><input type="checkbox" checked={compareEnabled} onChange={event => setCompareEnabled(event.target.checked)} /><span />Compare with another coin</label>
-              {compareEnabled && <label>Comparison coin<select value={compareSymbol} onChange={event => setCompareSymbol(event.target.value)}>{COMPARE_TOKENS.map(item => <option key={item.symbol} value={item.symbol}>{item.name} · {item.symbol}</option>)}</select></label>}
+              <label className="analytics-switch"><input type="checkbox" checked={compareEnabled} onChange={event => { setCompareEnabled(event.target.checked); invalidateMarketData() }} /><span />Compare with another coin</label>
+              {compareEnabled && <label>Comparison coin<select value={compareSymbol} onChange={event => { setCompareSymbol(event.target.value); invalidateMarketData() }}>{COMPARE_TOKENS.map(item => <option key={item.symbol} value={item.symbol}>{item.name} · {item.symbol}</option>)}</select></label>}
               <div className="analytics-field-label"><CalendarDays size={15} />Period</div>
-              <div className="analytics-periods">{PERIODS.map(item => <button key={item} type="button" className={period === item ? 'selected' : ''} onClick={() => setPeriod(item)}>{item}</button>)}</div>
+              <div className="analytics-periods">{PERIODS.map(item => <button key={item} type="button" className={period === item ? 'selected' : ''} onClick={() => { setPeriod(item); invalidateMarketData() }}>{item}</button>)}</div>
               <div className="analytics-two-fields">
-                <label>Metric<select value={metric} onChange={event => setMetric(event.target.value)}><option>Price performance</option><option>Market capitalization</option><option>Trading volume</option><option>OHLC candles</option></select></label>
+                <label>Metric<select value={metric} onChange={event => { setMetric(event.target.value); invalidateMarketData() }}><option>Price performance</option><option disabled>Market capitalization · coming soon</option><option disabled>Trading volume · coming soon</option><option disabled>OHLC candles · coming soon</option></select></label>
                 <label>Output format<select value={format} onChange={event => setFormat(event.target.value)}><option>Portrait · 1080 × 1350</option><option>Square · 1080 × 1080</option><option>Story · 1080 × 1920</option><option>Landscape · 1600 × 900</option></select></label>
               </div>
-              <div className="analytics-data-note"><span>Sample mode</span>Contract and pool mappings are still required before these figures become live.</div>
+              <div className="analytics-data-note"><span>Live check</span>Step 4 discovers the most liquid verified pool and extracts historical prices from public market APIs.</div>
             </section>
 
             <section className="analytics-control-section">
@@ -205,18 +307,26 @@ export default function AnalyticsPage() {
               </div>
             </section>
 
+            <section className="analytics-control-section analytics-verification-controls">
+              <div className="analytics-section-heading"><span>04</span><div><h2>Verify the extracted chart</h2><p>Fetch the public price history and inspect the simple chart before using AI.</p></div></div>
+              <button type="button" className="analytics-verify" disabled={verifying} onClick={verifyMarketData}>{verifying ? <><span className="analytics-spinner" />Extracting price history…</> : <><RefreshCw size={16} />Fetch and verify chart data</>}</button>
+              {verificationError && <p className="analytics-error">{verificationError}</p>}
+              {marketData && <VerifiedChart data={marketData} token={token} />}
+            </section>
+
             <section className="analytics-control-section analytics-generation-controls">
-              <div className="analytics-section-heading"><span>04</span><div><h2>Generate the art layer</h2><p>The model styles the background; RZWire keeps every number exact.</p></div></div>
+              <div className="analytics-section-heading"><span>05</span><div><h2>Generate the art layer</h2><p>The model styles the background after the chart data is verified.</p></div></div>
               <label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
               <label>Creative direction<textarea rows="3" value={direction} onChange={event => setDirection(event.target.value)} /></label>
-              <button type="button" className="analytics-generate" disabled={generating} onClick={generateBackground}>{generating ? <><span className="analytics-spinner" />Generating art layer…</> : <><Sparkles size={17} />Generate visual background<ArrowRight size={17} /></>}</button>
+              {!marketData && <div className="analytics-generation-lock"><Database size={15} />Verify the chart in step 4 to unlock image generation.</div>}
+              <button type="button" className="analytics-generate" disabled={generating || !marketData} onClick={generateBackground}>{generating ? <><span className="analytics-spinner" />Generating art layer…</> : <><Sparkles size={17} />Generate visual background<ArrowRight size={17} /></>}</button>
               {error && <p className="analytics-error">{error}</p>}
             </section>
           </aside>
 
           <section className="analytics-preview-column">
             <div className="analytics-preview-head"><div><p>Live composition preview</p><h2>{selectedTemplate.name}</h2></div><span>{format}</span></div>
-            <ChartPreview token={token} compare={compare} compareEnabled={compareEnabled} period={period} metric={metric} template={template} generatedBackground={generatedBackground} />
+            <ChartPreview token={token} compare={compare} compareEnabled={compareEnabled} period={period} metric={metric} template={template} generatedBackground={generatedBackground} marketData={marketData} />
             <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Hybrid image composition</strong>The image model cannot change the chart, prices, dates, percentages, logos, or source attribution.</span></div>
           </section>
         </div>
