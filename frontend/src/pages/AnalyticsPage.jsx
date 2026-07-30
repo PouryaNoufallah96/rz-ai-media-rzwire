@@ -6,6 +6,10 @@ import { API_BASE, IMAGE_MODEL_OPTIONS } from '../store/mmStore'
 import mgcLogo from '../assets/brands/mgc-coin-logo.png'
 import oasisLogo from '../assets/brands/oasis-coin-logo.png'
 import jewelryLogo from '../assets/brands/jewelry-coin-logo.png'
+import phoneTemplate from '../assets/analytics-templates/phone-comparison.png'
+import desktopTemplate from '../assets/analytics-templates/desktop-dashboard.png'
+import growthTemplate from '../assets/analytics-templates/growth-spotlight.png'
+import winnerLoserTemplate from '../assets/analytics-templates/winner-loser.png'
 import './AnalyticsPage.css'
 
 const TOKENS = [
@@ -24,10 +28,10 @@ const COMPARE_TOKENS = [
 const PERIODS = ['24h', '7d', '30d', '90d', '1y']
 
 const TEMPLATES = [
-  { id:'phone', name:'Phone comparison', description:'Two indexed price lines inside a mobile market view.', icon:'phone' },
-  { id:'laptop', name:'Dashboard frame', description:'Wide chart presentation inside a premium laptop frame.', icon:'laptop' },
-  { id:'growth', name:'Growth spotlight', description:'One coin, start and end values, and a bold growth claim.', icon:'growth' },
-  { id:'native', name:'Clean RZWire chart', description:'Original chart with no third-party interface or device.', icon:'native' },
+  { id:'phone', name:'Phone comparison', description:'Two indexed price lines inside a mobile market view.', image:phoneTemplate },
+  { id:'laptop', name:'Desktop dashboard', description:'Wide chart presentation inside a premium laptop frame.', image:desktopTemplate },
+  { id:'growth', name:'Growth spotlight', description:'One coin, start and end values, and a bold growth claim.', image:growthTemplate },
+  { id:'winner', name:'Winner vs loser', description:'A high-contrast comparison that makes the result immediate.', image:winnerLoserTemplate },
 ]
 
 const SERIES = {
@@ -74,10 +78,18 @@ function VerifiedChart({ data, token }) {
   const primary = percentValues(data.primary.points)
   const comparison = data.comparison ? percentValues(data.comparison.points) : []
   const allValues = [...primary, ...comparison, 0]
-  const min = Math.min(...allValues)
-  const max = Math.max(...allValues)
-  const firstDate = new Date(data.primary.points[0].timestamp * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric'})
-  const lastDate = new Date(data.primary.points.at(-1).timestamp * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric'})
+  const rawMin = Math.min(...allValues)
+  const rawMax = Math.max(...allValues)
+  const padding = Math.max(1, (rawMax - rawMin) * .12)
+  const min = rawMin - padding
+  const max = rawMax + padding
+  const chart = { left:76, right:654, top:24, bottom:252 }
+  const yFor = value => chart.bottom - ((value - min) / Math.max(.000001, max - min)) * (chart.bottom - chart.top)
+  const xFor = index => chart.left + index * ((chart.right - chart.left) / Math.max(1, primary.length - 1))
+  const lineFor = values => values.map((value, index) => `${xFor(index).toFixed(1)},${yFor(value).toFixed(1)}`).join(' ')
+  const yTicks = Array.from({length:5}, (_, index) => max - index * ((max - min) / 4))
+  const dateIndexes = Array.from(new Set([0, Math.round((primary.length - 1) * .25), Math.round((primary.length - 1) * .5), Math.round((primary.length - 1) * .75), primary.length - 1]))
+  const startPrice = Number(data.primary.startPrice) || 0
 
   return (
     <div className="analytics-verified-chart">
@@ -90,13 +102,26 @@ function VerifiedChart({ data, token }) {
         <div><small>{data.primary.symbol} latest</small><strong>{formatPrice(data.primary.endPrice)}</strong></div>
         <div><small>Period change</small><strong className={data.primary.changePercent >= 0 ? 'positive' : 'negative'}>{data.primary.changePercent >= 0 ? '+' : ''}{data.primary.changePercent.toFixed(2)}%</strong></div>
       </div>
-      <svg viewBox="0 0 620 220" role="img" aria-label={`Verified ${data.primary.symbol} price chart`}>
-        <path className="analytics-chart-grid" d="M18 40H602M18 95H602M18 150H602M18 202H602" />
-        <line className="analytics-chart-zero" x1="18" y1={220 - 18 - ((0 - min) / Math.max(.000001, max - min)) * 184} x2="602" y2={220 - 18 - ((0 - min) / Math.max(.000001, max - min)) * 184} />
-        <polyline className="analytics-series" style={{stroke:token.color}} points={domainPoints(primary, min, max)} />
-        {comparison.length > 0 && <polyline className="analytics-series analytics-series--compare" points={domainPoints(comparison, min, max)} />}
+      <div className="analytics-axis-title"><span>{data.primary.symbol} price (USD)</span><span>Indexed change</span></div>
+      <svg viewBox="0 0 720 292" role="img" aria-label={`Verified ${data.primary.symbol} price chart with USD and percentage axes`}>
+        {yTicks.map((tick, index) => {
+          const y = yFor(tick)
+          const tickPrice = startPrice * (1 + tick / 100)
+          return <g key={`y-${index}`}>
+            <line className="analytics-chart-grid-line" x1={chart.left} y1={y} x2={chart.right} y2={y} />
+            <text className="analytics-axis-text analytics-axis-text--left" x={chart.left - 10} y={y + 4}>{formatPrice(tickPrice)}</text>
+            <text className="analytics-axis-text" x={chart.right + 10} y={y + 4}>{tick >= 0 ? '+' : ''}{tick.toFixed(1)}%</text>
+          </g>
+        })}
+        {dateIndexes.map(index => {
+          const x = xFor(index)
+          const label = new Date(data.primary.points[index].timestamp * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric'})
+          return <text key={`x-${index}`} className="analytics-axis-text analytics-axis-text--date" x={x} y="281">{label}</text>
+        })}
+        <line className="analytics-chart-zero" x1={chart.left} y1={yFor(0)} x2={chart.right} y2={yFor(0)} />
+        <polyline className="analytics-series analytics-series--verified" style={{stroke:token.color}} points={lineFor(primary)} />
+        {comparison.length > 0 && <polyline className="analytics-series analytics-series--compare" points={lineFor(comparison)} />}
       </svg>
-      <div className="analytics-verified-axis"><span>{firstDate}</span><span>Indexed change from 0%</span><span>{lastDate}</span></div>
       <div className="analytics-chart-legend">
         <span><i style={{background:token.color}} />{data.primary.symbol}</span>
         {data.comparison && <span><i className="compare-dot" />{data.comparison.symbol}</span>}
@@ -108,19 +133,7 @@ function VerifiedChart({ data, token }) {
   )
 }
 
-function TemplateMiniature({ type }) {
-  return (
-    <div className={`analytics-template-mini analytics-template-mini--${type}`} aria-hidden="true">
-      <span className="analytics-mini-title" />
-      <span className="analytics-mini-device">
-        <i /><i /><i />
-      </span>
-      <span className="analytics-mini-footer" />
-    </div>
-  )
-}
-
-function ChartPreview({ token, compare, compareEnabled, period, metric, template, generatedBackground, marketData }) {
+function ChartPreview({ token, compare, compareEnabled, period, metric, template, generatedBackground, marketData, headline, chartText }) {
   const livePrimary = marketData ? percentValues(marketData.primary.points) : null
   const liveComparison = marketData?.comparison ? percentValues(marketData.comparison.points) : null
   const primaryPoints = livePrimary ? points(livePrimary) : points(SERIES[token.id])
@@ -140,7 +153,7 @@ function ChartPreview({ token, compare, compareEnabled, period, metric, template
       <header>
         <div>
           <p>{period === '30d' ? '1 month' : period} {compareEnabled ? 'comparison' : 'movement'}</p>
-          <h2>{title}</h2>
+          <h2>{headline || title}</h2>
         </div>
         <img src={token.logo} alt={`${token.name} logo`} />
       </header>
@@ -163,7 +176,7 @@ function ChartPreview({ token, compare, compareEnabled, period, metric, template
         </div>
       </div>
 
-      <div className="analytics-poster-result">{result}</div>
+      <div className="analytics-poster-result">{chartText || result}</div>
       <footer><span>RZWire Market Analytics</span><span>{marketData ? 'Verified public market feed' : 'Source added after live connection'}</span></footer>
     </div>
   )
@@ -185,6 +198,9 @@ export default function AnalyticsPage() {
   const [marketData, setMarketData] = useState(null)
   const [verifying, setVerifying] = useState(false)
   const [verificationError, setVerificationError] = useState('')
+  const [chartApproved, setChartApproved] = useState(false)
+  const [headline, setHeadline] = useState('30-day market comparison')
+  const [chartText, setChartText] = useState('Verified movement, presented with exact market data.')
 
   const token = TOKENS.find(item => item.id === tokenId) || TOKENS[0]
   const compare = COMPARE_TOKENS.find(item => item.symbol === compareSymbol) || COMPARE_TOKENS[0]
@@ -196,6 +212,7 @@ export default function AnalyticsPage() {
 
   function invalidateMarketData() {
     setMarketData(null)
+    setChartApproved(false)
     setVerificationError('')
     setGeneratedBackground('')
   }
@@ -205,6 +222,7 @@ export default function AnalyticsPage() {
     setVerifying(true)
     setVerificationError('')
     setMarketData(null)
+    setChartApproved(false)
     setGeneratedBackground('')
     try {
       const params = new URLSearchParams({token:tokenId, period})
@@ -215,6 +233,11 @@ export default function AnalyticsPage() {
         throw new Error(data.error || 'The public market feed did not return a verified chart.')
       }
       setMarketData(data)
+      const comparisonText = data.comparison
+        ? `${data.primary.symbol} ${data.primary.changePercent >= 0 ? 'rose' : 'fell'} ${Math.abs(data.primary.changePercent).toFixed(2)}% while ${data.comparison.symbol} ${data.comparison.changePercent >= 0 ? 'rose' : 'fell'} ${Math.abs(data.comparison.changePercent).toFixed(2)}%.`
+        : `${data.primary.symbol} moved from ${formatPrice(data.primary.startPrice)} to ${formatPrice(data.primary.endPrice)}.`
+      setHeadline(data.comparison ? `${data.primary.symbol} vs ${data.comparison.symbol}` : `${data.primary.symbol} price movement`)
+      setChartText(comparisonText)
     } catch (err) {
       setVerificationError(err.message || 'Price extraction failed.')
     } finally {
@@ -224,8 +247,8 @@ export default function AnalyticsPage() {
 
   async function generateBackground() {
     if (generating) return
-    if (!marketData?.verified) {
-      setError('Verify the chart data before generating the image background.')
+    if (!marketData?.verified || !chartApproved) {
+      setError('Approve the verified chart and axes before generating the image background.')
       return
     }
     setGenerating(true)
@@ -236,13 +259,13 @@ export default function AnalyticsPage() {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          article:{title:`${summary}. Template: ${selectedTemplate.name}`},
+          article:{title:headline || `${summary}. Template: ${selectedTemplate.name}`},
           platform:'Instagram',
           mediaBrand:token.brand,
           sentiment:token.change >= 0 ? 'Bullish' : 'Bearish',
           model:imageModel,
-          copy:`Create the decorative art layer for a verified market analytics post about ${summary}. Verified change: ${marketData.primary.changePercent.toFixed(2)}%.`,
-          imageDirection:`${direction} Generate background artwork only. Leave generous uncluttered space for an exact data chart, token logo, headline, dates, and statistics that will be overlaid later by RZWire. Do not render charts, interfaces, devices, logos, letters, numbers, prices, percentages, tickers, watermarks, or captions.`,
+          copy:`${chartText} Verified market view: ${summary}. Selected publishing style: ${selectedTemplate.name}.`,
+          imageDirection:`${direction} Use the visual hierarchy of the selected ${selectedTemplate.name} example, but generate background artwork only. Leave generous uncluttered space for the approved chart, token logo, header, dates, and statistics that will be overlaid later by RZWire. Do not render charts, interfaces, devices, logos, letters, numbers, prices, percentages, tickers, watermarks, or captions.`,
         }),
       })
       const data = await response.json().catch(() => ({}))
@@ -266,14 +289,14 @@ export default function AnalyticsPage() {
             <p>Choose the market data first, select a reusable design, then let an image model create only the decorative art layer around an accurate RZWire chart.</p>
           </div>
           <div className="analytics-steps" aria-label="Analytics post workflow">
-            <span className="active"><b>1</b>Data</span><i /><span><b>2</b>Design</span><i /><span><b>3</b>Verify</span><i /><span><b>4</b>Generate</span>
+            <span className="active"><b>1</b>Market</span><i /><span><b>2</b>Chart</span><i /><span><b>3</b>Copy</span><i /><span><b>4</b>Style</span><i /><span><b>5</b>Generate</span>
           </div>
         </section>
 
-        <div className="analytics-layout">
+        <div className="analytics-layout analytics-layout--storyboard">
           <aside className="analytics-controls">
-            <section className="analytics-control-section">
-              <div className="analytics-section-heading"><span>01</span><div><h2>Select a token</h2><p>Three RZWire coins are ready for initial setup.</p></div></div>
+            <section className="analytics-control-section analytics-setup-section">
+              <div className="analytics-section-heading"><span>01A</span><div><h2>Select a token</h2><p>Three RZWire coins are ready for initial setup.</p></div></div>
               <div className="analytics-token-grid">
                 {TOKENS.map(item => (
                   <button key={item.id} type="button" className={tokenId === item.id ? 'selected' : ''} onClick={() => { setTokenId(item.id); invalidateMarketData() }}>
@@ -283,8 +306,8 @@ export default function AnalyticsPage() {
               </div>
             </section>
 
-            <section className="analytics-control-section">
-              <div className="analytics-section-heading"><span>02</span><div><h2>Define the market view</h2><p>Choose the period, metric, and optional comparison.</p></div></div>
+            <section className="analytics-control-section analytics-market-section">
+              <div className="analytics-section-heading"><span>01B</span><div><h2>Define the market view</h2><p>Choose the period, metric, and optional comparison.</p></div></div>
               <label className="analytics-switch"><input type="checkbox" checked={compareEnabled} onChange={event => { setCompareEnabled(event.target.checked); invalidateMarketData() }} /><span />Compare with another coin</label>
               {compareEnabled && <label>Comparison coin<select value={compareSymbol} onChange={event => { setCompareSymbol(event.target.value); invalidateMarketData() }}>{COMPARE_TOKENS.map(item => <option key={item.symbol} value={item.symbol}>{item.name} · {item.symbol}</option>)}</select></label>}
               <div className="analytics-field-label"><CalendarDays size={15} />Period</div>
@@ -293,42 +316,61 @@ export default function AnalyticsPage() {
                 <label>Metric<select value={metric} onChange={event => { setMetric(event.target.value); invalidateMarketData() }}><option>Price performance</option><option disabled>Market capitalization · coming soon</option><option disabled>Trading volume · coming soon</option><option disabled>OHLC candles · coming soon</option></select></label>
                 <label>Output format<select value={format} onChange={event => setFormat(event.target.value)}><option>Portrait · 1080 × 1350</option><option>Square · 1080 × 1080</option><option>Story · 1080 × 1920</option><option>Landscape · 1600 × 900</option></select></label>
               </div>
-              <div className="analytics-data-note"><span>Live check</span>Step 4 discovers the most liquid verified pool and extracts historical prices from public market APIs.</div>
+              <div className="analytics-data-note"><span>Live check</span>The chart step discovers the most liquid verified pool and extracts historical prices from public market APIs.</div>
             </section>
 
-            <section className="analytics-control-section">
-              <div className="analytics-section-heading"><span>03</span><div><h2>Choose a template</h2><p>These samples preserve exact data as a locked chart layer.</p></div></div>
-              <div className="analytics-template-grid">
+            {chartApproved && <section className="analytics-control-section analytics-copy-section">
+              <div className="analytics-section-heading"><span>03</span><div><h2>Write the story</h2><p>Add the header and chart statement that will accompany the approved data.</p></div></div>
+              <label>Header<input value={headline} onChange={event => setHeadline(event.target.value)} /></label>
+              <label>Chart text<textarea rows="4" value={chartText} onChange={event => setChartText(event.target.value)} /></label>
+            </section>}
+
+            {chartApproved && <section className="analytics-control-section analytics-template-section">
+              <div className="analytics-section-heading"><span>04</span><div><h2>Choose how to publish it</h2><p>Select one of the approved visual examples. The exact reference image is shown here.</p></div></div>
+              <div className="analytics-template-grid analytics-template-grid--exact">
                 {TEMPLATES.map(item => (
                   <button key={item.id} type="button" className={template === item.id ? 'selected' : ''} onClick={() => setTemplate(item.id)}>
-                    <TemplateMiniature type={item.icon} /><strong>{item.name}</strong><small>{item.description}</small>
+                    <img src={item.image} alt={`${item.name} publishing example`} />
+                    <span><strong>{item.name}</strong><small>{item.description}</small></span>
+                    {template === item.id && <Check size={16} />}
                   </button>
                 ))}
               </div>
-            </section>
+            </section>}
 
             <section className="analytics-control-section analytics-verification-controls">
-              <div className="analytics-section-heading"><span>04</span><div><h2>Verify the extracted chart</h2><p>Fetch the public price history and inspect the simple chart before using AI.</p></div></div>
+              <div className="analytics-section-heading"><span>02</span><div><h2>Approve the white source chart</h2><p>Inspect prices, percentage scale, dates, and both axes before choosing any publishing design.</p></div></div>
               <button type="button" className="analytics-verify" disabled={verifying} onClick={verifyMarketData}>{verifying ? <><span className="analytics-spinner" />Extracting price history…</> : <><RefreshCw size={16} />Fetch and verify chart data</>}</button>
               {verificationError && <p className="analytics-error">{verificationError}</p>}
-              {marketData && <VerifiedChart data={marketData} token={token} />}
+              {!marketData && !verifying && <div className="analytics-proof-empty"><LineChart size={28} /><strong>Your verified chart will appear here</strong><span>Fetch the public price history to review a clean white chart before continuing.</span></div>}
+              {marketData && <>
+                <VerifiedChart data={marketData} token={token} />
+                <div className="analytics-chart-approval">
+                  <div><strong>{chartApproved ? 'Chart approved' : 'Check every label before continuing'}</strong><span>{chartApproved ? 'Copy, publishing examples, and image generation are now unlocked.' : 'Confirm the prices, axes, dates, comparison, and source attribution.'}</span></div>
+                  <button type="button" className={chartApproved ? 'approved' : ''} onClick={() => setChartApproved(true)}>{chartApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve chart and axes</>}</button>
+                </div>
+              </>}
             </section>
 
-            <section className="analytics-control-section analytics-generation-controls">
-              <div className="analytics-section-heading"><span>05</span><div><h2>Generate the art layer</h2><p>The model styles the background after the chart data is verified.</p></div></div>
+            {chartApproved && <section className="analytics-control-section analytics-generation-controls">
+              <div className="analytics-section-heading"><span>05</span><div><h2>Generate the art layer</h2><p>The model styles the background around the locked chart, approved header, and chart text.</p></div></div>
               <label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
               <label>Creative direction<textarea rows="3" value={direction} onChange={event => setDirection(event.target.value)} /></label>
-              {!marketData && <div className="analytics-generation-lock"><Database size={15} />Verify the chart in step 4 to unlock image generation.</div>}
-              <button type="button" className="analytics-generate" disabled={generating || !marketData} onClick={generateBackground}>{generating ? <><span className="analytics-spinner" />Generating art layer…</> : <><Sparkles size={17} />Generate visual background<ArrowRight size={17} /></>}</button>
+              <button type="button" className="analytics-generate" disabled={generating || !marketData || !chartApproved} onClick={generateBackground}>{generating ? <><span className="analytics-spinner" />Generating art layer…</> : <><Sparkles size={17} />Generate visual background<ArrowRight size={17} /></>}</button>
               {error && <p className="analytics-error">{error}</p>}
-            </section>
+            </section>}
           </aside>
 
-          <section className="analytics-preview-column">
-            <div className="analytics-preview-head"><div><p>Live composition preview</p><h2>{selectedTemplate.name}</h2></div><span>{format}</span></div>
-            <ChartPreview token={token} compare={compare} compareEnabled={compareEnabled} period={period} metric={metric} template={template} generatedBackground={generatedBackground} marketData={marketData} />
+          {chartApproved && <section className="analytics-preview-column">
+            <div className="analytics-preview-head"><div><p>Publishing preview</p><h2>{selectedTemplate.name}</h2></div><span>{format}</span></div>
+            <div className="analytics-reference-sample">
+              <div><strong>Exact style reference</strong><span>This is the approved example selected above.</span></div>
+              <img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact style reference`} />
+            </div>
+            <div className="analytics-live-output-label"><span>RZWire composition</span><small>Your approved chart, header, and chart text remain locked.</small></div>
+            <ChartPreview token={token} compare={compare} compareEnabled={compareEnabled} period={period} metric={metric} template={template} generatedBackground={generatedBackground} marketData={marketData} headline={headline} chartText={chartText} />
             <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Hybrid image composition</strong>The image model cannot change the chart, prices, dates, percentages, logos, or source attribution.</span></div>
-          </section>
+          </section>}
         </div>
       </main>
       <ChatWidget />
