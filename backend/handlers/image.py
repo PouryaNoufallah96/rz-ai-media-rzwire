@@ -104,13 +104,26 @@ def handle_generate_image(body):
     copy_text = body.get('copy', '')
     image_direction = body.get('imageDirection', '').strip()
     ref_images = body.get('referenceImages', []) or []
+    composition_mode = body.get('compositionMode', '').strip()
     language = body.get('language', 'en')
     if model not in OPENROUTER_IMAGE_MODELS:
         raise ValueError('Unsupported image generation model')
 
     profile = BRAND_IMAGE_PROFILES.get(media)
     brief = None
-    if profile:
+    if composition_mode == 'analytics_post':
+        if len(ref_images) < 2:
+            raise ValueError('Analytics post composition requires a design reference and an approved chart reference.')
+        prompt = (
+            'Create a single finished premium financial social-media post using the two supplied images. '
+            'The FIRST image is the visual-layout reference. The SECOND image is the authoritative approved market chart. '
+            'Follow the first image for composition, lighting, device framing, spacing, and atmosphere. '
+            'Place the second image fully inside the device screen, preserving its complete axes, dates, lines, labels, '
+            'values, proportions, and geometry. Do not crop the approved chart or fabricate market information. '
+            f'Brand identity: {media}. Platform: {platform}. Story copy: {copy_text}. '
+            'Return one polished publication-ready post, not a background, mockup description, or editable wireframe. '
+        )
+    elif profile:
         recent     = _RECENT_BRIEFS.get(media, [])
         brand_mode = _article_mentions_brand(article, profile)
         # Art-Director LLM call (Stage 1). If it fails for ANY reason — empty

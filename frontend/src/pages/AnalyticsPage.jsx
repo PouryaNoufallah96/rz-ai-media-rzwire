@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { ArrowRight, CalendarDays, Check, CircleCheck, ImageIcon, LineChart, RefreshCw, Sparkles } from 'lucide-react'
 import NavBar from '../components/NavBar'
 import ChatWidget from '../components/chat/ChatWidget'
@@ -74,7 +74,58 @@ function formatPrice(value) {
   return amount.toLocaleString('en-US', {style:'currency', currency:'USD', maximumFractionDigits:digits})
 }
 
-function VerifiedChart({ data, token }) {
+function assetToDataUrl(url) {
+  return fetch(url).then(response => {
+    if (!response.ok) throw new Error('The selected reference image could not be loaded.')
+    return response.blob()
+  }).then(blob => new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = () => reject(new Error('The selected reference image could not be prepared.'))
+    reader.readAsDataURL(blob)
+  }))
+}
+
+function chartToPngDataUrl(svgElement) {
+  if (!svgElement) return Promise.reject(new Error('The approved chart is not available for composition.'))
+  const clone = svgElement.cloneNode(true)
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+  const style = document.createElementNS('http://www.w3.org/2000/svg', 'style')
+  style.textContent = `
+    text{font-family:Inter,Arial,sans-serif}
+    .analytics-chart-grid-line{stroke:#dcd9d2;stroke-width:1}
+    .analytics-axis-text{fill:#73777f;font-size:10px}
+    .analytics-axis-text--left{text-anchor:end}
+    .analytics-axis-text--date{text-anchor:middle}
+    .analytics-chart-zero{stroke:#969a9f;stroke-width:1;stroke-dasharray:5 4}
+    .analytics-series{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+    .analytics-series--compare{stroke:#c9877f}
+  `
+  clone.prepend(style)
+  const source = new XMLSerializer().serializeToString(clone)
+  const blobUrl = URL.createObjectURL(new Blob([source], {type:'image/svg+xml;charset=utf-8'}))
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 1440
+      canvas.height = 584
+      const context = canvas.getContext('2d')
+      context.fillStyle = '#fbfaf7'
+      context.fillRect(0, 0, canvas.width, canvas.height)
+      context.drawImage(image, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(blobUrl)
+      resolve(canvas.toDataURL('image/png'))
+    }
+    image.onerror = () => {
+      URL.revokeObjectURL(blobUrl)
+      reject(new Error('The approved chart could not be prepared for image generation.'))
+    }
+    image.src = blobUrl
+  })
+}
+
+function VerifiedChart({ data, token, chartRef }) {
   const primaryPoints = data.primary.points
   const comparisonPoints = data.comparison?.points || []
   const primary = percentValues(primaryPoints)
@@ -98,7 +149,7 @@ function VerifiedChart({ data, token }) {
 
   return (
     <div className="analytics-verified-chart">
-      <svg className="analytics-proof-svg" viewBox="0 0 720 292" role="img" aria-label={`Complete ${data.period} ${data.primary.symbol} price chart with USD and percentage axes`}>
+      <svg ref={chartRef} className="analytics-proof-svg" viewBox="0 0 720 292" role="img" aria-label={`Complete ${data.period} ${data.primary.symbol} price chart with USD and percentage axes`}>
         {yTicks.map((tick, index) => {
           const y = yFor(tick)
           const tickPrice = startPrice * (1 + tick / 100)
@@ -175,15 +226,16 @@ function ChartPreview({ token, compare, compareEnabled, period, metric, template
 }
 
 export default function AnalyticsPage() {
+  const chartSvgRef = useRef(null)
   const [tokenId, setTokenId] = useState('mgc')
   const [compareEnabled, setCompareEnabled] = useState(true)
   const [compareSymbol, setCompareSymbol] = useState('XRP')
   const [period, setPeriod] = useState('30d')
   const [metric, setMetric] = useState('Price performance')
   const [format, setFormat] = useState('Portrait · 1080 × 1350')
-  const [template, setTemplate] = useState('phone')
+  const [template, setTemplate] = useState('laptop')
   const [imageModel, setImageModel] = useState('openai/gpt-5.4-image-2')
-  const [direction, setDirection] = useState('Premium financial editorial background, restrained lighting, clear central chart zone, no text or numbers.')
+  const [direction, setDirection] = useState('Premium financial editorial composition with restrained lighting, a centered laptop, generous spacing, and a clearly readable chart screen.')
   const [generatedBackground, setGeneratedBackground] = useState('')
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
@@ -247,6 +299,10 @@ export default function AnalyticsPage() {
     setError('')
     setGeneratedBackground('')
     try {
+      const [referenceImage, approvedChart] = await Promise.all([
+        assetToDataUrl(selectedTemplate.image),
+        chartToPngDataUrl(chartSvgRef.current),
+      ])
       const response = await fetch(`${API_BASE}/api/image/generate`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -256,15 +312,17 @@ export default function AnalyticsPage() {
           mediaBrand:token.brand,
           sentiment:token.change >= 0 ? 'Bullish' : 'Bearish',
           model:imageModel,
-          copy:`${chartText} Verified market view: ${summary}. Selected publishing style: ${selectedTemplate.name}.`,
-          imageDirection:`${direction} Use the visual hierarchy of the selected ${selectedTemplate.name} example, but generate background artwork only. Leave generous uncluttered space for the approved chart, token logo, header, dates, and statistics that will be overlaid later by RZWire. Do not render charts, interfaces, devices, logos, letters, numbers, prices, percentages, tickers, watermarks, or captions.`,
+          compositionMode:'analytics_post',
+          copy:chartText,
+          referenceImages:[referenceImage, approvedChart],
+          imageDirection:`Create one finished ${format} financial social post. REFERENCE IMAGE 1 is the exact visual composition and device style to follow. REFERENCE IMAGE 2 is the approved factual chart. Place REFERENCE IMAGE 2 clearly and completely inside the laptop or device screen from REFERENCE IMAGE 1. Keep every chart line, date, axis, price, percentage, ticker, and relative position from REFERENCE IMAGE 2 unchanged and readable. Use this exact header: "${headline}". Use this supporting chart text: "${chartText}". Brand: ${token.brand}. Market view: ${summary}. ${direction} Do not add invented prices, percentages, dates, logos, charts, watermarks, UI panels, or unrelated copy. The result must be a polished, publication-ready post rather than a background.`,
         }),
       })
       const data = await response.json().catch(() => ({}))
-      if (!response.ok || !data.imageB64) throw new Error(data.error || 'The image model did not return a background.')
+      if (!response.ok || !data.imageB64) throw new Error(data.error || 'The image model did not return a finished post.')
       setGeneratedBackground(data.imageB64)
     } catch (err) {
-      setError(err.message || 'Background generation failed.')
+      setError(err.message || 'Post generation failed.')
     } finally {
       setGenerating(false)
     }
@@ -336,7 +394,7 @@ export default function AnalyticsPage() {
               {verificationError && <p className="analytics-error">{verificationError}</p>}
               {!marketData && !verifying && <div className="analytics-proof-empty"><LineChart size={28} /><strong>Your verified chart will appear here</strong><span>Fetch the public price history to review a clean white chart before continuing.</span></div>}
               {marketData && <>
-                <VerifiedChart data={marketData} token={token} />
+                <VerifiedChart data={marketData} token={token} chartRef={chartSvgRef} />
                 <div className="analytics-chart-approval">
                   <div><strong>{chartApproved ? 'Chart approved' : 'Check every label before continuing'}</strong><span>{chartApproved ? 'Copy, publishing examples, and image generation are now unlocked.' : 'Confirm the prices, axes, dates, comparison, and source attribution.'}</span></div>
                   <button type="button" className={chartApproved ? 'approved' : ''} onClick={() => setChartApproved(true)}>{chartApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve chart and axes</>}</button>
@@ -345,10 +403,10 @@ export default function AnalyticsPage() {
             </section>
 
             {chartApproved && <section className="analytics-control-section analytics-generation-controls">
-              <div className="analytics-section-heading"><span>05</span><div><h2>Generate the art layer</h2><p>The model styles the background around the locked chart, approved header, and chart text.</p></div></div>
+              <div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished post</h2><p>The model receives the selected reference and approved chart as two separate images, then places the chart inside the reference device.</p></div></div>
               <label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
               <label>Creative direction<textarea rows="3" value={direction} onChange={event => setDirection(event.target.value)} /></label>
-              <button type="button" className="analytics-generate" disabled={generating || !marketData || !chartApproved} onClick={generateBackground}>{generating ? <><span className="analytics-spinner" />Generating art layer…</> : <><Sparkles size={17} />Generate visual background<ArrowRight size={17} /></>}</button>
+              <button type="button" className="analytics-generate" disabled={generating || !marketData || !chartApproved} onClick={generateBackground}>{generating ? <><span className="analytics-spinner" />Composing finished post…</> : <><Sparkles size={17} />Generate finished post<ArrowRight size={17} /></>}</button>
               {error && <p className="analytics-error">{error}</p>}
             </section>}
           </aside>
@@ -359,9 +417,11 @@ export default function AnalyticsPage() {
               <div><strong>Exact style reference</strong><span>This is the approved example selected above.</span></div>
               <img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact style reference`} />
             </div>
-            <div className="analytics-live-output-label"><span>RZWire composition</span><small>Your approved chart, header, and chart text remain locked.</small></div>
-            <ChartPreview token={token} compare={compare} compareEnabled={compareEnabled} period={period} metric={metric} template={template} generatedBackground={generatedBackground} marketData={marketData} headline={headline} chartText={chartText} />
-            <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Hybrid image composition</strong>The image model cannot change the chart, prices, dates, percentages, logos, or source attribution.</span></div>
+            <div className="analytics-live-output-label"><span>{generatedBackground ? 'Generated finished post' : 'RZWire composition preview'}</span><small>The reference and approved chart are supplied separately to the image model.</small></div>
+            {generatedBackground
+              ? <img className="analytics-generated-post" src={`data:image/png;base64,${generatedBackground}`} alt="Generated RZWire analytics post" />
+              : <ChartPreview token={token} compare={compare} compareEnabled={compareEnabled} period={period} metric={metric} template={template} marketData={marketData} headline={headline} chartText={chartText} />}
+            <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Two-reference composition</strong>The first image controls the laptop and visual style. The second image supplies the complete approved chart for the laptop screen.</span></div>
           </section>}
         </div>
       </main>
