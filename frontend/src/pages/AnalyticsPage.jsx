@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ArrowRight, CalendarDays, Check, CircleCheck, Database, ImageIcon, LineChart, RefreshCw, Sparkles } from 'lucide-react'
+import { ArrowRight, CalendarDays, Check, CircleCheck, ImageIcon, LineChart, RefreshCw, Sparkles } from 'lucide-react'
 import NavBar from '../components/NavBar'
 import ChatWidget from '../components/chat/ChatWidget'
 import { API_BASE, IMAGE_MODEL_OPTIONS } from '../store/mmStore'
@@ -75,35 +75,30 @@ function formatPrice(value) {
 }
 
 function VerifiedChart({ data, token }) {
-  const primary = percentValues(data.primary.points)
-  const comparison = data.comparison ? percentValues(data.comparison.points) : []
+  const primaryPoints = data.primary.points
+  const comparisonPoints = data.comparison?.points || []
+  const primary = percentValues(primaryPoints)
+  const comparison = percentValues(comparisonPoints)
   const allValues = [...primary, ...comparison, 0]
   const rawMin = Math.min(...allValues)
   const rawMax = Math.max(...allValues)
   const padding = Math.max(1, (rawMax - rawMin) * .12)
   const min = rawMin - padding
   const max = rawMax + padding
-  const chart = { left:76, right:654, top:24, bottom:252 }
+  const chart = { left:88, right:632, top:24, bottom:252 }
   const yFor = value => chart.bottom - ((value - min) / Math.max(.000001, max - min)) * (chart.bottom - chart.top)
-  const xFor = index => chart.left + index * ((chart.right - chart.left) / Math.max(1, primary.length - 1))
-  const lineFor = values => values.map((value, index) => `${xFor(index).toFixed(1)},${yFor(value).toFixed(1)}`).join(' ')
+  const timestamps = [...primaryPoints, ...comparisonPoints].map(point => Number(point.timestamp)).filter(Number.isFinite)
+  const firstTimestamp = Math.min(...timestamps)
+  const lastTimestamp = Math.max(...timestamps)
+  const xFor = timestamp => chart.left + ((Number(timestamp) - firstTimestamp) / Math.max(1, lastTimestamp - firstTimestamp)) * (chart.right - chart.left)
+  const lineFor = (items, values) => items.map((item, index) => `${xFor(item.timestamp).toFixed(1)},${yFor(values[index]).toFixed(1)}`).join(' ')
   const yTicks = Array.from({length:5}, (_, index) => max - index * ((max - min) / 4))
-  const dateIndexes = Array.from(new Set([0, Math.round((primary.length - 1) * .25), Math.round((primary.length - 1) * .5), Math.round((primary.length - 1) * .75), primary.length - 1]))
+  const dateTicks = Array.from({length:5}, (_, index) => firstTimestamp + index * ((lastTimestamp - firstTimestamp) / 4))
   const startPrice = Number(data.primary.startPrice) || 0
 
   return (
     <div className="analytics-verified-chart">
-      <div className="analytics-verified-status">
-        <span><CircleCheck size={16} />Live extraction verified</span>
-        <time>{new Date(data.fetchedAt).toLocaleString()}</time>
-      </div>
-      <div className="analytics-verified-summary">
-        <div><small>{data.primary.symbol} start</small><strong>{formatPrice(data.primary.startPrice)}</strong></div>
-        <div><small>{data.primary.symbol} latest</small><strong>{formatPrice(data.primary.endPrice)}</strong></div>
-        <div><small>Period change</small><strong className={data.primary.changePercent >= 0 ? 'positive' : 'negative'}>{data.primary.changePercent >= 0 ? '+' : ''}{data.primary.changePercent.toFixed(2)}%</strong></div>
-      </div>
-      <div className="analytics-axis-title"><span>{data.primary.symbol} price (USD)</span><span>Indexed change</span></div>
-      <svg viewBox="0 0 720 292" role="img" aria-label={`Verified ${data.primary.symbol} price chart with USD and percentage axes`}>
+      <svg className="analytics-proof-svg" viewBox="0 0 720 292" role="img" aria-label={`Complete ${data.period} ${data.primary.symbol} price chart with USD and percentage axes`}>
         {yTicks.map((tick, index) => {
           const y = yFor(tick)
           const tickPrice = startPrice * (1 + tick / 100)
@@ -113,21 +108,18 @@ function VerifiedChart({ data, token }) {
             <text className="analytics-axis-text" x={chart.right + 10} y={y + 4}>{tick >= 0 ? '+' : ''}{tick.toFixed(1)}%</text>
           </g>
         })}
-        {dateIndexes.map(index => {
-          const x = xFor(index)
-          const label = new Date(data.primary.points[index].timestamp * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric'})
+        {dateTicks.map((timestamp, index) => {
+          const x = xFor(timestamp)
+          const label = new Date(timestamp * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric'})
           return <text key={`x-${index}`} className="analytics-axis-text analytics-axis-text--date" x={x} y="281">{label}</text>
         })}
         <line className="analytics-chart-zero" x1={chart.left} y1={yFor(0)} x2={chart.right} y2={yFor(0)} />
-        <polyline className="analytics-series analytics-series--verified" style={{stroke:token.color}} points={lineFor(primary)} />
-        {comparison.length > 0 && <polyline className="analytics-series analytics-series--compare" points={lineFor(comparison)} />}
+        <polyline className="analytics-series analytics-series--verified" style={{stroke:token.color}} points={lineFor(primaryPoints, primary)} />
+        {comparison.length > 0 && <polyline className="analytics-series analytics-series--compare" points={lineFor(comparisonPoints, comparison)} />}
       </svg>
       <div className="analytics-chart-legend">
         <span><i style={{background:token.color}} />{data.primary.symbol}</span>
         {data.comparison && <span><i className="compare-dot" />{data.comparison.symbol}</span>}
-      </div>
-      <div className="analytics-source-list">
-        {data.sources.map(source => <a key={`${source.provider}-${source.poolAddress || source.pair}`} href={source.attributionUrl} target="_blank" rel="noreferrer"><Database size={13} /><span><strong>{source.provider}</strong><small>{source.poolName || source.pair}</small></span></a>)}
       </div>
     </div>
   )
