@@ -112,7 +112,7 @@ class ImageModelAllowlistTests(unittest.TestCase):
         self.assertIn('fake CoinMarketCap screenshot', prompt)
 
     def test_frame_composite_rejects_incomplete_payload(self):
-        with self.assertRaisesRegex(ValueError, 'exactly two ordered references'):
+        with self.assertRaisesRegex(ValueError, 'either two legacy references or three ordered references'):
             handle_generate_image({
                 'compositionMode': 'analytics_frame_composite',
                 'templateId': 'laptop',

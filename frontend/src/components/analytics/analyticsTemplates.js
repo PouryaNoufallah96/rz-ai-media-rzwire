@@ -1,47 +1,61 @@
-import phoneDark from '../../assets/analytics-templates/phone-market-reference.png'
-import phoneLight from '../../assets/analytics-templates/phone-comparison.png'
-import laptopCinematic from '../../assets/analytics-templates/desktop-dashboard-reference.png'
-import laptopWide from '../../assets/analytics-templates/desktop-dashboard.png'
-import growthImage from '../../assets/analytics-templates/growth-spotlight.png'
-import contrastImage from '../../assets/analytics-templates/winner-loser.png'
-import separatedImage from '../../assets/analytics-templates/separated-performance-reference.jpg'
-import combinedImage from '../../assets/analytics-templates/combined-performance-reference.jpg'
+import phoneA from '../../assets/analytics-concepts/phone-a.png'
+import phoneB from '../../assets/analytics-concepts/phone-b.png'
+import phoneC from '../../assets/analytics-concepts/phone-c.png'
+import desktopA from '../../assets/analytics-concepts/desktop-a.png'
+import desktopB from '../../assets/analytics-concepts/desktop-b.png'
+import desktopC from '../../assets/analytics-concepts/desktop-c.png'
+import growthA from '../../assets/analytics-concepts/growth-a.png'
+import growthB from '../../assets/analytics-concepts/growth-b.png'
+import growthC from '../../assets/analytics-concepts/growth-c.png'
+import contrastA from '../../assets/analytics-concepts/contrast-a.png'
+import contrastB from '../../assets/analytics-concepts/contrast-b.png'
+import contrastC from '../../assets/analytics-concepts/contrast-c.png'
+import cardsA from '../../assets/analytics-concepts/cards-a.png'
+import cardsB from '../../assets/analytics-concepts/cards-b.png'
+import cardsC from '../../assets/analytics-concepts/cards-c.png'
+import combinedA from '../../assets/analytics-concepts/combined-a.png'
+import combinedB from '../../assets/analytics-concepts/combined-b.png'
+import combinedC from '../../assets/analytics-concepts/combined-c.png'
+
+function variant(id, conceptLabel, name, description, image, stylePrompt) {
+  return {id, conceptLabel, name, description, image, stylePrompt}
+}
 
 export const TEMPLATE_CATEGORIES = [
   {id:'phone', name:'Phone Market View', description:'Mobile market presentation', variants:[
-    {id:'phone-centered', name:'Centered phone', description:'A centered premium phone with complete market view.', image:phoneDark},
-    {id:'phone-split-stat', name:'Split-stat phone', description:'Phone chart with exact result callouts on both sides.', image:phoneLight},
-    {id:'phone-editorial', name:'Compact editorial phone', description:'A tighter editorial phone composition for fast reading.', image:phoneDark},
+    variant('phone-centered', 'A', 'Centered phone', 'A centered premium phone with a complete market view.', phoneA, 'Centered full-height phone, bold header above, restrained side callouts, generous brand-colored negative space.'),
+    variant('phone-split-stat', 'B', 'Split-stat phone', 'Editorial phone with exact result callouts at the side.', phoneB, 'Angled editorial phone, large performance statement, asymmetric side statistics, cinematic brand atmosphere.'),
+    variant('phone-editorial', 'C', 'Compact editorial phone', 'A close, dramatic phone composition for fast reading.', phoneC, 'Tight cropped phone, oversized market headline, compact comparison labels, high-impact mobile editorial composition.'),
   ]},
   {id:'laptop', name:'Laptop Dashboard', description:'Desktop market presentation', variants:[
-    {id:'laptop-cinematic', name:'Cinematic laptop', description:'Premium laptop with a dramatic chart-focused stage.', image:laptopCinematic},
-    {id:'laptop-editorial', name:'Editorial laptop', description:'Headline-led laptop composition with calm spacing.', image:laptopWide},
-    {id:'laptop-wide', name:'Wide dashboard laptop', description:'A wider multi-series dashboard presentation.', image:laptopCinematic},
+    variant('laptop-cinematic', 'A', 'Cinematic laptop', 'Frontal laptop on a dramatic chart-focused stage.', desktopA, 'Centered frontal laptop, premium atmospheric stage, strong headline above, small verified data strip below.'),
+    variant('laptop-editorial', 'B', 'Editorial laptop', 'Angled laptop with calm editorial spacing.', desktopB, 'Angled laptop, spacious editorial hierarchy, atmospheric brand environment, chart dominant inside the screen.'),
+    variant('laptop-wide', 'C', 'Wide dashboard laptop', 'Desk-set laptop with a wider multi-series presentation.', desktopC, 'Laptop on a realistic editorial desk, wide chart screen, soft environmental lighting and restrained header/footer.'),
   ]},
   {id:'growth', name:'Growth Spotlight', description:'Focused performance story', variants:[
-    {id:'growth-card', name:'Performance card', description:'Exact movement presented in one protected result card.', image:growthImage},
-    {id:'growth-hero', name:'Growth hero', description:'Large chart-led hero with brand-owned color and hierarchy.', image:growthImage},
-    {id:'growth-milestone', name:'Milestone result', description:'Start, end, and movement framed as a verified milestone.', image:growthImage},
+    variant('growth-card', 'A', 'Performance card', 'Headline, verified chart and two exact result strips.', growthA, 'Protected chart card, concise headline, start/end and movement strips, crisp brand-owned information hierarchy.'),
+    variant('growth-hero', 'B', 'Growth hero', 'Large percentage-led hero with a dominant chart.', growthB, 'Oversized verified percentage, large protected chart, energetic but refined brand gradient and compact footer.'),
+    variant('growth-milestone', 'C', 'Milestone result', 'Editorial headline and a refined milestone chart.', growthC, 'Editorial headline, premium serif/sans contrast, protected chart panel, spacious luxury financial composition.'),
   ]},
   {id:'contrast', name:'Performance Contrast', description:'Winner, loser, and mixed-market stories', variants:[
-    {id:'contrast-duel', name:'Winner / loser duel', description:'Two or more results contrasted with exact movements.', image:contrastImage},
-    {id:'contrast-intersecting', name:'Intersecting comparison', description:'Combined lines and callouts inside a premium contrast field.', image:combinedImage},
-    {id:'contrast-scoreboard', name:'Ranked scoreboard', description:'All selected assets ordered by verified performance.', image:contrastImage},
+    variant('contrast-duel', 'A', 'Winner / loser duel', 'Separate branded result panels for contrasted assets.', contrastA, 'Stacked winner and loser panels, exact start/end callouts, dramatic contrast lighting and strong outcome headline.'),
+    variant('contrast-intersecting', 'B', 'Intersecting comparison', 'Combined chart with exact winner and loser callouts.', contrastB, 'One protected combined chart, endpoint callouts, bold winner/loser headline and clean brand-owned framing.'),
+    variant('contrast-scoreboard', 'C', 'Ranked scoreboard', 'A cinematic duel with ranked verified outcomes.', contrastC, 'Cinematic market duel, ranked outcome hierarchy, compact protected chart, dramatic but factual result storytelling.'),
   ]},
   {id:'separated', name:'Separated Performance', description:'Individual asset modules', variants:[
-    {id:'separated-grid', name:'Responsive grid', description:'One exact performance card for every selected asset.', image:separatedImage},
-    {id:'separated-stacked', name:'Stacked cards', description:'Editorial stacked cards with clear movement hierarchy.', image:separatedImage},
-    {id:'separated-orbiting', name:'Orbiting cards', description:'Dynamic modular cards orbiting the shared story.', image:separatedImage},
+    variant('separated-grid', 'A', 'Responsive grid', 'A clean card for every selected asset.', cardsA, 'Individual verified asset cards arranged in a clear responsive grid with one brand-owned editorial headline.'),
+    variant('separated-stacked', 'B', 'Stacked cards', 'Offset editorial cards connected into one story.', cardsB, 'Offset stacked cards with visual connections, exact mini charts and a calm premium background.'),
+    variant('separated-orbiting', 'C', 'Orbiting cards', 'Dynamic modules orbiting the shared market story.', cardsC, 'Dynamic modular cards around a central market story, balanced spacing, exact per-asset values and lines.'),
   ]},
   {id:'combined', name:'Combined Performance', description:'One protected multi-series chart', variants:[
-    {id:'combined-rounded', name:'Rounded chart', description:'A generous rounded chart with exact data callouts.', image:combinedImage},
-    {id:'combined-minimal', name:'Minimal chart', description:'Quiet, typography-first combined market story.', image:combinedImage},
-    {id:'combined-editorial', name:'Editorial chart with callouts', description:'Combined verified chart with winner and loser callouts.', image:combinedImage},
+    variant('combined-rounded', 'A', 'Rounded chart', 'A generous arched chart with exact callouts.', combinedA, 'Large arched combined chart, horizon-like depth, exact callouts and refined futuristic financial atmosphere.'),
+    variant('combined-minimal', 'B', 'Minimal chart', 'A quiet spotlight chart with premium restraint.', combinedB, 'Round spotlight chart, minimal typography, restrained light, clean legend and exceptional negative space.'),
+    variant('combined-editorial', 'C', 'Editorial chart with callouts', 'Typography-forward chart with winner and loser callouts.', combinedC, 'Typography-forward editorial composition, protected multi-line chart, exact endpoint callouts and compact brand footer.'),
   ]},
 ]
 
-export const TEMPLATE_VARIANTS = TEMPLATE_CATEGORIES.flatMap(category => category.variants.map(variant => ({
-  ...variant,
+export const TEMPLATE_VARIANTS = TEMPLATE_CATEGORIES.flatMap(category => category.variants.map(item => ({
+  ...item,
   categoryId:category.id,
   categoryName:category.name,
   min:1,

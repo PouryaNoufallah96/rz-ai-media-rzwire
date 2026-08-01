@@ -120,8 +120,11 @@ def handle_generate_image(body):
     profile = BRAND_IMAGE_PROFILES.get(media)
     brief = None
     if composition_mode == 'analytics_frame_composite':
-        if len(ref_images) != 2:
-            raise ValueError('Analytics frame composition requires exactly two ordered references: static publishing frame and approved factual chart.')
+        if len(ref_images) not in (2, 3):
+            raise ValueError(
+                'Analytics frame composition requires either two legacy references or three ordered references: '
+                'approved concept, static publishing frame, and approved factual chart.'
+            )
         if not template_category_id or not template_variant_id:
             raise ValueError('Analytics frame composition requires templateCategoryId and templateVariantId.')
         if not isinstance(series_metadata, list) or not series_metadata:
@@ -154,18 +157,34 @@ def handle_generate_image(body):
             raise ValueError('Analytics output dimensions must be between 512 and 4096 pixels.')
         symbols = ', '.join(str(item.get('symbol', '')).upper() for item in series_metadata if item.get('symbol'))
         headline = str(article.get('title') or '').strip()
+        if len(ref_images) == 3:
+            chart_frame_reference = 'REFERENCE 2'
+            reference_instructions = (
+                'Create one beautiful, premium, publication-ready financial social-media post from exactly three ordered references. '
+                'REFERENCE 1 is the exact APPROVED VISUAL CONCEPT and the primary aesthetic target. Keep its recognizable composition, '
+                'proportions, visual rhythm, device or card treatment, hierarchy, spacing, lighting, and premium finish. Adapt its example '
+                'coin identity to the selected RZWire theme owner without drifting into a different template. '
+                'REFERENCE 2 is the deterministic STATIC PUBLISHING FRAME. Treat its canvas, headline, supporting text, logo placement, '
+                'footer/domain placement, and chart aperture as protected layout instructions. '
+                'REFERENCE 3 is the AUTHORITATIVE APPROVED FACTUAL CHART. Place this complete chart inside the reserved chart aperture '
+            )
+        else:
+            chart_frame_reference = 'REFERENCE 1'
+            reference_instructions = (
+                'Create one beautiful, premium, publication-ready financial social-media post from two legacy ordered references. '
+                'REFERENCE 1 is the deterministic STATIC PUBLISHING FRAME. Treat its canvas, headline, supporting text, logo placement, '
+                'footer/domain placement, device or card silhouette, and chart aperture as protected layout instructions. '
+                'REFERENCE 2 is the AUTHORITATIVE APPROVED FACTUAL CHART. Place this complete chart inside the reserved chart aperture '
+            )
         prompt = (
-            'Create one beautiful, premium, publication-ready financial social-media post from exactly two references. '
-            'REFERENCE 1 is the approved STATIC PUBLISHING FRAME. Treat its canvas, composition, background palette, headline area, '
-            'logo placement, footer placement, device or card silhouette, and empty chart aperture as the fixed art direction. '
-            'REFERENCE 2 is the AUTHORITATIVE APPROVED FACTUAL CHART. Place this complete chart inside the reserved chart aperture '
-            'of REFERENCE 1 so it feels naturally integrated into the frame. The chart must remain the dominant, sharp, readable '
+            reference_instructions +
+            f'of {chart_frame_reference} so it feels naturally integrated into the frame. The chart must remain the dominant, sharp, readable '
             'factual element. Preserve the entire chart image: do not crop, redraw, simplify, recolor, relabel, blur, restyle, or '
             'invent any line, axis, date, legend, ticker, value, percentage, or market fact. Do not turn the frame into a fake '
             'CoinMarketCap screenshot, generic trading dashboard, website page, data table, or collection of extra market cards. '
             'Do not add a second chart. Improve only the visual integration around the protected chart using refined lighting, '
-            'realistic depth, subtle reflections, elegant spacing, and premium editorial polish. Preserve the frame header and any '
-            'provided brand mark or footer; never replace them with invented logos or domains. '
+            'realistic depth, subtle reflections, elegant spacing, and premium editorial polish. Preserve the protected header, '
+            'supporting text, brand mark, footer, and domain; never replace them with invented wording, logos, or domains. '
             f'Exact headline intent: {headline}. Supporting text intent: {copy_text}. '
             f'Publishing category: {template_category_id}. Exact variant: {template_variant_id}. '
             f'Brand owner: {theme_owner["name"]}. Brand palette: {json.dumps(theme_owner["theme"])}. '
