@@ -39,12 +39,19 @@ function chartGeometry(series, scale, width=620, height=220, padding={left:28,ri
   return {valueSets, min, max, first, last, x, y, width, height, padding}
 }
 
-function MarketChart({series, scale='relative', compact=false, dark=true, showDates=true}) {
+function marketTick(value, scale) {
+  if (scale === 'relative') return `${value >= 0 ? '+' : ''}${value.toFixed(0)}%`
+  if (Math.abs(value) >= 1000) return `$${(value / 1000).toFixed(1)}k`
+  if (Math.abs(value) >= 1) return `$${value.toFixed(2)}`
+  return `$${value.toFixed(4)}`
+}
+
+function MarketChart({series, scale='relative', compact=false, dark=true, showDates=true, showValues=true}) {
   const g = chartGeometry(series, scale, 620, compact ? 150 : 230, {left:28,right:18,top:18,bottom:showDates ? 34 : 12})
   const ticks = Array.from({length:compact ? 3 : 4}, (_, index) => g.min + index * ((g.max - g.min) / (compact ? 2 : 3)))
   const dates = Array.from({length:5}, (_, index) => g.first + index * ((g.last - g.first) / 4))
   return <svg className={`rz-composition-chart ${dark ? 'dark' : 'light'}`} viewBox={`0 0 ${g.width} ${g.height}`} role="img" aria-label={`${series.map(item => item.symbol).join(', ')} verified market chart`}>
-    {ticks.map((tick, index) => <line key={index} x1={g.padding.left} x2={g.width-g.padding.right} y1={g.y(tick)} y2={g.y(tick)} />)}
+    {ticks.map((tick, index) => <g key={index}><line x1={g.padding.left} x2={g.width-g.padding.right} y1={g.y(tick)} y2={g.y(tick)} />{showValues && <text className="rz-chart-value" x={g.width-g.padding.right} y={g.y(tick)-4} textAnchor="end">{marketTick(tick, scale)}</text>}</g>)}
     {series.map((item, index) => <polyline key={item.id} style={{stroke:item.color}} points={item.points.map((point, pointIndex) => `${g.x(point.timestamp).toFixed(1)},${g.y(g.valueSets[index][pointIndex]).toFixed(1)}`).join(' ')} />)}
     {showDates && dates.map((date, index) => <text key={index} x={g.x(date)} y={g.height-8} textAnchor="middle">{shortDate(date)}</text>)}
   </svg>
@@ -66,13 +73,20 @@ function BrandFooter({theme, series}) {
   </footer>
 }
 
+function RangeTabs({period}) {
+  const periods = ['1h', '24h', '7d', '30d', '90d', '1y']
+  return <div className="rz-range-tabs">
+    {periods.map(item => item === period ? <b key={item}>{item}</b> : <span key={item}>{item}</span>)}
+  </div>
+}
+
 function PhoneView({series, period, scale}) {
   return <div className="rz-phone-shell">
     <div className="rz-phone-speaker" />
     <div className="rz-phone-screen">
       <div className="rz-market-brand"><b>CoinMarketCap</b><span>Compare</span></div>
       <div className="rz-phone-assets">{series.map(item => <TokenBadge key={item.id} item={item} />)}</div>
-      <div className="rz-range-tabs"><span>1h</span><span>24h</span><span>7d</span><b>{period}</b><span>90d</span><span>1y</span></div>
+      <RangeTabs period={period} />
       <MarketChart series={series} scale={scale} compact />
       <div className="rz-legend">{series.map(item => <TokenBadge key={item.id} item={item} detailed />)}</div>
       <div className="rz-market-controls"><b>Price</b><span>Market Cap</span><span>Volume</span></div>
@@ -86,16 +100,33 @@ function PhoneView({series, period, scale}) {
 }
 
 function DesktopView({series, period, scale, neutral}) {
-  return <div className="rz-laptop-shell">
-    <div className="rz-laptop-screen">
-      <div className="rz-desktop-top"><b>{neutral ? 'RZWire / Market Desk' : 'CoinMarketCap'}</b><span>Cryptocurrencies</span><span>Dashboards</span><span>Markets</span><i>Search</i></div>
-      <div className="rz-desktop-grid">
-        <aside><strong>{series.map(item => item.symbol).join(' / ')}</strong><b>{formatPrice(series[0].endPrice)}</b><em>{series[0].changePercent >= 0 ? '+' : ''}{series[0].changePercent.toFixed(2)}%</em>{series.slice(0,4).map(item => <TokenBadge key={item.id} item={item} detailed />)}</aside>
-        <main><div className="rz-desktop-chart-head"><b>Chart</b><span>{period}</span><span>{scale === 'relative' ? 'Relative %' : 'USD'}</span></div><div className="rz-range-tabs"><span>1h</span><span>24h</span><span>7d</span><b>{period}</b><span>90d</span><span>1y</span></div><MarketChart series={series} scale={scale} dark={!neutral} /><div className="rz-legend">{series.map(item => <TokenBadge key={item.id} item={item} detailed />)}</div></main>
-        <aside className="right"><strong>Market view</strong>{series.map(item => <div key={item.id}><TokenBadge item={item} /><b>{formatPrice(item.endPrice)}</b><em className={item.changePercent >= 0 ? 'up' : 'down'}>{item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%</em></div>)}</aside>
+  const compact = series.length > 3
+  return <div className={`rz-laptop-shell ${compact ? 'is-dense' : ''}`}>
+    <div className="rz-laptop-lid">
+      <div className="rz-laptop-camera" />
+      <div className="rz-laptop-screen">
+        <div className="rz-desktop-top">
+          <b>{neutral ? 'RZWire Market' : 'CoinMarketCap'}</b>
+          <span>Cryptocurrencies</span><span>Markets</span><span>Community</span>
+          <i>Search assets</i><i className="rz-desktop-avatar" />
+        </div>
+        <div className="rz-desktop-asset-strip" style={{'--asset-count':series.length}}>
+          {series.map(item => <article key={item.id}><TokenBadge item={item} /><b>{formatPrice(item.endPrice)}</b><em className={item.changePercent >= 0 ? 'up' : 'down'}>{item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%</em></article>)}
+        </div>
+        <main className="rz-desktop-market-card">
+          <div className="rz-desktop-chart-head"><div><small>Verified comparison</small><b>{series.map(item => item.symbol).join(' · ')}</b></div><span>{period}</span><span>{scale === 'relative' ? 'Relative performance' : 'USD price'}</span></div>
+          <RangeTabs period={period} />
+          <MarketChart series={series} scale={scale} dark compact={compact} />
+          <div className="rz-legend">{series.map(item => <TokenBadge key={item.id} item={item} detailed />)}</div>
+        </main>
+        <div className="rz-desktop-bottom-row">
+          <div><small>Market range</small><b>{shortDate(Math.min(...series.flatMap(item => item.points.map(point => point.timestamp))))} – {shortDate(Math.max(...series.flatMap(item => item.points.map(point => point.timestamp))))}</b></div>
+          <div><small>Data integrity</small><b>Verified histories</b></div>
+          <div><small>Series</small><b>{series.length} assets</b></div>
+        </div>
       </div>
     </div>
-    <div className="rz-laptop-base" />
+    <div className="rz-laptop-deck"><i /></div>
   </div>
 }
 

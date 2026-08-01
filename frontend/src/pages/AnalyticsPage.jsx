@@ -128,8 +128,34 @@ function resizePng(dataUrl, width, height) {
 
 async function captureComposition(node, output) {
   if (!node) throw new Error('The approved composition is not ready for capture.')
-  const capture = await toPng(node, {cacheBust:true, pixelRatio:2, backgroundColor:'#10151c'})
+  const bounds = node.getBoundingClientRect()
+  const pixelRatio = Math.min(3, Math.max(1, output.width / Math.max(1, bounds.width)))
+  const capture = await toPng(node, {cacheBust:true, pixelRatio, backgroundColor:'#10151c'})
   return resizePng(capture, output.width, output.height)
+}
+
+function suggestedCopy(series, period) {
+  if (!series?.length) return {headline:'Verified market movement', chartText:''}
+  const ranked = [...series].sort((a, b) => Number(b.changePercent) - Number(a.changePercent))
+  const best = ranked[0]
+  const worst = ranked[ranked.length - 1]
+  if (series.length === 1) {
+    const direction = best.changePercent >= 0 ? 'gained' : 'fell'
+    return {
+      headline:`${best.symbol} ${direction} ${Math.abs(best.changePercent).toFixed(2)}%`,
+      chartText:`From ${formatPrice(best.startPrice)} to ${formatPrice(best.endPrice)} over ${period}.`,
+    }
+  }
+  if (series.length === 2) {
+    return {
+      headline:`${series[0].symbol} vs ${series[1].symbol}`,
+      chartText:`${best.symbol} led at ${best.changePercent >= 0 ? '+' : ''}${best.changePercent.toFixed(2)}%; ${worst.symbol} finished at ${worst.changePercent >= 0 ? '+' : ''}${worst.changePercent.toFixed(2)}%.`,
+    }
+  }
+  return {
+    headline:`${period} market comparison`,
+    chartText:`${best.symbol} led the selected assets; ${worst.symbol} had the weakest performance.`,
+  }
 }
 
 function colorisedSeries(data) {
@@ -332,9 +358,9 @@ export default function AnalyticsPage() {
       const data = await response.json().catch(() => ({}))
       if (!response.ok || !data.verified || !data.series?.length) throw new Error(data.error || 'The public market feeds did not return a verified RZWire chart.')
       setMarketData(data)
-      const symbols = data.series.map(item => item.symbol)
-      setHeadline(symbols.length === 1 ? `${symbols[0]} price movement` : `${symbols.join(' vs ')} market comparison`)
-      setChartText(data.series.map(item => `${item.symbol} ${item.changePercent >= 0 ? 'rose' : 'fell'} ${Math.abs(item.changePercent).toFixed(2)}%`).join(', ') + '.')
+      const copy = suggestedCopy(data.series, period)
+      setHeadline(copy.headline)
+      setChartText(copy.chartText)
     } catch (err) {
       setVerificationError(err.message || 'Price extraction failed.')
     } finally {
@@ -466,7 +492,7 @@ export default function AnalyticsPage() {
         </section>}
       </div>
     </main>
-    {chartApproved && <div className="analytics-export-renders" aria-hidden="true">{selectedTemplates.map(item => <div key={`capture-${item.id}`}><CompositionPreview ref={node => { compositionRefs.current[item.id] = node }} templateId={item.id} marketData={marketData} tokens={TOKENS} primaryIds={primaryIds} period={period} scale={scale} format={format} headline={headline} chartText={chartText} /><CompositionPreview ref={node => { exportRefs.current[item.id] = node }} templateId={item.id} marketData={marketData} tokens={TOKENS} primaryIds={primaryIds} period={period} scale={scale} format={format} headline={headline} chartText={chartText} generatedLayer={generatedLayers[item.id]} /></div>)}</div>}
+    {chartApproved && <div className="analytics-export-renders" aria-hidden="true">{selectedTemplates.map(item => <div key={`capture-${item.id}`} style={{width:`${outputFormat.width}px`}}><CompositionPreview ref={node => { compositionRefs.current[item.id] = node }} templateId={item.id} marketData={marketData} tokens={TOKENS} primaryIds={primaryIds} period={period} scale={scale} format={format} headline={headline} chartText={chartText} /><CompositionPreview ref={node => { exportRefs.current[item.id] = node }} templateId={item.id} marketData={marketData} tokens={TOKENS} primaryIds={primaryIds} period={period} scale={scale} format={format} headline={headline} chartText={chartText} generatedLayer={generatedLayers[item.id]} /></div>)}</div>}
     <ChatWidget />
   </div>
 }
