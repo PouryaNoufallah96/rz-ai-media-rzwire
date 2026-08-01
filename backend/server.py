@@ -47,7 +47,12 @@ from handlers.chat import (
     start_chat_indexer,
 )
 from handlers.translation import handle_translate_cards
-from handlers.market import handle_market_history
+from handlers.market import (
+    handle_market_assets,
+    handle_market_history,
+    handle_market_history_batch,
+    handle_resolve_dex_asset,
+)
 from telegram_public import DEFAULT_TELEGRAM_SOURCES, fetch_many_telegram_public_posts, rank_telegram_posts
 
 
@@ -98,6 +103,18 @@ class Handler(BaseHTTPRequestHandler):
                 self._error(400, str(exc))
             except Exception as exc:
                 self._error(502, f'Market data extraction failed: {exc}')
+        elif self.path.startswith('/api/market/assets'):
+            user = auth.get_current_user(self)
+            if user is None:
+                return self._error(401, 'Not authenticated')
+            import urllib.parse as url_tools
+            params = url_tools.parse_qs(url_tools.urlparse(self.path).query)
+            try:
+                self._json(handle_market_assets(params))
+            except ValueError as exc:
+                self._error(400, str(exc))
+            except Exception as exc:
+                self._error(502, f'Market asset search failed: {exc}')
         elif self.path == '/api/auth/me':
             user = auth.get_current_user(self)
             if user is None:
@@ -246,6 +263,16 @@ class Handler(BaseHTTPRequestHandler):
                 if user is None:
                     return self._error(401, 'Not authenticated')
                 self._json(handle_saved_confirm_schedule(user['id'], body))
+            elif path == '/api/market/history/batch':
+                user = auth.get_current_user(self)
+                if user is None:
+                    return self._error(401, 'Not authenticated')
+                self._json(handle_market_history_batch(body))
+            elif path == '/api/market/assets/resolve':
+                user = auth.get_current_user(self)
+                if user is None:
+                    return self._error(401, 'Not authenticated')
+                self._json(handle_resolve_dex_asset(body))
             elif path == '/api/schedule/create':
                 user = auth.get_current_user(self)
                 if user is None:
