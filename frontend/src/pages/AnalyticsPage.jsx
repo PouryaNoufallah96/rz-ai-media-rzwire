@@ -28,10 +28,10 @@ const POPULAR_COMPARISONS = [
 const PERIODS = ['24h', '7d', '30d', '90d', '1y']
 const EXTERNAL_COLORS = ['#c9877f', '#3978c7', '#b878cf']
 const TEMPLATES = [
-  { id:'phone', name:'Phone comparison', description:'Two verified series inside a mobile market view.', image:phoneTemplate, min:2, max:2 },
+  { id:'phone', name:'Phone market view', description:'One to six verified series inside a mobile market view.', image:phoneTemplate, min:1, max:6 },
   { id:'laptop', name:'Desktop dashboard', description:'One to six verified series inside a premium laptop frame.', image:desktopTemplate, min:1, max:6 },
-  { id:'growth', name:'Growth spotlight', description:'One token with its exact start, end, and movement.', image:growthTemplate, min:1, max:1 },
-  { id:'winner', name:'Winner vs loser', description:'A high-contrast comparison for exactly two tokens.', image:winnerLoserTemplate, min:2, max:2 },
+  { id:'growth', name:'Growth spotlight', description:'A focused growth story preserving every verified chart line.', image:growthTemplate, min:1, max:6 },
+  { id:'winner', name:'Performance contrast', description:'A high-contrast market story adapted to every verified series.', image:winnerLoserTemplate, min:1, max:6 },
 ]
 
 function formatPrice(value) {
