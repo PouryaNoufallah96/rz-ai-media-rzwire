@@ -187,11 +187,13 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState('30d')
   const [scale, setScale] = useState('relative')
   const [format, setFormat] = useState('Portrait · 1080 × 1350')
-  const [template, setTemplate] = useState('laptop')
+  const [templateIds, setTemplateIds] = useState(['laptop'])
+  const [previewTemplateId, setPreviewTemplateId] = useState('laptop')
   const [imageModel, setImageModel] = useState('openai/gpt-5.4-image-2')
   const [direction, setDirection] = useState('Premium financial editorial composition with restrained lighting, a centered laptop, generous spacing, and a clearly readable chart screen.')
-  const [generatedBackground, setGeneratedBackground] = useState('')
+  const [generatedPosts, setGeneratedPosts] = useState({})
   const [generating, setGenerating] = useState(false)
+  const [generatingTemplateId, setGeneratingTemplateId] = useState('')
   const [error, setError] = useState('')
   const [marketData, setMarketData] = useState(null)
   const [verifying, setVerifying] = useState(false)
@@ -204,7 +206,9 @@ export default function AnalyticsPage() {
   const allSelectedSymbols = [...selectedPrimary.map(token => token.symbol), ...comparisonAssets.map(asset => asset.symbol)]
   const seriesCount = allSelectedSymbols.length
   const primaryToken = selectedPrimary[0] || TOKENS[0]
-  const selectedTemplate = TEMPLATES.find(item => item.id === template) || TEMPLATES[1]
+  const selectedTemplates = TEMPLATES.filter(item => templateIds.includes(item.id))
+  const selectedTemplate = TEMPLATES.find(item => item.id === previewTemplateId) || selectedTemplates[0] || TEMPLATES[1]
+  const generatedBackground = generatedPosts[selectedTemplate.id] || ''
   const summary = `${allSelectedSymbols.join(' versus ')}, ${period}, ${scale === 'relative' ? 'relative performance' : 'absolute USD price'}`
   const visibleAssetResults = assetQuery.trim() ? assetResults : POPULAR_COMPARISONS
 
@@ -232,7 +236,7 @@ export default function AnalyticsPage() {
     setMarketData(null)
     setChartApproved(false)
     setVerificationError('')
-    setGeneratedBackground('')
+    setGeneratedPosts({})
     setError('')
   }
 
@@ -249,7 +253,8 @@ export default function AnalyticsPage() {
       return
     }
     setPrimaryIds(selected ? primaryIds.filter(item => item !== id) : [...primaryIds, id])
-    setTemplate('laptop')
+    setTemplateIds(['laptop'])
+    setPreviewTemplateId('laptop')
     invalidateMarketData()
   }
 
@@ -265,13 +270,15 @@ export default function AnalyticsPage() {
     }
     setComparisonAssets([...comparisonAssets, asset])
     setAssetQuery('')
-    setTemplate('laptop')
+    setTemplateIds(['laptop'])
+    setPreviewTemplateId('laptop')
     invalidateMarketData()
   }
 
   function removeComparison(id) {
     setComparisonAssets(comparisonAssets.filter(item => item.id !== id))
-    setTemplate('laptop')
+    setTemplateIds(['laptop'])
+    setPreviewTemplateId('laptop')
     invalidateMarketData()
   }
 
@@ -298,7 +305,7 @@ export default function AnalyticsPage() {
     setVerificationError('')
     setMarketData(null)
     setChartApproved(false)
-    setGeneratedBackground('')
+    setGeneratedPosts({})
     try {
       const response = await fetch(`${API_BASE}/api/market/history/batch`, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({primaryTokens:primaryIds, comparisonAssets, period, scale})})
       const data = await response.json().catch(() => ({}))
@@ -314,33 +321,70 @@ export default function AnalyticsPage() {
     }
   }
 
-  async function generatePost() {
+  function toggleTemplate(id) {
+    setError('')
+    setGeneratedPosts({})
+    if (templateIds.includes(id)) {
+      if (templateIds.length === 1) {
+        setError('Keep at least one publishing design selected.')
+        return
+      }
+      const next = templateIds.filter(item => item !== id)
+      setTemplateIds(next)
+      if (previewTemplateId === id) setPreviewTemplateId(next[0])
+      return
+    }
+    setTemplateIds([...templateIds, id])
+    setPreviewTemplateId(id)
+  }
+
+  async function generatePosts() {
     if (generating) return
     if (!marketData?.verified || !chartApproved) {
       setError('Approve the verified chart and axes before generating the finished post.')
       return
     }
-    if (seriesCount < selectedTemplate.min || seriesCount > selectedTemplate.max) {
-      setError(`${selectedTemplate.name} supports ${selectedTemplate.min === selectedTemplate.max ? `exactly ${selectedTemplate.min}` : `${selectedTemplate.min}-${selectedTemplate.max}`} chart series.`)
+    if (!selectedTemplates.length) {
+      setError('Select at least one publishing design.')
+      return
+    }
+    const incompatible = selectedTemplates.find(item => seriesCount < item.min || seriesCount > item.max)
+    if (incompatible) {
+      setError(`${incompatible.name} supports ${incompatible.min === incompatible.max ? `exactly ${incompatible.min}` : `${incompatible.min}-${incompatible.max}`} chart series.`)
       return
     }
     setGenerating(true)
     setError('')
-    setGeneratedBackground('')
+    setGeneratedPosts({})
     try {
-      const [referenceImage, approvedChart] = await Promise.all([assetToDataUrl(selectedTemplate.image), chartToPngDataUrl(chartSvgRef.current)])
+      const approvedChart = await chartToPngDataUrl(chartSvgRef.current)
       const movement = marketData.series.reduce((total, item) => total + item.changePercent, 0) / marketData.series.length
-      const response = await fetch(`${API_BASE}/api/image/generate`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
-        article:{title:headline || summary}, platform:'Instagram', mediaBrand:primaryToken.brand, sentiment:movement >= 0 ? 'Bullish' : 'Bearish', model:imageModel, compositionMode:'analytics_post', copy:chartText, referenceImages:[referenceImage, approvedChart],
-        imageDirection:`Create one finished ${format} financial social post. REFERENCE IMAGE 1 is the exact visual composition and device style to follow. REFERENCE IMAGE 2 is the approved factual multi-token chart containing ${marketData.series.map(item => item.symbol).join(', ')}. Place REFERENCE IMAGE 2 clearly and completely inside the device screen from REFERENCE IMAGE 1. Keep every chart line, color, date, axis, price, percentage, ticker, legend, and relative position from REFERENCE IMAGE 2 unchanged and readable. Use this exact header: "${headline}". Use this supporting text: "${chartText}". RZWire brands represented: ${selectedPrimary.map(item => item.brand).join(', ')}. ${direction} Do not add invented prices, percentages, dates, logos, charts, watermarks, UI panels, or unrelated copy.`,
-      })})
-      const data = await response.json().catch(() => ({}))
-      if (!response.ok || !data.imageB64) throw new Error(data.error || 'The image model did not return a finished post.')
-      setGeneratedBackground(data.imageB64)
+      const completed = {}
+      const failures = []
+      for (const publishingTemplate of selectedTemplates) {
+        setGeneratingTemplateId(publishingTemplate.id)
+        try {
+          const referenceImage = await assetToDataUrl(publishingTemplate.image)
+          const response = await fetch(`${API_BASE}/api/image/generate`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+            article:{title:headline || summary}, platform:'Instagram', mediaBrand:primaryToken.brand, sentiment:movement >= 0 ? 'Bullish' : 'Bearish', model:imageModel, compositionMode:'analytics_post', copy:chartText, referenceImages:[referenceImage, approvedChart],
+            imageDirection:`Create one finished ${format} financial social post using the ${publishingTemplate.name} publishing design. REFERENCE IMAGE 1 is the exact visual composition and device style to follow. REFERENCE IMAGE 2 is the approved factual multi-token chart containing ${marketData.series.map(item => item.symbol).join(', ')}. Place REFERENCE IMAGE 2 clearly and completely inside the device screen from REFERENCE IMAGE 1. Keep every chart line, color, date, axis, price, percentage, ticker, legend, and relative position from REFERENCE IMAGE 2 unchanged and readable. Use this exact header: "${headline}". Use this supporting text: "${chartText}". RZWire brands represented: ${selectedPrimary.map(item => item.brand).join(', ')}. ${direction} Do not add invented prices, percentages, dates, logos, charts, watermarks, UI panels, or unrelated copy.`,
+          })})
+          const data = await response.json().catch(() => ({}))
+          if (!response.ok || !data.imageB64) throw new Error(data.error || 'The image model did not return a finished post.')
+          completed[publishingTemplate.id] = data.imageB64
+          setGeneratedPosts({...completed})
+          setPreviewTemplateId(publishingTemplate.id)
+        } catch (templateError) {
+          failures.push(`${publishingTemplate.name}: ${templateError.message || 'generation failed'}`)
+        }
+      }
+      if (failures.length) setError(`${Object.keys(completed).length} of ${selectedTemplates.length} versions were created. ${failures.join(' ')}`)
+      if (!Object.keys(completed).length) throw new Error('None of the selected publishing versions could be generated.')
     } catch (err) {
       setError(err.message || 'Post generation failed.')
     } finally {
       setGenerating(false)
+      setGeneratingTemplateId('')
     }
   }
 
@@ -373,10 +417,10 @@ export default function AnalyticsPage() {
             {marketData && <><VerifiedChart data={marketData} chartRef={chartSvgRef} />{!!marketData.failures?.length && <div className="analytics-failure-summary"><AlertTriangle size={16} /><span><strong>{marketData.failures.length} selected {marketData.failures.length === 1 ? 'asset was' : 'assets were'} unavailable.</strong>{marketData.failures.map(item => <small key={item.id}>{item.symbol} - unavailable from {item.type === 'binance' ? 'Binance' : 'GeckoTerminal'}: {item.error}</small>)}<small>The verified lines above can still be approved.</small></span></div>}<div className="analytics-chart-approval"><div><strong>{chartApproved ? 'Chart approved' : 'Check every line and label before continuing'}</strong><span>{chartApproved ? 'Copy, compatible examples, and image generation are unlocked.' : 'Confirm the prices, axes, dates, warnings, and source attribution.'}</span></div><button type="button" className={chartApproved ? 'approved' : ''} onClick={() => setChartApproved(true)}>{chartApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve complete chart</>}</button></div></>}
           </section>
           {chartApproved && <section className="analytics-control-section analytics-copy-section"><div className="analytics-section-heading"><span>03</span><div><h2>Write the story</h2><p>Add the header and statement that accompany every verified series.</p></div></div><label>Header<input value={headline} onChange={event => setHeadline(event.target.value)} /></label><label>Chart text<textarea rows="4" value={chartText} onChange={event => setChartText(event.target.value)} /></label></section>}
-          {chartApproved && <section className="analytics-control-section analytics-template-section"><div className="analytics-section-heading"><span>04</span><div><h2>Choose how to publish it</h2><p>Only references compatible with {marketData.series.length} verified chart lines can be selected.</p></div></div><div className="analytics-template-grid analytics-template-grid--exact">{TEMPLATES.map(item => { const compatible = marketData.series.length >= item.min && marketData.series.length <= item.max; return <button key={item.id} type="button" disabled={!compatible} className={template === item.id ? 'selected' : ''} onClick={() => setTemplate(item.id)}><img src={item.image} alt={`${item.name} publishing example`} /><span><strong>{item.name}</strong><small>{compatible ? item.description : `Requires ${item.min === item.max ? `${item.min} lines` : `${item.min}-${item.max} lines`}`}</small></span>{template === item.id && compatible && <Check size={16} />}</button> })}</div></section>}
-          {chartApproved && <section className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished post</h2><p>The image model receives the selected reference and the complete approved chart as separate images.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => setDirection(event.target.value)} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !chartApproved} onClick={generatePost}>{generating ? <><span className="analytics-spinner" />Composing finished post…</> : <><Sparkles size={17} />Generate finished post<ArrowRight size={17} /></>}</button>{error && <p className="analytics-error">{error}</p>}</section>}
+          {chartApproved && <section className="analytics-control-section analytics-template-section"><div className="analytics-section-heading"><span>04</span><div><h2>Choose how to publish it</h2><p>Select one or several compatible designs. Each selected design becomes a separate post.</p></div></div><div className="analytics-template-grid analytics-template-grid--exact">{TEMPLATES.map(item => { const compatible = marketData.series.length >= item.min && marketData.series.length <= item.max; const selected = templateIds.includes(item.id); return <button key={item.id} type="button" disabled={!compatible} className={selected ? 'selected' : ''} onClick={() => toggleTemplate(item.id)}><img src={item.image} alt={`${item.name} publishing example`} /><span><strong>{item.name}</strong><small>{compatible ? item.description : `Requires ${item.min === item.max ? `${item.min} lines` : `${item.min}-${item.max} lines`}`}</small></span>{selected && compatible && <Check size={16} />}</button> })}</div><div className="analytics-template-selection-note"><strong>{selectedTemplates.length} {selectedTemplates.length === 1 ? 'design' : 'designs'} selected</strong><span>RZWire will create one finished image for each design.</span></div></section>}
+          {chartApproved && <section className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished posts</h2><p>The approved chart is reused exactly inside each selected publishing reference.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => setDirection(event.target.value)} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !chartApproved || !selectedTemplates.length} onClick={generatePosts}>{generating ? <><span className="analytics-spinner" />Creating {TEMPLATES.find(item => item.id === generatingTemplateId)?.name || 'selected version'}…</> : <><Sparkles size={17} />Generate {selectedTemplates.length} finished {selectedTemplates.length === 1 ? 'post' : 'posts'}<ArrowRight size={17} /></>}</button>{error && <p className="analytics-error">{error}</p>}</section>}
         </aside>
-        {chartApproved && <section className="analytics-preview-column"><div className="analytics-preview-head"><div><p>Publishing preview</p><h2>{selectedTemplate.name}</h2></div><span>{format}</span></div><div className="analytics-reference-sample"><div><strong>Exact style reference</strong><span>The complete approved chart will replace the sample chart inside this device.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact style reference`} /></div><div className="analytics-live-output-label"><span>{generatedBackground ? 'Generated finished post' : 'RZWire composition preview'}</span><small>The reference and complete approved chart are supplied separately.</small></div>{generatedBackground ? <img className="analytics-generated-post" src={`data:image/png;base64,${generatedBackground}`} alt="Generated RZWire multi-token analytics post" /> : <ChartPreview marketData={marketData} period={period} template={template} headline={headline} chartText={chartText} primaryToken={primaryToken} />}<div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Locked factual layer</strong>All {marketData.series.length} verified chart lines remain together as one approved image inside the selected reference composition.</span></div></section>}
+        {chartApproved && <section className="analytics-preview-column"><div className="analytics-preview-head"><div><p>Publishing preview</p><h2>{selectedTemplate.name}</h2></div><span>{format}</span></div>{selectedTemplates.length > 1 && <div className="analytics-variant-tabs" aria-label="Selected publishing versions">{selectedTemplates.map(item => <button key={item.id} type="button" className={selectedTemplate.id === item.id ? 'selected' : ''} onClick={() => setPreviewTemplateId(item.id)}>{generatedPosts[item.id] && <Check size={13} />}{item.name}</button>)}</div>}<div className="analytics-reference-sample"><div><strong>Exact style reference</strong><span>The complete approved chart will replace the sample chart inside this device.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact style reference`} /></div><div className="analytics-live-output-label"><span>{generatedBackground ? 'Generated finished post' : 'RZWire composition preview'}</span><small>The reference and complete approved chart are supplied separately.</small></div>{generatedBackground ? <img className="analytics-generated-post" src={`data:image/png;base64,${generatedBackground}`} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <ChartPreview marketData={marketData} period={period} template={selectedTemplate.id} headline={headline} chartText={chartText} primaryToken={primaryToken} />}<div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Locked factual layer</strong>All {marketData.series.length} verified chart lines remain together as one approved image inside every selected reference composition.</span></div></section>}
       </div>
     </main>
     <ChatWidget />
