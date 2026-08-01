@@ -115,7 +115,36 @@ def handle_generate_image(body):
 
     profile = BRAND_IMAGE_PROFILES.get(media)
     brief = None
-    if composition_mode == 'analytics_background':
+    if composition_mode == 'analytics_frame_composite':
+        if len(ref_images) != 2:
+            raise ValueError('Analytics frame composition requires exactly two ordered references: static publishing frame and approved factual chart.')
+        if not template_id:
+            raise ValueError('Analytics frame composition requires templateId.')
+        if not isinstance(series_metadata, list) or not series_metadata:
+            raise ValueError('Analytics frame composition requires verified seriesMetadata.')
+        width = int(output_dimensions.get('width') or 1080)
+        height = int(output_dimensions.get('height') or 1350)
+        if width < 512 or height < 512 or width > 4096 or height > 4096:
+            raise ValueError('Analytics output dimensions must be between 512 and 4096 pixels.')
+        symbols = ', '.join(str(item.get('symbol', '')).upper() for item in series_metadata if item.get('symbol'))
+        headline = str(article.get('title') or '').strip()
+        prompt = (
+            'Create one beautiful, premium, publication-ready financial social-media post from exactly two references. '
+            'REFERENCE 1 is the approved STATIC PUBLISHING FRAME. Treat its canvas, composition, background palette, headline area, '
+            'logo placement, footer placement, device or card silhouette, and empty chart aperture as the fixed art direction. '
+            'REFERENCE 2 is the AUTHORITATIVE APPROVED FACTUAL CHART. Place this complete chart inside the reserved chart aperture '
+            'of REFERENCE 1 so it feels naturally integrated into the frame. The chart must remain the dominant, sharp, readable '
+            'factual element. Preserve the entire chart image: do not crop, redraw, simplify, recolor, relabel, blur, restyle, or '
+            'invent any line, axis, date, legend, ticker, value, percentage, or market fact. Do not turn the frame into a fake '
+            'CoinMarketCap screenshot, generic trading dashboard, website page, data table, or collection of extra market cards. '
+            'Do not add a second chart. Improve only the visual integration around the protected chart using refined lighting, '
+            'realistic depth, subtle reflections, elegant spacing, and premium editorial polish. Preserve the frame header and any '
+            'provided brand mark or footer; never replace them with invented logos or domains. '
+            f'Exact headline intent: {headline}. Supporting text intent: {copy_text}. Template: {template_id}. '
+            f'Brand theme: {brand_theme or media}. Canvas: {width}x{height}. Verified assets: {symbols}. '
+            'Return one finished image only, with no mockup annotations, editing handles, placeholder labels, or explanation.'
+        )
+    elif composition_mode == 'analytics_background':
         if len(ref_images) != 3:
             raise ValueError('Analytics background generation requires exactly three ordered references: design sample, approved composition, and approved chart.')
         if not template_id:

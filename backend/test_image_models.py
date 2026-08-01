@@ -81,6 +81,45 @@ class ImageModelAllowlistTests(unittest.TestCase):
                 'referenceImages': ['design', 'chart'],
             })
 
+    @patch('handlers.image.openrouter_image')
+    def test_frame_composite_forwards_static_frame_and_verified_chart(self, generate):
+        generate.return_value = ('finished-post', 'openai/gpt-5.4-image-2')
+        references = [
+            'data:image/png;base64,static-frame',
+            'data:image/png;base64,verified-chart',
+        ]
+
+        result = handle_generate_image({
+            'model': 'openai/gpt-5.4-image-2',
+            'mediaBrand': 'MGC Coin',
+            'compositionMode': 'analytics_frame_composite',
+            'templateId': 'laptop',
+            'brandTheme': 'mgc',
+            'outputDimensions': {'width': 1080, 'height': 1350},
+            'seriesMetadata': [{'symbol': 'MGC'}, {'symbol': 'BTC'}],
+            'referenceImages': references,
+            'headline': 'MGC outperformed BTC over 30 days',
+            'supportingText': 'Verified market movement, presented clearly.',
+        })
+
+        self.assertEqual(result['imageB64'], 'finished-post')
+        self.assertEqual(result['compositionMode'], 'analytics_frame_composite')
+        self.assertEqual(generate.call_args.kwargs['ref_images'], references)
+        prompt = generate.call_args.args[0]
+        self.assertIn('REFERENCE 1', prompt)
+        self.assertIn('REFERENCE 2', prompt)
+        self.assertIn('reserved chart aperture', prompt)
+        self.assertIn('fake CoinMarketCap screenshot', prompt)
+
+    def test_frame_composite_rejects_incomplete_payload(self):
+        with self.assertRaisesRegex(ValueError, 'exactly two ordered references'):
+            handle_generate_image({
+                'compositionMode': 'analytics_frame_composite',
+                'templateId': 'laptop',
+                'seriesMetadata': [{'symbol': 'MGC'}],
+                'referenceImages': ['static-frame'],
+            })
+
 
 if __name__ == '__main__':
     unittest.main()
