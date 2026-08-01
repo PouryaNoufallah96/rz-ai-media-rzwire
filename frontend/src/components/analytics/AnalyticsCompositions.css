@@ -16,6 +16,20 @@
 .rz-composition--oasis { background: radial-gradient(circle at 75% 18%, rgba(72, 139, 117, .2), transparent 37%), linear-gradient(145deg, #050608, #15181e 62%, #292e34); }
 .rz-composition--jewelry { color: #251846; background: radial-gradient(circle at 82% 14%, rgba(179, 137, 247, .35), transparent 40%), linear-gradient(145deg, #fbf9ff, #e7def9 61%, #b7a2ec); }
 .rz-composition--rzwire { background: radial-gradient(circle at 80% 8%, rgba(79, 148, 137, .25), transparent 34%), linear-gradient(145deg, #0b1115, #18252a 61%, #284149); }
+.rz-composition.rz-composition--generated-bg {
+  background:
+    linear-gradient(180deg, rgba(4,8,12,.08), rgba(4,8,12,.24)),
+    var(--generated-background),
+    linear-gradient(145deg, var(--theme-bg), var(--theme-bg-alt));
+  background-position: center;
+  background-size: cover;
+}
+.rz-composition--jewelry.rz-composition--generated-bg {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.07), rgba(57,35,91,.12)),
+    var(--generated-background),
+    linear-gradient(145deg, #fbf9ff, #e7def9 61%, #b7a2ec);
+}
 .rz-composition-atmosphere { position: absolute; inset: 0; z-index: -2; background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.2)), radial-gradient(circle at 50% 45%, transparent 0 38%, rgba(0,0,0,.16) 84%); }
 .rz-composition--jewelry .rz-composition-atmosphere { background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(57,35,91,.08)); }
 

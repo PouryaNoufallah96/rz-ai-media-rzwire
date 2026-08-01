@@ -100,6 +100,20 @@ async function imageUrlToDataUrl(url) {
   })
 }
 
+async function preloadImage(dataUrl) {
+  if (!dataUrl) throw new Error('The generated background is unavailable.')
+  const image = new Image()
+  image.src = dataUrl
+  if (typeof image.decode === 'function') {
+    await image.decode()
+    return
+  }
+  await new Promise((resolve, reject) => {
+    image.onload = resolve
+    image.onerror = () => reject(new Error('The generated background could not be prepared for export.'))
+  })
+}
+
 function finalImageFingerprint(image, composition) {
   if (!image || !composition) return ''
   return `${composition}:${image.length}:${image.slice(-48)}`
@@ -433,13 +447,15 @@ export default function AnalyticsPage() {
     setPublishDestination('')
     setPublishResult('')
     setError('')
+    const lockedNode = frameRefs.current[selectedTemplate.id]
     try {
+      if (!lockedNode) throw new Error('The approved composition is not ready for export yet. Please try again.')
       const approvedChart = await chartToPngDataUrl(chartSvgRef.current)
       const approvalSample = await imageUrlToDataUrl(selectedTemplate.image)
       const movement = marketData.series.reduce((total, item) => total + item.changePercent, 0) / marketData.series.length
-      const staticFrame = await captureComposition(frameRefs.current[selectedTemplate.id], outputFormat)
+      const lockedComposition = await captureComposition(lockedNode, outputFormat)
       const response = await fetch(`${API_BASE}/api/image/generate`, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
-            article:{title:headline || summary}, platform:'Instagram', mediaBrand:themeOwner.brand, sentiment:movement >= 0 ? 'Bullish' : 'Bearish', model:imageModel, compositionMode:'analytics_frame_composite', copy:chartText,
+            article:{title:headline || summary}, platform:'Instagram', mediaBrand:themeOwner.brand, sentiment:movement >= 0 ? 'Bullish' : 'Bearish', model:imageModel, compositionMode:'analytics_background', copy:chartText,
             templateId:selectedTemplate.id,
             templateCategoryId:selectedTemplate.categoryId,
             templateVariantId:selectedTemplate.id,
@@ -447,16 +463,23 @@ export default function AnalyticsPage() {
             brandTheme:brandTheme.id,
             outputDimensions:{width:outputFormat.width, height:outputFormat.height, ratio:format},
             seriesMetadata:marketData.series.map(item => ({id:item.id, tokenId:item.tokenId, symbol:item.symbol, name:item.name, role:item.role, startPrice:item.startPrice, endPrice:item.endPrice, changePercent:item.changePercent, coverageStart:item.coverageStart, coverageEnd:item.coverageEnd})),
-            referenceImages:[approvalSample, staticFrame, approvedChart],
-            imageDirection:`REFERENCE 1 is approval concept ${selectedTemplate.conceptLabel} and is the primary style target. Make the output strongly resemble its layout, visual rhythm, device treatment, hierarchy, and polish while replacing its example coin and chart with the verified selected assets. REFERENCE 2 is the deterministic ${selectedTemplate.name} frame and fixes the exact header, brand, logo, footer, and chart aperture. REFERENCE 3 is the authoritative approved chart and must remain complete and accurate. Preserve the ${brandTheme.label} palette and apply this variant guidance: ${selectedTemplate.stylePrompt} ${direction}`,
+            referenceImages:[approvalSample, lockedComposition, approvedChart],
+            imageDirection:`Generate ONLY the full-bleed decorative background atmosphere for this ${selectedTemplate.name} post. REFERENCE 1 supplies the approved mood, lighting, texture, and ${brandTheme.label} palette. REFERENCE 2 is the protected final composition; use it only to understand where calm negative space and contrast are needed. REFERENCE 3 is the factual chart; use it only as placement context. Do not render a phone, laptop, device, chart, graph, financial data, text, typography, token name, logo, footer, UI panel, card, border, or mockup. RZWire will place the already-approved phone, verified chart, headline, logo, and footer over your background after generation. ${direction}`,
           })})
       const data = await response.json().catch(() => ({}))
-      if (!response.ok || !data.imageB64) throw new Error(data.error || 'The image model did not return a finished frame composition.')
-      const image = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
-      setGeneratedPosts(previous => ({...previous, [selectedTemplate.id]:image}))
+      if (!response.ok || !data.imageB64) throw new Error(data.error || 'The image model did not return a decorative background.')
+      const background = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
+      await preloadImage(background)
+      lockedNode.style.setProperty('--generated-background', `url(${JSON.stringify(background)})`)
+      lockedNode.classList.add('rz-composition--generated-bg')
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const finishedPost = await captureComposition(lockedNode, outputFormat)
+      setGeneratedPosts(previous => ({...previous, [selectedTemplate.id]:finishedPost}))
     } catch (err) {
       setError(err.message || 'Post generation failed.')
     } finally {
+      lockedNode?.classList.remove('rz-composition--generated-bg')
+      lockedNode?.style.removeProperty('--generated-background')
       setGenerating(false)
       setGeneratingTemplateId('')
     }
@@ -532,21 +555,21 @@ export default function AnalyticsPage() {
             </div>)}
             <div className="analytics-template-selection-note"><strong>1 sample selected</strong><span>{selectedCompositionApproved ? 'This composition is approved and ready for generation.' : 'Review and approve this exact composition before generation.'}</span></div>
           </section>}
-          {chartApproved && <section className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished post</h2><p>The selected concept, deterministic composition, and approved factual chart are sent as three ordered references.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => { setDirection(event.target.value); invalidateCompositions() }} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !themeOwnerValid || !selectedCompositionApproved} onClick={generatePost}>{generating ? <><span className="analytics-spinner" />Creating {findTemplateVariant(generatingTemplateId)?.name || 'selected version'}…</> : <><Sparkles size={17} />Generate one finished post<ArrowRight size={17} /></>}</button>{!selectedCompositionApproved && <p className="analytics-generation-lock">Approve the selected composition in the preview panel to unlock generation.</p>}{error && <p className="analytics-error">{error}</p>}</section>}
+          {chartApproved && <section className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished post</h2><p>AI creates only the decorative atmosphere. RZWire exports the approved layout, device, copy, logo, and verified chart as protected foreground.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => { setDirection(event.target.value); invalidateCompositions() }} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !themeOwnerValid || !selectedCompositionApproved} onClick={generatePost}>{generating ? <><span className="analytics-spinner" />Creating {findTemplateVariant(generatingTemplateId)?.name || 'selected version'}…</> : <><Sparkles size={17} />Generate one finished post<ArrowRight size={17} /></>}</button>{!selectedCompositionApproved && <p className="analytics-generation-lock">Approve the selected composition in the preview panel to unlock generation.</p>}{error && <p className="analytics-error">{error}</p>}</section>}
         </aside>
         {chartApproved && themeOwnerValid && <section className="analytics-preview-column">
           <div className="analytics-preview-head"><div><p>Final composition preview</p><h2>{selectedTemplate.name}</h2><small>{themeOwner.name} visual system</small></div><span>{outputFormat.label}</span></div>
           <div className="analytics-reference-sample"><div><strong>Exact approved concept {selectedTemplate.conceptLabel}</strong><span>This image is the primary style target. The selected coin owner supplies its palette, logo, and footer while the verified chart replaces the sample market data.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact approval concept`} /></div>
-          <div className="analytics-live-output-label"><span>{generatedPost ? 'Finished generated PNG' : 'Deterministic composition frame'}</span><small>The concept, composition, and factual chart remain separate ordered references.</small></div>
-          {generatedPost ? <img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <CompositionPreview frameOnly templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} />}
+          <div className="analytics-live-output-label"><span>{generatedPost ? 'Finished protected PNG' : 'Locked final composition'}</span><small>The exact device, chart, copy, logo, and footer shown here remain fixed. Only the atmosphere behind them may change.</small></div>
+          {generatedPost ? <img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <CompositionPreview templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} />}
           <div className={`analytics-composition-approval ${selectedCompositionApproved ? 'approved' : ''}`}><div><strong>{selectedCompositionApproved ? 'Composition approved' : 'Approve this composition'}</strong><span>{selectedCompositionApproved ? 'Its exact state is ready for generation.' : 'Check hierarchy, palette, logo, footer, chart, and copy.'}</span></div><button type="button" onClick={() => setCompositionApprovals(previous => ({...previous, [selectedTemplate.id]:selectedFingerprint}))}>{selectedCompositionApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve {selectedTemplate.name}</>}</button></div>
           {generatedPost && <div className={`analytics-final-approval ${finalImageApproved ? 'approved' : ''}`}><div><strong>{finalImageApproved ? 'Final image approved' : 'Approve the final image'}</strong><span>{finalImageApproved ? 'Publishing destinations are now unlocked.' : 'Inspect the finished image before any external publishing action becomes available.'}</span></div><button type="button" onClick={() => { setFinalApprovals(previous => ({...previous, [selectedTemplate.id]:generatedFingerprint})); setPublishResult('') }}>{finalImageApproved ? <><CircleCheck size={17} />Final approved</> : <><Check size={17} />Approve final image</>}</button></div>}
           {generatedPost && finalImageApproved && <div className="analytics-publish-choice"><div><strong>Where do you want to publish it?</strong><span>Choose one destination. Nothing is posted until you press the final publish button.</span></div><div className="analytics-publish-destinations"><button type="button" className={publishDestination === 'telegram' ? 'selected' : ''} onClick={() => { setPublishDestination('telegram'); setPublishResult('') }}><Send size={18} /><span><strong>Telegram</strong><small>Publish to the configured RZWire channel</small></span>{publishDestination === 'telegram' && <Check size={16} />}</button><button type="button" className={publishDestination === 'x' ? 'selected' : ''} onClick={() => { setPublishDestination('x'); setPublishResult('') }}><MessageCircle size={18} /><span><strong>X</strong><small>Publish with the approved market copy</small></span>{publishDestination === 'x' && <Check size={16} />}</button></div><button type="button" className="analytics-publish-final" disabled={!publishDestination || publishing} onClick={publishFinalImage}>{publishing ? <><span className="analytics-spinner" />Publishing…</> : <>Publish final image to {publishDestination === 'telegram' ? 'Telegram' : publishDestination === 'x' ? 'X' : 'selected destination'}<ArrowRight size={17} /></>}</button>{publishResult && <p className="analytics-publish-success"><CircleCheck size={16} />{publishResult}</p>}</div>}
-          <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Three-reference composition</strong>The exact concept controls the aesthetic, the static frame controls protected brand and copy placement, and the approved chart controls every financial fact.</span></div>
+          <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Protected composition</strong>The selected concept guides only the atmosphere. RZWire deterministically locks the device, chart, financial facts, copy, logo, and footer into the final export.</span></div>
         </section>}
       </div>
     </main>
-    {chartApproved && themeOwnerValid && <div className="analytics-export-renders" aria-hidden="true"><div key={`capture-${selectedTemplate.id}`} style={{width:`${outputFormat.width}px`}}><CompositionPreview frameOnly ref={node => { frameRefs.current[selectedTemplate.id] = node }} templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} /></div></div>}
+    {chartApproved && themeOwnerValid && <div className="analytics-export-renders" aria-hidden="true"><div key={`capture-${selectedTemplate.id}`} style={{width:`${outputFormat.width}px`}}><CompositionPreview ref={node => { frameRefs.current[selectedTemplate.id] = node }} templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} /></div></div>}
     <ChatWidget />
   </div>
 }
