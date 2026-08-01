@@ -105,13 +105,41 @@ def handle_generate_image(body):
     image_direction = body.get('imageDirection', '').strip()
     ref_images = body.get('referenceImages', []) or []
     composition_mode = body.get('compositionMode', '').strip()
+    template_id = body.get('templateId', '').strip()
+    brand_theme = body.get('brandTheme', '').strip()
+    output_dimensions = body.get('outputDimensions') or {}
+    series_metadata = body.get('seriesMetadata') or []
     language = body.get('language', 'en')
     if model not in OPENROUTER_IMAGE_MODELS:
         raise ValueError('Unsupported image generation model')
 
     profile = BRAND_IMAGE_PROFILES.get(media)
     brief = None
-    if composition_mode == 'analytics_post':
+    if composition_mode == 'analytics_background':
+        if len(ref_images) != 3:
+            raise ValueError('Analytics background generation requires exactly three ordered references: design sample, approved composition, and approved chart.')
+        if not template_id:
+            raise ValueError('Analytics background generation requires templateId.')
+        if not isinstance(series_metadata, list) or not series_metadata:
+            raise ValueError('Analytics background generation requires verified seriesMetadata.')
+        width = int(output_dimensions.get('width') or 1080)
+        height = int(output_dimensions.get('height') or 1350)
+        if width < 512 or height < 512 or width > 4096 or height > 4096:
+            raise ValueError('Analytics output dimensions must be between 512 and 4096 pixels.')
+        symbols = ', '.join(str(item.get('symbol', '')).upper() for item in series_metadata if item.get('symbol'))
+        prompt = (
+            'Create only a refined decorative background layer for a premium financial social post. '
+            'REFERENCE 1 is the permanent publishing-design sample. REFERENCE 2 is the approved deterministic final composition. '
+            'REFERENCE 3 is the authoritative white factual chart. Use them only to understand spacing, atmosphere, and palette. '
+            'The returned image will sit BEHIND the exact deterministic composition, so preserve calm negative space and avoid focal '
+            'objects where the composition places its device, chart, header, statistics, logo, and footer. '
+            'STRICTLY FORBIDDEN: any letters, words, numbers, tickers, prices, percentages, dates, charts, axes, legends, logos, '
+            'watermarks, device screens, interface panels, cards, buttons, graphs, or financial symbols. Do not imitate or redraw '
+            'any protected factual or branded layer. Return atmosphere only: subtle light, gradient depth, restrained texture, and '
+            f'brand-compatible ambience. Template: {template_id}. Theme: {brand_theme or media}. Canvas: {width}x{height}. '
+            f'Assets represented above the background: {symbols}. '
+        )
+    elif composition_mode == 'analytics_post':
         if len(ref_images) < 2:
             raise ValueError('Analytics post composition requires a design reference and an approved chart reference.')
         prompt = (
@@ -172,6 +200,7 @@ def handle_generate_image(body):
         'model': model_used,
         'requestedModel': model,
         'usedFallback': model_used != model,
+        'compositionMode': composition_mode,
     }
     if brief is not None:
         result['brief'] = brief
