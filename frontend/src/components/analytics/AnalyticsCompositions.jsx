@@ -99,14 +99,14 @@ function PhoneView({series, period, scale}) {
   </div>
 }
 
-function DesktopView({series, period, scale, neutral}) {
+function DesktopView({series, period, scale}) {
   const compact = series.length > 3
   return <div className={`rz-laptop-shell ${compact ? 'is-dense' : ''}`}>
     <div className="rz-laptop-lid">
       <div className="rz-laptop-camera" />
       <div className="rz-laptop-screen">
         <div className="rz-desktop-top">
-          <b>{neutral ? 'RZWire Market' : 'CoinMarketCap'}</b>
+          <b>RZWire Market</b>
           <span>Cryptocurrencies</span><span>Markets</span><span>Community</span>
           <i>Search assets</i><i className="rz-desktop-avatar" />
         </div>
@@ -158,33 +158,33 @@ function CombinedView({series, scale}) {
   return <div className="rz-combined-view"><h3>{headline}</h3><div className="rz-combined-chart"><div className="rz-legend">{series.map(item => <TokenBadge key={item.id} item={item} detailed />)}</div><MarketChart series={series} scale={scale} dark /></div></div>
 }
 
-function StaticFrameStage({templateId, series, period}) {
+function StaticFrameStage({templateCategoryId, series, period}) {
   const marks = <div className="rz-frame-corners" aria-hidden="true"><i /><i /><i /><i /></div>
-  if (templateId === 'phone') return <div className="rz-static-phone"><div className="rz-static-phone-notch" /><div className="rz-frame-aperture">{marks}</div><div className="rz-static-frame-meta"><span>{period}</span><span>{series.length} verified {series.length === 1 ? 'asset' : 'assets'}</span></div></div>
-  if (templateId === 'laptop') return <div className="rz-static-laptop"><div className="rz-static-laptop-lid"><div className="rz-static-laptop-camera" /><div className="rz-frame-aperture">{marks}</div></div><div className="rz-static-laptop-deck"><i /></div></div>
-  if (templateId === 'growth') return <div className="rz-static-growth"><div className="rz-static-growth-copy"><span>VERIFIED PERFORMANCE</span><b>{series[0]?.symbol}</b><i /></div><div className="rz-frame-aperture">{marks}</div></div>
-  if (templateId === 'contrast') return <div className="rz-static-contrast"><div className="rz-static-contrast-labels"><i /><i /></div><div className="rz-frame-aperture">{marks}</div></div>
-  if (templateId === 'separated') return <div className="rz-static-separated"><div className="rz-frame-aperture">{marks}</div><div className="rz-static-stat-slots">{series.slice(0, 6).map(item => <i key={item.id} style={{'--series':item.color}} />)}</div></div>
+  if (templateCategoryId === 'phone') return <div className="rz-static-phone"><div className="rz-static-phone-notch" /><div className="rz-frame-aperture">{marks}</div><div className="rz-static-frame-meta"><span>{period}</span><span>{series.length} verified {series.length === 1 ? 'asset' : 'assets'}</span></div></div>
+  if (templateCategoryId === 'laptop') return <div className="rz-static-laptop"><div className="rz-static-laptop-lid"><div className="rz-static-laptop-camera" /><div className="rz-frame-aperture">{marks}</div></div><div className="rz-static-laptop-deck"><i /></div></div>
+  if (templateCategoryId === 'growth') return <div className="rz-static-growth"><div className="rz-static-growth-copy"><span>VERIFIED PERFORMANCE</span><b>{series[0]?.symbol}</b><i /></div><div className="rz-frame-aperture">{marks}</div></div>
+  if (templateCategoryId === 'contrast') return <div className="rz-static-contrast"><div className="rz-static-contrast-labels"><i /><i /></div><div className="rz-frame-aperture">{marks}</div></div>
+  if (templateCategoryId === 'separated') return <div className="rz-static-separated"><div className="rz-frame-aperture">{marks}</div><div className="rz-static-stat-slots">{series.slice(0, 6).map(item => <i key={item.id} style={{'--series':item.color}} />)}</div></div>
   return <div className="rz-static-combined"><div className="rz-static-combined-orbit" /><div className="rz-frame-aperture">{marks}</div></div>
 }
 
-const CompositionPreview = forwardRef(function CompositionPreview({marketData, templateId, headline, chartText, period, format, theme, tokens, primaryIds=[], frameOnly=false}, ref) {
+const CompositionPreview = forwardRef(function CompositionPreview({marketData, templateCategoryId, templateVariantId, themeOwnerTokenId, headline, chartText, period, format, theme, tokens, frameOnly=false}, ref) {
   const series = compositionSeries(marketData, tokens)
   const output = OUTPUT_FORMATS.find(item => item.id === format) || OUTPUT_FORMATS[0]
-  const primaryCount = series.filter(item => item.role === 'primary').length
-  const resolvedTheme = theme || analyticsTheme(primaryIds, tokens)
-  return <article ref={ref} className={`rz-composition rz-composition--${templateId} rz-composition--${resolvedTheme.id} rz-composition--${format} ${frameOnly ? 'rz-composition--frame' : ''}`} style={{'--ratio':`${output.width}/${output.height}`, '--accent':resolvedTheme.accent, '--accent-2':resolvedTheme.accent2}}>
+  const resolvedTheme = theme || analyticsTheme(themeOwnerTokenId, tokens)
+  if (!resolvedTheme) return null
+  return <article ref={ref} className={`rz-composition rz-composition--${templateCategoryId} rz-composition--${templateVariantId} rz-composition--${resolvedTheme.id} rz-composition--${format} ${frameOnly ? 'rz-composition--frame' : ''}`} style={{'--ratio':`${output.width}/${output.height}`, '--accent':resolvedTheme.accent, '--accent-2':resolvedTheme.accent2, '--theme-bg':resolvedTheme.background, '--theme-bg-alt':resolvedTheme.backgroundAlt, '--theme-surface':resolvedTheme.surface, '--theme-surface-alt':resolvedTheme.surfaceAlt, '--theme-text':resolvedTheme.text, '--theme-muted':resolvedTheme.muted, '--theme-border':resolvedTheme.border}}>
     <div className="rz-composition-atmosphere" />
     <div className="rz-composition-content">
       <header className="rz-composition-header"><small>{period} verified market view</small><h2>{headline}</h2><p>{chartText}</p></header>
       <div className="rz-composition-stage">
-        {frameOnly ? <StaticFrameStage templateId={templateId} series={series} period={period} /> : <>
-          {templateId === 'phone' && <PhoneView series={series} period={period} scale={marketData.scale} />}
-          {templateId === 'laptop' && <DesktopView series={series} period={period} scale={marketData.scale} neutral={primaryCount !== 1} />}
-          {templateId === 'growth' && <GrowthView series={series} scale={marketData.scale} />}
-          {templateId === 'contrast' && <ContrastView series={series} scale={marketData.scale} />}
-          {templateId === 'separated' && <SeparatedCards series={series} scale={marketData.scale} />}
-          {templateId === 'combined' && <CombinedView series={series} scale={marketData.scale} />}
+        {frameOnly ? <StaticFrameStage templateCategoryId={templateCategoryId} series={series} period={period} /> : <>
+          {templateCategoryId === 'phone' && <PhoneView series={series} period={period} scale={marketData.scale} />}
+          {templateCategoryId === 'laptop' && <DesktopView series={series} period={period} scale={marketData.scale} />}
+          {templateCategoryId === 'growth' && <GrowthView series={series} scale={marketData.scale} />}
+          {templateCategoryId === 'contrast' && <ContrastView series={series} scale={marketData.scale} />}
+          {templateCategoryId === 'separated' && <SeparatedCards series={series} scale={marketData.scale} />}
+          {templateCategoryId === 'combined' && <CombinedView series={series} scale={marketData.scale} />}
         </>}
       </div>
       <BrandFooter theme={resolvedTheme} series={series} />

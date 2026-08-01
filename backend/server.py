@@ -49,6 +49,7 @@ from handlers.chat import (
 from handlers.translation import handle_translate_cards
 from handlers.market import (
     handle_market_assets,
+    handle_market_brands,
     handle_market_history,
     handle_market_history_batch,
     handle_resolve_dex_asset,
@@ -91,6 +92,11 @@ class Handler(BaseHTTPRequestHandler):
                 'publishing': {'enabled': PUBLISHING_ENABLED},
                 'sheets': {'enabled': SHEETS_ENABLED},
             })
+        elif self.path.startswith('/api/market/brands'):
+            user = auth.get_current_user(self)
+            if user is None:
+                return self._error(401, 'Not authenticated')
+            self._json(handle_market_brands())
         elif self.path.startswith('/api/market/history'):
             user = auth.get_current_user(self)
             if user is None:

@@ -10,6 +10,8 @@ from time import monotonic, sleep
 
 import requests
 
+from analytics_brands import get_analytics_brand, market_token_config, public_analytics_brands
+
 
 GECKO_BASE = "https://api.geckoterminal.com/api/v2"
 BINANCE_BASE = "https://api.binance.com/api/v3"
@@ -18,35 +20,11 @@ GECKO_HEADERS = {
     "User-Agent": "RZWire/1.0 market-analytics",
 }
 
-TOKEN_CONFIG = {
-    "mgc": {
-        "name": "MGC Coin",
-        "symbol": "MGC",
-        "network": "bsc",
-        "contract": "0xbb73BB2505AC4643d5C0a99c2A1F34B3DfD09D11",
-        "pool": "0x771e1c638a9409bfc93158588f1745f638f4d10b",
-        "poolName": "RZ / MGC",
-        "tokenSide": "quote",
-    },
-    "oasis": {
-        "name": "Oasis Coin",
-        "symbol": "OASIS",
-        "network": "bsc",
-        "contract": "0x1a4D41219C547f3A0EE36cf3d9E68F80699cF283",
-        "pool": "0xc60bb735abcaa4be9a271bfe3af2fad19a953397",
-        "poolName": "OASIS / MGC",
-        "tokenSide": "base",
-    },
-    "jewelry": {
-        "name": "Jewelry Coin",
-        "symbol": "JEWELRY",
-        "network": "bsc",
-        "contract": "0xf04FaB6Dda66261eaBfD65e92A6b81dDaF6a950a",
-        "pool": "0xd85df7190cdc09a42d7a2567f68812128c71e9a7",
-        "poolName": "Jewelry / MGC",
-        "tokenSide": "base",
-    },
-}
+TOKEN_CONFIG = market_token_config()
+
+
+def handle_market_brands() -> dict:
+    return {"ok": True, "brands": public_analytics_brands()}
 
 PERIOD_CONFIG = {
     "24h": {"gecko": ("hour", 1, 25), "binance": ("1h", 25)},
@@ -355,13 +333,12 @@ def _normalise_batch_request(body: dict) -> tuple[list[dict], str, str]:
     primary_symbols: set[str] = set()
     for raw_token_id in primary_ids:
         token_id = str(raw_token_id or "").strip().lower()
-        if token_id not in TOKEN_CONFIG:
-            raise ValueError("Primary tokens must be mgc, oasis, or jewelry.")
+        brand = get_analytics_brand(token_id)
         key = f"rz:{token_id}"
         if key in seen:
             raise ValueError("Each RZWire token can only be selected once.")
         seen.add(key)
-        token = TOKEN_CONFIG[token_id]
+        token = {"name": brand["name"], "symbol": brand["symbol"], **brand["market"]}
         primary_symbols.add(token["symbol"].upper())
         descriptors.append({
             "id": key,
@@ -413,9 +390,11 @@ def _fetch_descriptor(descriptor: dict, period: str) -> dict:
     asset_type = descriptor["type"]
     if asset_type == "rz":
         token_id = descriptor["tokenId"]
+        brand = get_analytics_brand(token_id)
+        token = {"name": brand["name"], "symbol": brand["symbol"], **brand["market"]}
         summary, source, cached = _cached_series(
             ("rz", token_id, period),
-            lambda: _gecko_history(TOKEN_CONFIG[token_id], period),
+            lambda: _gecko_history(token, period),
         )
     elif asset_type == "binance":
         symbol = descriptor["symbol"]
@@ -513,8 +492,11 @@ def handle_market_history(params: dict[str, list[str]]) -> dict:
     period = (params.get("period") or ["30d"])[0].strip()
     compare = (params.get("compare") or [""])[0].strip().upper()
 
-    if token_id not in TOKEN_CONFIG:
-        raise ValueError("token must be mgc, oasis, or jewelry")
+    try:
+        brand = get_analytics_brand(token_id)
+    except ValueError as exc:
+        allowed = ", ".join(sorted(TOKEN_CONFIG))
+        raise ValueError(f"token must be one of: {allowed}") from exc
     if period not in PERIOD_CONFIG:
         raise ValueError("Unsupported period")
     if compare:
@@ -526,7 +508,8 @@ def handle_market_history(params: dict[str, list[str]]) -> dict:
         if cached and monotonic() - cached[0] < _CACHE_SECONDS:
             return {**cached[1], "cached": True}
 
-    primary, primary_source = _gecko_history(TOKEN_CONFIG[token_id], period)
+    token = {"name": brand["name"], "symbol": brand["symbol"], **brand["market"]}
+    primary, primary_source = _gecko_history(token, period)
     comparison = comparison_source = None
     if compare:
         comparison, comparison_source = _binance_history(compare, period)

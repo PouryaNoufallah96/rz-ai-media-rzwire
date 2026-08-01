@@ -4,25 +4,11 @@ import { AlertTriangle, ArrowRight, CalendarDays, Check, CircleCheck, Database, 
 import NavBar from '../components/NavBar'
 import ChatWidget from '../components/chat/ChatWidget'
 import { API_BASE, IMAGE_MODEL_OPTIONS } from '../store/mmStore'
-import mgcLogo from '../assets/brands/mgc-coin-logo.png'
-import oasisLogo from '../assets/brands/oasis-coin-logo.png'
-import jewelryLogo from '../assets/brands/jewelry-coin-logo.png'
-import phoneTemplate from '../assets/analytics-templates/phone-market-reference.png'
-import desktopTemplate from '../assets/analytics-templates/desktop-dashboard-reference.png'
-import growthTemplate from '../assets/analytics-templates/growth-spotlight.png'
-import winnerLoserTemplate from '../assets/analytics-templates/winner-loser.png'
-import separatedTemplate from '../assets/analytics-templates/separated-performance-reference.jpg'
-import combinedTemplate from '../assets/analytics-templates/combined-performance-reference.jpg'
 import CompositionPreview from '../components/analytics/AnalyticsCompositions'
-import { OUTPUT_FORMATS, analyticsTheme, compositionFingerprint } from '../components/analytics/analyticsCompositionConfig'
+import { OUTPUT_FORMATS, EXTERNAL_COLORS, analyticsTheme, compositionFingerprint } from '../components/analytics/analyticsCompositionConfig'
+import { TEMPLATE_CATEGORIES, TEMPLATE_VARIANTS, findTemplateVariant } from '../components/analytics/analyticsTemplates'
 import '../components/analytics/AnalyticsCompositions.css'
 import './AnalyticsPage.css'
-
-const TOKENS = [
-  { id:'mgc', name:'MGC Coin', symbol:'MGC', brand:'MGC Coin', logo:mgcLogo, color:'#d9b91d' },
-  { id:'oasis', name:'Oasis Coin', symbol:'OASIS', brand:'Oasis Coin', logo:oasisLogo, color:'#739e90' },
-  { id:'jewelry', name:'Jewelry Coin', symbol:'JEWELRY', brand:'Jewelry Coin', logo:jewelryLogo, color:'#8f82e8' },
-]
 
 const POPULAR_COMPARISONS = [
   { id:'binance:BTC', type:'binance', symbol:'BTC', name:'Bitcoin', source:'Binance Public Spot API' },
@@ -32,16 +18,6 @@ const POPULAR_COMPARISONS = [
 ]
 
 const PERIODS = ['24h', '7d', '30d', '90d', '1y']
-const EXTERNAL_COLORS = ['#c9877f', '#3978c7', '#b878cf']
-const TEMPLATES = [
-  { id:'phone', name:'Phone Chart Frame', description:'A premium phone frame with a dedicated approved-chart aperture.', image:phoneTemplate, min:1, max:6 },
-  { id:'laptop', name:'Laptop Chart Frame', description:'A cinematic laptop frame built around the approved chart.', image:desktopTemplate, min:1, max:6 },
-  { id:'growth', name:'Growth Spotlight', description:'A bold performance frame with a large protected chart window.', image:growthTemplate, min:1, max:6 },
-  { id:'contrast', name:'Performance Contrast', description:'A refined winner, loser, or mixed-market editorial frame.', image:winnerLoserTemplate, min:1, max:6 },
-  { id:'separated', name:'Separated Performance', description:'A modular frame with room for the chart and exact asset results.', image:separatedTemplate, min:1, max:6 },
-  { id:'combined', name:'Combined Performance', description:'A premium multi-series frame with a dominant chart aperture.', image:combinedTemplate, min:1, max:6 },
-]
-
 function formatPrice(value) {
   const amount = Number(value)
   if (!Number.isFinite(amount)) return 'Unavailable'
@@ -142,17 +118,17 @@ function suggestedCopy(series, period) {
   }
 }
 
-function colorisedSeries(data) {
+function colorisedSeries(data, tokens) {
   let comparisonIndex = 0
   return (data?.series || []).map(item => {
-    const primary = TOKENS.find(token => token.symbol === item.symbol)
+    const primary = tokens.find(token => token.id === item.tokenId || token.symbol === item.symbol)
     const color = primary?.color || EXTERNAL_COLORS[comparisonIndex++ % EXTERNAL_COLORS.length]
     return {...item, color}
   })
 }
 
-function VerifiedChart({ data, chartRef }) {
-  const series = colorisedSeries(data)
+function VerifiedChart({ data, chartRef, tokens }) {
+  const series = colorisedSeries(data, tokens)
   const scale = data.scale || 'relative'
   const valueSets = series.map(item => chartValues(item, scale))
   const allValues = valueSets.flat().filter(Number.isFinite)
@@ -194,7 +170,11 @@ function VerifiedChart({ data, chartRef }) {
 export default function AnalyticsPage() {
   const chartSvgRef = useRef(null)
   const frameRefs = useRef({})
-  const [primaryIds, setPrimaryIds] = useState(['mgc'])
+  const [tokens, setTokens] = useState([])
+  const [brandsLoading, setBrandsLoading] = useState(true)
+  const [brandsError, setBrandsError] = useState('')
+  const [primaryIds, setPrimaryIds] = useState([])
+  const [themeOwnerTokenId, setThemeOwnerTokenId] = useState('')
   const [comparisonAssets, setComparisonAssets] = useState([POPULAR_COMPARISONS[2]])
   const [assetQuery, setAssetQuery] = useState('')
   const [assetResults, setAssetResults] = useState(POPULAR_COMPARISONS)
@@ -206,8 +186,8 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState('30d')
   const [scale, setScale] = useState('relative')
   const [format, setFormat] = useState('portrait')
-  const [templateIds, setTemplateIds] = useState(['laptop'])
-  const [previewTemplateId, setPreviewTemplateId] = useState('laptop')
+  const [templateVariantIds, setTemplateVariantIds] = useState(['laptop-cinematic'])
+  const [previewVariantId, setPreviewVariantId] = useState('laptop-cinematic')
   const [imageModel, setImageModel] = useState('openai/gpt-5.4-image-2')
   const [direction, setDirection] = useState('Premium financial editorial composition with refined lighting, elegant hierarchy, generous spacing, a beautiful header, and a dominant readable chart.')
   const [compositionApprovals, setCompositionApprovals] = useState({})
@@ -222,20 +202,46 @@ export default function AnalyticsPage() {
   const [headline, setHeadline] = useState('30-day market comparison')
   const [chartText, setChartText] = useState('Verified movement, presented with exact market data.')
 
-  const selectedPrimary = TOKENS.filter(token => primaryIds.includes(token.id))
+  const selectedPrimary = tokens.filter(token => primaryIds.includes(token.id))
   const allSelectedSymbols = [...selectedPrimary.map(token => token.symbol), ...comparisonAssets.map(asset => asset.symbol)]
   const seriesCount = allSelectedSymbols.length
-  const primaryToken = selectedPrimary[0] || TOKENS[0]
-  const selectedTemplates = TEMPLATES.filter(item => templateIds.includes(item.id))
-  const selectedTemplate = TEMPLATES.find(item => item.id === previewTemplateId) || selectedTemplates[0] || TEMPLATES[1]
-  const brandTheme = analyticsTheme(primaryIds, TOKENS)
+  const selectedTemplates = TEMPLATE_VARIANTS.filter(item => templateVariantIds.includes(item.id))
+  const selectedTemplate = findTemplateVariant(previewVariantId) || selectedTemplates[0] || TEMPLATE_VARIANTS[3]
+  const themeOwnerValid = selectedPrimary.some(token => token.id === themeOwnerTokenId)
+  const themeOwner = tokens.find(token => token.id === themeOwnerTokenId)
+  const brandTheme = themeOwnerValid ? analyticsTheme(themeOwnerTokenId, tokens) : null
   const outputFormat = OUTPUT_FORMATS.find(item => item.id === format) || OUTPUT_FORMATS[0]
   const generatedPost = generatedPosts[selectedTemplate.id] || ''
-  const selectedFingerprint = marketData ? compositionFingerprint({templateId:selectedTemplate.id, marketData, period, scale, format, headline, chartText, themeId:brandTheme.id}) : ''
+  const selectedFingerprint = marketData && brandTheme ? compositionFingerprint({templateCategoryId:selectedTemplate.categoryId, templateVariantId:selectedTemplate.id, themeOwnerTokenId, marketData, period, scale, format, headline, chartText, direction}) : ''
   const selectedCompositionApproved = Boolean(selectedFingerprint && compositionApprovals[selectedTemplate.id] === selectedFingerprint)
-  const everyCompositionApproved = Boolean(marketData && selectedTemplates.length && selectedTemplates.every(item => compositionApprovals[item.id] === compositionFingerprint({templateId:item.id, marketData, period, scale, format, headline, chartText, themeId:brandTheme.id})))
+  const everyCompositionApproved = Boolean(marketData && brandTheme && selectedTemplates.length && selectedTemplates.every(item => compositionApprovals[item.id] === compositionFingerprint({templateCategoryId:item.categoryId, templateVariantId:item.id, themeOwnerTokenId, marketData, period, scale, format, headline, chartText, direction})))
   const summary = `${allSelectedSymbols.join(' versus ')}, ${period}, ${scale === 'relative' ? 'relative performance' : 'absolute USD price'}`
   const visibleAssetResults = assetQuery.trim() ? assetResults : POPULAR_COMPARISONS
+
+  useEffect(() => {
+    let active = true
+    async function loadBrands() {
+      setBrandsLoading(true)
+      try {
+        const response = await fetch(`${API_BASE}/api/market/brands`, {credentials:'include'})
+        const data = await response.json().catch(() => ({}))
+        if (!response.ok) throw new Error(data.error || 'RZWire brands could not be loaded.')
+        const next = (data.brands || []).map(brand => ({...brand, brand:brand.name, logo:brand.logoUrl, color:brand.chartColor}))
+        if (!next.length) throw new Error('No approved analytics brands are enabled.')
+        if (!active) return
+        setTokens(next)
+        setPrimaryIds(previous => previous.length ? previous.filter(id => next.some(item => item.id === id)) : [next[0].id])
+        setThemeOwnerTokenId(previous => next.some(item => item.id === previous) ? previous : next[0].id)
+        setBrandsError('')
+      } catch (err) {
+        if (active) setBrandsError(err.message || 'RZWire brands could not be loaded.')
+      } finally {
+        if (active) setBrandsLoading(false)
+      }
+    }
+    loadBrands()
+    return () => { active = false }
+  }, [])
 
   useEffect(() => {
     const query = assetQuery.trim()
@@ -274,7 +280,7 @@ export default function AnalyticsPage() {
   function togglePrimary(id) {
     setSelectionError('')
     const selected = primaryIds.includes(id)
-    const token = TOKENS.find(item => item.id === id)
+    const token = tokens.find(item => item.id === id)
     if (selected && primaryIds.length === 1) {
       setSelectionError('At least one RZWire token must remain selected.')
       return
@@ -283,8 +289,19 @@ export default function AnalyticsPage() {
       setSelectionError(`${token.symbol} is already selected as a comparison asset.`)
       return
     }
-    setPrimaryIds(selected ? primaryIds.filter(item => item !== id) : [...primaryIds, id])
+    const next = selected ? primaryIds.filter(item => item !== id) : [...primaryIds, id]
+    setPrimaryIds(next)
+    if (next.length === 1) setThemeOwnerTokenId(next[0])
+    else if (primaryIds.length === 1 || !next.includes(themeOwnerTokenId)) setThemeOwnerTokenId('')
     invalidateMarketData()
+  }
+
+  function chooseThemeOwner(id) {
+    if (!primaryIds.includes(id)) return
+    setThemeOwnerTokenId(id)
+    setCompositionApprovals({})
+    setGeneratedPosts({})
+    setError('')
   }
 
   function addComparison(asset) {
@@ -349,18 +366,22 @@ export default function AnalyticsPage() {
 
   function toggleTemplate(id) {
     setError('')
-    if (templateIds.includes(id)) {
-      if (templateIds.length === 1) {
+    if (!themeOwnerValid) {
+      setError('Choose which selected RZWire coin owns the post theme first.')
+      return
+    }
+    if (templateVariantIds.includes(id)) {
+      if (templateVariantIds.length === 1) {
         setError('Keep at least one publishing design selected.')
         return
       }
-      const next = templateIds.filter(item => item !== id)
-      setTemplateIds(next)
-      if (previewTemplateId === id) setPreviewTemplateId(next[0])
+      const next = templateVariantIds.filter(item => item !== id)
+      setTemplateVariantIds(next)
+      if (previewVariantId === id) setPreviewVariantId(next[0])
       return
     }
-    setTemplateIds([...templateIds, id])
-    setPreviewTemplateId(id)
+    setTemplateVariantIds([...templateVariantIds, id])
+    setPreviewVariantId(id)
   }
 
   async function generatePosts() {
@@ -371,6 +392,10 @@ export default function AnalyticsPage() {
     }
     if (!selectedTemplates.length) {
       setError('Select at least one publishing design.')
+      return
+    }
+    if (!themeOwnerValid || !brandTheme) {
+      setError('Choose one selected RZWire coin to own the post theme.')
       return
     }
     const incompatible = selectedTemplates.find(item => seriesCount < item.min || seriesCount > item.max)
@@ -394,11 +419,14 @@ export default function AnalyticsPage() {
         try {
           const staticFrame = await captureComposition(frameRefs.current[publishingTemplate.id], outputFormat)
           const response = await fetch(`${API_BASE}/api/image/generate`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
-            article:{title:headline || summary}, platform:'Instagram', mediaBrand:primaryIds.length === 1 ? primaryToken.brand : 'RZWire', sentiment:movement >= 0 ? 'Bullish' : 'Bearish', model:imageModel, compositionMode:'analytics_frame_composite', copy:chartText,
+            article:{title:headline || summary}, platform:'Instagram', mediaBrand:themeOwner.brand, sentiment:movement >= 0 ? 'Bullish' : 'Bearish', model:imageModel, compositionMode:'analytics_frame_composite', copy:chartText,
             templateId:publishingTemplate.id,
+            templateCategoryId:publishingTemplate.categoryId,
+            templateVariantId:publishingTemplate.id,
+            themeOwnerTokenId,
             brandTheme:brandTheme.id,
             outputDimensions:{width:outputFormat.width, height:outputFormat.height, ratio:format},
-            seriesMetadata:marketData.series.map(item => ({id:item.id, symbol:item.symbol, name:item.name, role:item.role, startPrice:item.startPrice, endPrice:item.endPrice, changePercent:item.changePercent, coverageStart:item.coverageStart, coverageEnd:item.coverageEnd})),
+            seriesMetadata:marketData.series.map(item => ({id:item.id, tokenId:item.tokenId, symbol:item.symbol, name:item.name, role:item.role, startPrice:item.startPrice, endPrice:item.endPrice, changePercent:item.changePercent, coverageStart:item.coverageStart, coverageEnd:item.coverageEnd})),
             referenceImages:[staticFrame, approvedChart],
             imageDirection:`Use the ${publishingTemplate.name} frame exactly. Preserve its ${brandTheme.label} palette, header hierarchy, logo placement, footer, and chart aperture. ${direction}`,
           })})
@@ -406,7 +434,7 @@ export default function AnalyticsPage() {
           if (!response.ok || !data.imageB64) throw new Error(data.error || 'The image model did not return a finished frame composition.')
           completed[publishingTemplate.id] = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
           setGeneratedPosts({...completed})
-          setPreviewTemplateId(publishingTemplate.id)
+          setPreviewVariantId(publishingTemplate.id)
         } catch (templateError) {
           failures.push(`${publishingTemplate.name}: ${templateError.message || 'generation failed'}`)
         }
@@ -429,8 +457,12 @@ export default function AnalyticsPage() {
       <div className="analytics-layout analytics-layout--storyboard">
         <aside className="analytics-controls">
           <section className="analytics-control-section analytics-setup-section">
-            <div className="analytics-section-heading"><span>01A</span><div><h2>Select RZWire tokens</h2><p>Choose one, two, or all three primary brand tokens.</p></div></div>
-            <div className="analytics-token-grid">{TOKENS.map(item => <button key={item.id} type="button" className={primaryIds.includes(item.id) ? 'selected' : ''} onClick={() => togglePrimary(item.id)}><img src={item.logo} alt="" /><span><strong>{item.symbol}</strong><small>{item.name}</small></span>{primaryIds.includes(item.id) && <Check size={15} />}</button>)}</div>
+            <div className="analytics-section-heading"><span>01A</span><div><h2>Select RZWire tokens</h2><p>Choose up to three enabled brands from the central RZWire coin registry.</p></div></div>
+            {brandsLoading && <div className="analytics-proof-empty"><span className="analytics-spinner" /><strong>Loading approved brands…</strong></div>}
+            {brandsError && <p className="analytics-error">{brandsError}</p>}
+            <div className="analytics-token-grid">{tokens.map(item => <button key={item.id} type="button" className={primaryIds.includes(item.id) ? 'selected' : ''} onClick={() => togglePrimary(item.id)}><img src={item.logo} alt="" /><span><strong>{item.symbol}</strong><small>{item.name}</small></span>{primaryIds.includes(item.id) && <Check size={15} />}</button>)}</div>
+            {selectedPrimary.length === 1 && themeOwner && <div className="analytics-theme-owner-note"><img src={themeOwner.logo} alt="" /><span><strong>{themeOwner.name} owns this post</strong><small>Palette, logo, footer, motifs, and Art Director are automatic.</small></span></div>}
+            {selectedPrimary.length > 1 && <div className="analytics-theme-owner-picker"><div><strong>Choose the visual owner</strong><span>One selected RZWire coin must own the post theme. Comparison coins cannot own it.</span></div><div>{selectedPrimary.map(item => <button type="button" key={item.id} className={themeOwnerTokenId === item.id ? 'selected' : ''} onClick={() => chooseThemeOwner(item.id)}><img src={item.logo} alt="" /><span>{item.symbol}</span>{themeOwnerTokenId === item.id && <Check size={14} />}</button>)}</div>{!themeOwnerValid && <small>Select a visual owner to unlock publishing designs.</small>}</div>}
             <div className="analytics-selected-summary"><strong>{seriesCount}/6 chart lines</strong><div>{selectedPrimary.map(item => <span key={item.id}><i style={{background:item.color}} />{item.symbol}</span>)}{comparisonAssets.map((item, index) => <span key={item.id}><i style={{background:EXTERNAL_COLORS[index % EXTERNAL_COLORS.length]}} />{item.symbol}<button type="button" onClick={() => removeComparison(item.id)} aria-label={`Remove ${item.symbol}`}><X size={12} /></button></span>)}</div></div>
           </section>
           <section className="analytics-control-section analytics-market-section">
@@ -448,24 +480,36 @@ export default function AnalyticsPage() {
             <button type="button" className="analytics-verify" disabled={verifying || !primaryIds.length} onClick={verifyMarketData}>{verifying ? <><span className="analytics-spinner" />Extracting {seriesCount} price histories…</> : <><RefreshCw size={16} />Fetch and verify {seriesCount} chart {seriesCount === 1 ? 'line' : 'lines'}</>}</button>
             {verificationError && <p className="analytics-error">{verificationError}</p>}
             {!marketData && !verifying && <div className="analytics-proof-empty"><LineChart size={28} /><strong>Your complete verified chart will appear here</strong><span>RZWire will fetch every selected history concurrently and keep available lines if another provider fails.</span></div>}
-            {marketData && <><VerifiedChart data={marketData} chartRef={chartSvgRef} />{!!marketData.failures?.length && <div className="analytics-failure-summary"><AlertTriangle size={16} /><span><strong>{marketData.failures.length} selected {marketData.failures.length === 1 ? 'asset was' : 'assets were'} unavailable.</strong>{marketData.failures.map(item => <small key={item.id}>{item.symbol} - unavailable from {item.type === 'binance' ? 'Binance' : 'GeckoTerminal'}: {item.error}</small>)}<small>The verified lines above can still be approved.</small></span></div>}<div className="analytics-chart-approval"><div><strong>{chartApproved ? 'Chart approved' : 'Check every line and label before continuing'}</strong><span>{chartApproved ? 'Copy, compatible examples, and image generation are unlocked.' : 'Confirm the prices, axes, dates, warnings, and source attribution.'}</span></div><button type="button" className={chartApproved ? 'approved' : ''} onClick={() => setChartApproved(true)}>{chartApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve complete chart</>}</button></div></>}
+            {marketData && <><VerifiedChart data={marketData} chartRef={chartSvgRef} tokens={tokens} />{!!marketData.failures?.length && <div className="analytics-failure-summary"><AlertTriangle size={16} /><span><strong>{marketData.failures.length} selected {marketData.failures.length === 1 ? 'asset was' : 'assets were'} unavailable.</strong>{marketData.failures.map(item => <small key={item.id}>{item.symbol} — {item.error}</small>)}<small>The verified lines above can still be approved.</small></span></div>}<div className="analytics-chart-approval"><div><strong>{chartApproved ? 'Chart approved' : 'Check every line and label before continuing'}</strong><span>{chartApproved ? 'Story and publishing choices are unlocked.' : 'Confirm the prices, axes, dates, warnings, and source attribution.'}</span></div><button type="button" className={chartApproved ? 'approved' : ''} onClick={() => setChartApproved(true)}>{chartApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve complete chart</>}</button></div></>}
           </section>
           {chartApproved && <section className="analytics-control-section analytics-copy-section"><div className="analytics-section-heading"><span>03</span><div><h2>Write the story</h2><p>Set the beautiful header and supporting statement that guide every static publishing frame.</p></div></div><label>Header<input value={headline} onChange={event => { setHeadline(event.target.value); invalidateCompositions() }} /></label><label>Chart text<textarea rows="4" value={chartText} onChange={event => { setChartText(event.target.value); invalidateCompositions() }} /></label></section>}
-          {chartApproved && <section className="analytics-control-section analytics-template-section"><div className="analytics-section-heading"><span>04</span><div><h2>Choose how to publish it</h2><p>Select one or several static frames. Each frame is sent separately from the approved chart.</p></div></div><div className="analytics-template-grid analytics-template-grid--exact">{TEMPLATES.map(item => { const compatible = marketData.series.length >= item.min && marketData.series.length <= item.max; const selected = templateIds.includes(item.id); const approved = compositionApprovals[item.id] === compositionFingerprint({templateId:item.id, marketData, period, scale, format, headline, chartText, themeId:brandTheme.id}); return <button key={item.id} type="button" disabled={!compatible} className={selected ? 'selected' : ''} onClick={() => toggleTemplate(item.id)}><img src={item.image} alt={`${item.name} publishing example`} /><span><strong>{item.name}</strong><small>{compatible ? item.description : `Requires ${item.min === item.max ? `${item.min} lines` : `${item.min}-${item.max} lines`}`}</small>{selected && <em className={approved ? 'approved' : ''}>{approved ? 'Approved' : 'Needs approval'}</em>}</span>{selected && compatible && <Check size={16} />}</button> })}</div><div className="analytics-template-selection-note"><strong>{selectedTemplates.length} {selectedTemplates.length === 1 ? 'frame' : 'frames'} selected</strong><span>{everyCompositionApproved ? 'Every selected frame is approved.' : 'Open each selected frame and approve it before generation.'}</span></div></section>}
-          {chartApproved && <section className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished posts</h2><p>RZWire sends the selected static frame and approved factual chart as two separate references. The model places the complete chart inside the reserved frame.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => setDirection(event.target.value)} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !chartApproved || !selectedTemplates.length || !everyCompositionApproved} onClick={generatePosts}>{generating ? <><span className="analytics-spinner" />Creating {TEMPLATES.find(item => item.id === generatingTemplateId)?.name || 'selected version'}…</> : <><Sparkles size={17} />Generate {selectedTemplates.length} finished {selectedTemplates.length === 1 ? 'post' : 'posts'}<ArrowRight size={17} /></>}</button>{!everyCompositionApproved && <p className="analytics-generation-lock">Approve every selected frame in the preview panel to unlock generation.</p>}{error && <p className="analytics-error">{error}</p>}</section>}
+          {chartApproved && <section className={`analytics-control-section analytics-template-section ${!themeOwnerValid ? 'is-locked' : ''}`}>
+            <div className="analytics-section-heading"><span>04</span><div><h2>Choose how to publish it</h2><p>Choose a category, then one or more permanent visual variants.</p></div></div>
+            {!themeOwnerValid && <p className="analytics-generation-lock">Choose which selected RZWire coin owns the visual theme first.</p>}
+            {TEMPLATE_CATEGORIES.map(category => <div className="analytics-template-category" key={category.id}>
+              <div><strong>{category.name}</strong><span>{category.description}</span></div>
+              <div className="analytics-template-grid analytics-template-grid--exact">{category.variants.map(variant => {
+                const selected = templateVariantIds.includes(variant.id)
+                const approved = compositionApprovals[variant.id] === compositionFingerprint({templateCategoryId:category.id, templateVariantId:variant.id, themeOwnerTokenId, marketData, period, scale, format, headline, chartText, direction})
+                return <button key={variant.id} type="button" disabled={!themeOwnerValid} className={selected ? 'selected' : ''} onClick={() => toggleTemplate(variant.id)}><img src={variant.image} alt={`${variant.name} publishing example`} /><span><strong>{variant.name}</strong><small>{variant.description}</small>{selected && <em className={approved ? 'approved' : ''}>{approved ? 'Approved' : 'Needs approval'}</em>}</span>{selected && <Check size={16} />}</button>
+              })}</div>
+            </div>)}
+            <div className="analytics-template-selection-note"><strong>{selectedTemplates.length} {selectedTemplates.length === 1 ? 'variant' : 'variants'} selected</strong><span>{everyCompositionApproved ? 'Every selected composition is approved.' : 'Open and approve every selected composition before generation.'}</span></div>
+          </section>}
+          {chartApproved && <section className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished posts</h2><p>Each approved variant uses its permanent frame, exact chart, and the visual owner’s Art Director.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => { setDirection(event.target.value); invalidateCompositions() }} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !themeOwnerValid || !selectedTemplates.length || !everyCompositionApproved} onClick={generatePosts}>{generating ? <><span className="analytics-spinner" />Creating {findTemplateVariant(generatingTemplateId)?.name || 'selected version'}…</> : <><Sparkles size={17} />Generate {selectedTemplates.length} finished {selectedTemplates.length === 1 ? 'post' : 'posts'}<ArrowRight size={17} /></>}</button>{!everyCompositionApproved && <p className="analytics-generation-lock">Approve every selected composition in the preview panel to unlock generation.</p>}{error && <p className="analytics-error">{error}</p>}</section>}
         </aside>
-        {chartApproved && <section className="analytics-preview-column">
-          <div className="analytics-preview-head"><div><p>Final composition preview</p><h2>{selectedTemplate.name}</h2></div><span>{outputFormat.label}</span></div>
-          <div className="analytics-variant-tabs" aria-label="Selected publishing versions">{selectedTemplates.map(item => { const approved = compositionApprovals[item.id] === compositionFingerprint({templateId:item.id, marketData, period, scale, format, headline, chartText, themeId:brandTheme.id}); return <button key={item.id} type="button" className={selectedTemplate.id === item.id ? 'selected' : ''} onClick={() => setPreviewTemplateId(item.id)}>{approved && <Check size={13} />}{item.name}</button> })}</div>
+        {chartApproved && themeOwnerValid && <section className="analytics-preview-column">
+          <div className="analytics-preview-head"><div><p>Final composition preview</p><h2>{selectedTemplate.name}</h2><small>{themeOwner.name} visual system</small></div><span>{outputFormat.label}</span></div>
+          <div className="analytics-variant-tabs" aria-label="Selected publishing versions">{selectedTemplates.map(item => { const approved = compositionApprovals[item.id] === compositionFingerprint({templateCategoryId:item.categoryId, templateVariantId:item.id, themeOwnerTokenId, marketData, period, scale, format, headline, chartText, direction}); return <button key={item.id} type="button" className={selectedTemplate.id === item.id ? 'selected' : ''} onClick={() => setPreviewVariantId(item.id)}>{approved && <Check size={13} />}{item.name}</button> })}</div>
           <div className="analytics-reference-sample"><div><strong>Visual family reference</strong><span>The original example informs the publishing style; the new static frame below controls header, logo, footer, and chart placement.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} style reference`} /></div>
           <div className="analytics-live-output-label"><span>{generatedPost ? 'Finished frame-composed PNG' : 'Static publishing frame'}</span><small>The approved chart is kept separate until image generation.</small></div>
-          {generatedPost ? <img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <CompositionPreview frameOnly templateId={selectedTemplate.id} marketData={marketData} tokens={TOKENS} primaryIds={primaryIds} period={period} scale={scale} format={format} headline={headline} chartText={chartText} />}
-          <div className={`analytics-composition-approval ${selectedCompositionApproved ? 'approved' : ''}`}><div><strong>{selectedCompositionApproved ? 'Static frame approved' : 'Approve this static frame'}</strong><span>{selectedCompositionApproved ? 'This frame and the approved chart are ready for generation.' : 'Check the header, hierarchy, palette, logo, footer, and reserved chart aperture.'}</span></div><button type="button" onClick={() => setCompositionApprovals(previous => ({...previous, [selectedTemplate.id]:selectedFingerprint}))}>{selectedCompositionApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve {selectedTemplate.name}</>}</button></div>
+          {generatedPost ? <img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <CompositionPreview frameOnly templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} />}
+          <div className={`analytics-composition-approval ${selectedCompositionApproved ? 'approved' : ''}`}><div><strong>{selectedCompositionApproved ? 'Composition approved' : 'Approve this composition'}</strong><span>{selectedCompositionApproved ? 'Its exact state is ready for generation.' : 'Check hierarchy, palette, logo, footer, chart, and copy.'}</span></div><button type="button" onClick={() => setCompositionApprovals(previous => ({...previous, [selectedTemplate.id]:selectedFingerprint}))}>{selectedCompositionApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve {selectedTemplate.name}</>}</button></div>
           <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Two-reference composition</strong>The static frame and the complete approved chart are sent separately. The model must place the full chart inside the reserved aperture without inventing extra dashboards, cards, or market data.</span></div>
         </section>}
       </div>
     </main>
-    {chartApproved && <div className="analytics-export-renders" aria-hidden="true">{selectedTemplates.map(item => <div key={`capture-${item.id}`} style={{width:`${outputFormat.width}px`}}><CompositionPreview frameOnly ref={node => { frameRefs.current[item.id] = node }} templateId={item.id} marketData={marketData} tokens={TOKENS} primaryIds={primaryIds} period={period} scale={scale} format={format} headline={headline} chartText={chartText} /></div>)}</div>}
+    {chartApproved && themeOwnerValid && <div className="analytics-export-renders" aria-hidden="true">{selectedTemplates.map(item => <div key={`capture-${item.id}`} style={{width:`${outputFormat.width}px`}}><CompositionPreview frameOnly ref={node => { frameRefs.current[item.id] = node }} templateCategoryId={item.categoryId} templateVariantId={item.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} /></div>)}</div>}
     <ChatWidget />
   </div>
 }

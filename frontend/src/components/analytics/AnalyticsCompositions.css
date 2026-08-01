@@ -7,7 +7,7 @@
   aspect-ratio: var(--ratio);
   overflow: hidden;
   color: var(--paper);
-  background: radial-gradient(circle at 75% 10%, rgba(91, 122, 113, .22), transparent 35%), linear-gradient(145deg, #0f1418, #20272d 62%, #353c40);
+  background: radial-gradient(circle at 75% 10%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 35%), linear-gradient(145deg, var(--theme-bg), var(--theme-bg-alt) 72%);
   border-radius: 14px;
   box-shadow: 0 28px 60px rgba(0, 0, 0, .3);
   font-family: Inter, Arial, sans-serif;
@@ -18,6 +18,28 @@
 .rz-composition--rzwire { background: radial-gradient(circle at 80% 8%, rgba(79, 148, 137, .25), transparent 34%), linear-gradient(145deg, #0b1115, #18252a 61%, #284149); }
 .rz-composition-atmosphere { position: absolute; inset: 0; z-index: -2; background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.2)), radial-gradient(circle at 50% 45%, transparent 0 38%, rgba(0,0,0,.16) 84%); }
 .rz-composition--jewelry .rz-composition-atmosphere { background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(57,35,91,.08)); }
+
+/* Variant-level art direction. These alter composition, never factual chart data. */
+.rz-composition--phone-split-stat .rz-static-phone,
+.rz-composition--phone-split-stat .rz-phone-shell { transform: translateY(1.5%) scale(.9); }
+.rz-composition--phone-editorial .rz-composition-header { max-width: 70%; }
+.rz-composition--phone-editorial .rz-static-phone,
+.rz-composition--phone-editorial .rz-phone-shell { justify-self: end; width: 78%; }
+.rz-composition--laptop-editorial .rz-static-laptop,
+.rz-composition--laptop-editorial .rz-laptop-shell { transform: translateY(3%) scale(.92); }
+.rz-composition--laptop-wide .rz-static-laptop,
+.rz-composition--laptop-wide .rz-laptop-shell { width: 100%; transform: scale(1.04); }
+.rz-composition--growth-hero .rz-growth-view,
+.rz-composition--growth-hero .rz-static-growth { transform: scale(1.05); }
+.rz-composition--growth-milestone .rz-composition-header { text-align: center; place-items: center; }
+.rz-composition--contrast-intersecting .rz-static-contrast,
+.rz-composition--contrast-intersecting .rz-contrast-view { transform: rotate(-1deg) scale(.96); }
+.rz-composition--contrast-scoreboard .rz-contrast-cards { grid-template-columns: 1fr; }
+.rz-composition--separated-stacked .rz-separated-grid { grid-template-columns: 1fr; overflow: hidden; }
+.rz-composition--separated-orbiting .rz-separated-grid { transform: rotate(-2deg) scale(.94); }
+.rz-composition--combined-minimal .rz-composition-atmosphere { opacity: .35; }
+.rz-composition--combined-minimal .rz-composition-header p { display: none; }
+.rz-composition--combined-editorial .rz-combined-view { transform: translateY(2%); }
 
 .rz-composition-content { position: absolute; inset: 0; display: grid; grid-template-rows: auto minmax(0,1fr) auto; gap: 2.2cqw; padding: 5.2cqw 5.5cqw 3.8cqw; }
 .rz-composition-header { position: relative; z-index: 3; display: grid; gap: .45cqw; }

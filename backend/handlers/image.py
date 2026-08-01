@@ -4,6 +4,7 @@ import sys
 
 from config import BRAND_VISUAL_TONE, EDITORIAL_MODELS, OPENROUTER_IMAGE_MODELS
 from brand_profiles import BRAND_IMAGE_PROFILES
+from analytics_brands import get_analytics_brand
 from llm import openrouter_chat, openrouter_image
 from image_pipeline import (_RECENT_BRIEFS, _remember_brief, _article_mentions_brand,
                             call_art_director, validate_brief, assemble_prompt, _fallback_brief)
@@ -106,6 +107,9 @@ def handle_generate_image(body):
     ref_images = body.get('referenceImages', []) or []
     composition_mode = body.get('compositionMode', '').strip()
     template_id = body.get('templateId', '').strip()
+    template_category_id = body.get('templateCategoryId', '').strip() or template_id
+    template_variant_id = body.get('templateVariantId', '').strip() or template_id
+    theme_owner_token_id = body.get('themeOwnerTokenId', '').strip().lower()
     brand_theme = body.get('brandTheme', '').strip()
     output_dimensions = body.get('outputDimensions') or {}
     series_metadata = body.get('seriesMetadata') or []
@@ -118,10 +122,32 @@ def handle_generate_image(body):
     if composition_mode == 'analytics_frame_composite':
         if len(ref_images) != 2:
             raise ValueError('Analytics frame composition requires exactly two ordered references: static publishing frame and approved factual chart.')
-        if not template_id:
-            raise ValueError('Analytics frame composition requires templateId.')
+        if not template_category_id or not template_variant_id:
+            raise ValueError('Analytics frame composition requires templateCategoryId and templateVariantId.')
         if not isinstance(series_metadata, list) or not series_metadata:
             raise ValueError('Analytics frame composition requires verified seriesMetadata.')
+        # Older analytics clients identified the owner through ``brandTheme`` and
+        # omitted role/tokenId from series metadata. Preserve that request shape
+        # while keeping the registry as the sole source of truth. New clients
+        # always send themeOwnerTokenId explicitly.
+        legacy_theme_owner = not theme_owner_token_id
+        if legacy_theme_owner:
+            theme_owner_token_id = brand_theme.strip().lower()
+        theme_owner = get_analytics_brand(theme_owner_token_id)
+        selected_primary_ids = {
+            str(item.get('tokenId') or str(item.get('id') or '').removeprefix('rz:')).strip().lower()
+            for item in series_metadata if item.get('role') == 'primary'
+        }
+        if legacy_theme_owner and not selected_primary_ids:
+            owner_symbol = str(theme_owner.get('symbol') or '').upper()
+            if any(str(item.get('symbol') or '').upper() == owner_symbol for item in series_metadata):
+                selected_primary_ids.add(theme_owner_token_id)
+        if theme_owner_token_id not in selected_primary_ids:
+            raise ValueError('The analytics theme owner must be one of the selected RZWire primary tokens.')
+        profile = BRAND_IMAGE_PROFILES.get(theme_owner['artDirectorProfile'])
+        if not profile:
+            raise ValueError('The selected analytics theme owner has no approved Art Director profile.')
+        media = theme_owner['artDirectorProfile']
         width = int(output_dimensions.get('width') or 1080)
         height = int(output_dimensions.get('height') or 1350)
         if width < 512 or height < 512 or width > 4096 or height > 4096:
@@ -140,8 +166,11 @@ def handle_generate_image(body):
             'Do not add a second chart. Improve only the visual integration around the protected chart using refined lighting, '
             'realistic depth, subtle reflections, elegant spacing, and premium editorial polish. Preserve the frame header and any '
             'provided brand mark or footer; never replace them with invented logos or domains. '
-            f'Exact headline intent: {headline}. Supporting text intent: {copy_text}. Template: {template_id}. '
-            f'Brand theme: {brand_theme or media}. Canvas: {width}x{height}. Verified assets: {symbols}. '
+            f'Exact headline intent: {headline}. Supporting text intent: {copy_text}. '
+            f'Publishing category: {template_category_id}. Exact variant: {template_variant_id}. '
+            f'Brand owner: {theme_owner["name"]}. Brand palette: {json.dumps(theme_owner["theme"])}. '
+            f'Brand motifs: {", ".join(theme_owner["motifs"])}. Art direction: {theme_owner["imagePrompt"]}. '
+            f'Canvas: {width}x{height}. Verified assets: {symbols}. '
             'Return one finished image only, with no mockup annotations, editing handles, placeholder labels, or explanation.'
         )
     elif composition_mode == 'analytics_background':
