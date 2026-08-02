@@ -456,7 +456,7 @@ export default function AnalyticsPage() {
       const movement = marketData.series.reduce((total, item) => total + item.changePercent, 0) / marketData.series.length
       const lockedComposition = await captureComposition(lockedNode, outputFormat)
       const response = await fetch(`${API_BASE}/api/image/generate`, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
-            article:{title:headline || summary}, platform:'Instagram', mediaBrand:themeOwner.brand, sentiment:movement >= 0 ? 'Bullish' : 'Bearish', model:imageModel, compositionMode:'analytics_background', copy:chartText,
+            article:{title:headline || summary}, platform:'Instagram', mediaBrand:themeOwner.brand, sentiment:movement >= 0 ? 'Bullish' : 'Bearish', model:imageModel, compositionMode:'analytics_art_directed', copy:chartText,
             templateId:selectedTemplate.id,
             templateCategoryId:selectedTemplate.categoryId,
             templateVariantId:selectedTemplate.id,
@@ -465,22 +465,16 @@ export default function AnalyticsPage() {
             outputDimensions:{width:outputFormat.width, height:outputFormat.height, ratio:format},
             seriesMetadata:marketData.series.map(item => ({id:item.id, tokenId:item.tokenId, symbol:item.symbol, name:item.name, role:item.role, startPrice:item.startPrice, endPrice:item.endPrice, changePercent:item.changePercent, coverageStart:item.coverageStart, coverageEnd:item.coverageEnd})),
             referenceImages:[approvalSample, lockedComposition, approvedChart],
-            imageDirection:`Generate ONLY the full-bleed decorative background atmosphere for this ${selectedTemplate.name} post. REFERENCE 1 supplies the approved mood, lighting, texture, and ${brandTheme.label} palette. REFERENCE 2 is the protected final composition; use it only to understand where calm negative space and contrast are needed. REFERENCE 3 is the factual chart; use it only as placement context. Do not render a phone, laptop, device, chart, graph, financial data, text, typography, token name, logo, footer, UI panel, card, border, or mockup. RZWire will place the already-approved phone, verified chart, headline, logo, and footer over your background after generation. ${direction}`,
+            imageDirection:`Treat the approved ${selectedTemplate.name} sample as a binding publishing family. Recreate that same premium composition for ${brandTheme.label}; adapt its palette, identity, exact supplied copy, and verified market content. Keep the complete approved chart sharp and physically inside the sample's reserved chart aperture or device screen. ${direction}`,
           })})
       const data = await response.json().catch(() => ({}))
-      if (!response.ok || !data.imageB64) throw new Error(data.error || 'The image model did not return a decorative background.')
-      const background = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
-      await preloadImage(background)
-      lockedNode.style.setProperty('--generated-background', `url(${JSON.stringify(background)})`)
-      lockedNode.classList.add('rz-composition--generated-bg')
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-      const finishedPost = await captureComposition(lockedNode, outputFormat)
+      if (!response.ok || !data.imageB64) throw new Error(data.error || 'The Analytics Art Director did not return a finished post.')
+      const finishedPost = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
+      await preloadImage(finishedPost)
       setGeneratedPosts(previous => ({...previous, [selectedTemplate.id]:finishedPost}))
     } catch (err) {
       setError(err.message || 'Post generation failed.')
     } finally {
-      lockedNode?.classList.remove('rz-composition--generated-bg')
-      lockedNode?.style.removeProperty('--generated-background')
       setGenerating(false)
       setGeneratingTemplateId('')
     }
@@ -556,7 +550,7 @@ export default function AnalyticsPage() {
             </div>)}
             <div className="analytics-template-selection-note"><strong>1 sample selected</strong><span>{selectedCompositionApproved ? 'This composition is approved and ready for generation.' : 'Review and approve this exact composition before generation.'}</span></div>
           </section>}
-          {chartApproved && <section className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished post</h2><p>AI creates only the decorative atmosphere. RZWire exports the approved layout, device, copy, logo, and verified chart as protected foreground.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => { setDirection(event.target.value); invalidateCompositions() }} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !themeOwnerValid || !selectedCompositionApproved} onClick={generatePost}>{generating ? <><span className="analytics-spinner" />Creating {findTemplateVariant(generatingTemplateId)?.name || 'selected version'}…</> : <><Sparkles size={17} />Generate one finished post<ArrowRight size={17} /></>}</button>{!selectedCompositionApproved && <p className="analytics-generation-lock">Approve the selected composition in the preview panel to unlock generation.</p>}{error && <p className="analytics-error">{error}</p>}</section>}
+          {chartApproved && <section className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished post</h2><p>The Analytics Art Director combines the approved publishing sample, selected coin identity, locked composition, and verified chart into one finished post.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => { setDirection(event.target.value); invalidateCompositions() }} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !themeOwnerValid || !selectedCompositionApproved} onClick={generatePost}>{generating ? <><span className="analytics-spinner" />Creating {findTemplateVariant(generatingTemplateId)?.name || 'selected version'}…</> : <><Sparkles size={17} />Generate one finished post<ArrowRight size={17} /></>}</button>{!selectedCompositionApproved && <p className="analytics-generation-lock">Approve the selected composition in the preview panel to unlock generation.</p>}{error && <p className="analytics-error">{error}</p>}</section>}
         </aside>
         {chartApproved && themeOwnerValid && <section className="analytics-preview-column">
           <div className="analytics-preview-head"><div><p>Final composition preview</p><h2>{selectedTemplate.name}</h2><small>{themeOwner.name} visual system</small></div><span>{outputFormat.label}</span></div>

@@ -81,6 +81,51 @@ class ImageModelAllowlistTests(unittest.TestCase):
                 'referenceImages': ['design', 'chart'],
             })
 
+    @patch('handlers.image.call_analytics_art_director')
+    @patch('handlers.image.openrouter_image')
+    def test_analytics_art_director_uses_family_brand_and_three_references(self, generate, direct):
+        generate.return_value = ('finished-art', 'openai/gpt-5.4-image-2')
+        direct.return_value = {
+            'family': 'phone', 'variant': 'phone-centered', 'sample_fidelity': 'binding',
+            'lighting': 'cinematic atmospheric', 'depth': 'cinematic dimensional',
+            'density': 'balanced',
+        }
+        references = ['approved-sample', 'locked-composition', 'approved-chart']
+        result = handle_generate_image({
+            'model': 'openai/gpt-5.4-image-2',
+            'compositionMode': 'analytics_art_directed',
+            'templateCategoryId': 'phone',
+            'templateVariantId': 'phone-centered',
+            'themeOwnerTokenId': 'mgc',
+            'outputDimensions': {'width': 1080, 'height': 1350},
+            'article': {'title': 'MGC vs BTC'},
+            'copy': 'Thirty-day verified comparison.',
+            'seriesMetadata': [
+                {'tokenId': 'mgc', 'symbol': 'MGC', 'role': 'primary', 'startPrice': 2, 'endPrice': 3},
+                {'symbol': 'BTC', 'role': 'comparison', 'startPrice': 60000, 'endPrice': 62000},
+            ],
+            'referenceImages': references,
+        })
+        self.assertEqual(result['imageB64'], 'finished-art')
+        self.assertEqual(result['compositionMode'], 'analytics_art_directed')
+        self.assertEqual(generate.call_args.kwargs['ref_images'], references)
+        prompt = generate.call_args.args[0]
+        self.assertIn('binding composition contract', prompt)
+        self.assertIn('inside the device screen', prompt)
+        self.assertIn('metagamescoin.io', prompt)
+        self.assertEqual(result['brief']['variant'], 'phone-centered')
+
+    def test_analytics_art_director_rejects_non_primary_theme_owner(self):
+        with self.assertRaisesRegex(ValueError, 'must be one of the selected'):
+            handle_generate_image({
+                'compositionMode': 'analytics_art_directed',
+                'templateCategoryId': 'phone',
+                'templateVariantId': 'phone-centered',
+                'themeOwnerTokenId': 'oasis',
+                'seriesMetadata': [{'tokenId': 'mgc', 'symbol': 'MGC', 'role': 'primary'}],
+                'referenceImages': ['sample', 'composition', 'chart'],
+            })
+
     @patch('handlers.image.openrouter_image')
     def test_frame_composite_forwards_static_frame_and_verified_chart(self, generate):
         generate.return_value = ('finished-post', 'openai/gpt-5.4-image-2')

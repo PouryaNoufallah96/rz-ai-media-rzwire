@@ -8,6 +8,11 @@ from analytics_brands import get_analytics_brand
 from llm import openrouter_chat, openrouter_image
 from image_pipeline import (_RECENT_BRIEFS, _remember_brief, _article_mentions_brand,
                             call_art_director, validate_brief, assemble_prompt, _fallback_brief)
+from analytics_image_pipeline import (assemble_analytics_prompt,
+                                      call_analytics_art_director,
+                                      fallback_analytics_brief,
+                                      resolve_analytics_template,
+                                      validate_analytics_brief)
 from _branddoc import _brand_doc
 
 
@@ -119,7 +124,57 @@ def handle_generate_image(body):
 
     profile = BRAND_IMAGE_PROFILES.get(media)
     brief = None
-    if composition_mode == 'analytics_frame_composite':
+    append_image_direction = True
+    apply_logo_safe_zone = True
+    if composition_mode == 'analytics_art_directed':
+        if len(ref_images) != 3:
+            raise ValueError(
+                'Analytics Art Director requires exactly three ordered references: approved publishing sample, '
+                'approved locked composition, and approved factual chart.'
+            )
+        if not template_category_id or not template_variant_id:
+            raise ValueError('Analytics Art Director requires templateCategoryId and templateVariantId.')
+        if not isinstance(series_metadata, list) or not series_metadata:
+            raise ValueError('Analytics Art Director requires verified seriesMetadata.')
+        if not theme_owner_token_id:
+            raise ValueError('Analytics Art Director requires themeOwnerTokenId.')
+
+        theme_owner = get_analytics_brand(theme_owner_token_id)
+        selected_primary_ids = {
+            str(item.get('tokenId') or str(item.get('id') or '').removeprefix('rz:')).strip().lower()
+            for item in series_metadata if item.get('role') == 'primary'
+        }
+        if theme_owner_token_id not in selected_primary_ids:
+            raise ValueError('The analytics theme owner must be one of the selected RZWire primary tokens.')
+        profile = BRAND_IMAGE_PROFILES.get(theme_owner['artDirectorProfile'])
+        if not profile:
+            raise ValueError('The selected analytics theme owner has no approved Art Director profile.')
+
+        template = resolve_analytics_template(template_category_id, template_variant_id)
+        width = int(output_dimensions.get('width') or 1080)
+        height = int(output_dimensions.get('height') or 1350)
+        if width < 512 or height < 512 or width > 4096 or height > 4096:
+            raise ValueError('Analytics output dimensions must be between 512 and 4096 pixels.')
+        output_dimensions = {**output_dimensions, 'width': width, 'height': height}
+        media = theme_owner['artDirectorProfile']
+
+        try:
+            raw_brief = call_analytics_art_director(
+                article, copy_text, theme_owner, profile, template,
+                output_dimensions, series_metadata, image_direction,
+            )
+            brief = validate_analytics_brief(raw_brief, template, theme_owner, series_metadata)
+        except Exception as exc:  # Keep image generation available if the brief model fails.
+            print(f'[image] Analytics Art Director failed, using fallback brief: {exc}', file=sys.stderr)
+            brief = fallback_analytics_brief(template, theme_owner, series_metadata)
+
+        prompt = assemble_analytics_prompt(
+            brief, template, theme_owner, profile, article, copy_text,
+            output_dimensions, series_metadata,
+        )
+        append_image_direction = False
+        apply_logo_safe_zone = False
+    elif composition_mode == 'analytics_frame_composite':
         if len(ref_images) not in (2, 3):
             raise ValueError(
                 'Analytics frame composition requires either two legacy references or three ordered references: '
@@ -260,12 +315,12 @@ def handle_generate_image(body):
             f'No text overlays. No logos.'
         )
 
-    if image_direction:
+    if image_direction and append_image_direction:
         prompt = prompt + ' ' + image_direction
     if language == 'fa':
         prompt += (' Any visible headline, caption, or text in the image MUST be fluent Persian in a clear RTL layout '
                    'with Persian digits. Keep only essential crypto tickers and project or brand names in English.')
-    if ''.join(str(media).lower().split()) in _LOGO_MEDIA_KEYS:
+    if apply_logo_safe_zone and ''.join(str(media).lower().split()) in _LOGO_MEDIA_KEYS:
         prompt += _LOGO_SAFE_ZONE
 
     print(f'[image] brief: {brief}', file=sys.stderr)
