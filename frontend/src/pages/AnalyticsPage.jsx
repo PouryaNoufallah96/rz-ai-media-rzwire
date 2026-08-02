@@ -3,7 +3,7 @@ import { toPng } from 'html-to-image'
 import { AlertTriangle, ArrowRight, CalendarDays, Check, CircleCheck, Database, ImageIcon, LineChart, MessageCircle, Plus, RefreshCw, Search, Send, Sparkles, X } from 'lucide-react'
 import NavBar from '../components/NavBar'
 import ChatWidget from '../components/chat/ChatWidget'
-import { API_BASE, IMAGE_MODEL_OPTIONS } from '../store/mmStore'
+import { API_BASE, EDITORIAL_MODEL_META, IMAGE_MODEL_OPTIONS } from '../store/mmStore'
 import CompositionPreview from '../components/analytics/AnalyticsCompositions'
 import { OUTPUT_FORMATS, EXTERNAL_COLORS, analyticsTheme, compositionFingerprint } from '../components/analytics/analyticsCompositionConfig'
 import { TEMPLATE_CATEGORIES, TEMPLATE_VARIANTS, findTemplateVariant } from '../components/analytics/analyticsTemplates'
@@ -18,6 +18,12 @@ const POPULAR_COMPARISONS = [
 ]
 
 const PERIODS = ['24h', '7d', '30d', '90d', '1y']
+const CAPTION_PLATFORMS = [
+  {id:'telegram', label:'Telegram', apiName:'Telegram', description:'Detailed editorial caption · 300–600 characters · 3–5 hashtags'},
+  {id:'x', label:'X', apiName:'X', description:'Concise post · maximum 280 characters · no emoji'},
+]
+const EDITORIAL_MODELS = Object.entries(EDITORIAL_MODEL_META).map(([id, meta]) => ({id, ...meta}))
+
 function formatPrice(value) {
   const amount = Number(value)
   if (!Number.isFinite(amount)) return 'Unavailable'
@@ -226,6 +232,11 @@ export default function AnalyticsPage() {
   const [generatedPosts, setGeneratedPosts] = useState({})
   const [finalApprovals, setFinalApprovals] = useState({})
   const [publishDestination, setPublishDestination] = useState('')
+  const [captionModelKey, setCaptionModelKey] = useState('')
+  const [captionVariants, setCaptionVariants] = useState([])
+  const [selectedCaptionIndex, setSelectedCaptionIndex] = useState(-1)
+  const [generatingCaptions, setGeneratingCaptions] = useState(false)
+  const [captionError, setCaptionError] = useState('')
   const [publishing, setPublishing] = useState(false)
   const [publishResult, setPublishResult] = useState('')
   const [generating, setGenerating] = useState(false)
@@ -299,6 +310,15 @@ export default function AnalyticsPage() {
     return () => { clearTimeout(timer); controller.abort() }
   }, [assetQuery])
 
+  function resetCaptionFlow({keepDestination=false, keepModel=false}={}) {
+    if (!keepDestination) setPublishDestination('')
+    if (!keepModel) setCaptionModelKey('')
+    setCaptionVariants([])
+    setSelectedCaptionIndex(-1)
+    setCaptionError('')
+    setPublishResult('')
+  }
+
   function invalidateMarketData() {
     setMarketData(null)
     setChartApproved(false)
@@ -306,16 +326,14 @@ export default function AnalyticsPage() {
     setCompositionApprovals({})
     setGeneratedPosts({})
     setFinalApprovals({})
-    setPublishDestination('')
-    setPublishResult('')
+    resetCaptionFlow()
     setError('')
   }
 
   function invalidateCompositions() {
     setGeneratedPosts({})
     setFinalApprovals({})
-    setPublishDestination('')
-    setPublishResult('')
+    resetCaptionFlow()
     setError('')
   }
 
@@ -344,8 +362,7 @@ export default function AnalyticsPage() {
     setCompositionApprovals({})
     setGeneratedPosts({})
     setFinalApprovals({})
-    setPublishDestination('')
-    setPublishResult('')
+    resetCaptionFlow()
     setError('')
   }
 
@@ -395,8 +412,7 @@ export default function AnalyticsPage() {
     setCompositionApprovals({})
     setGeneratedPosts({})
     setFinalApprovals({})
-    setPublishDestination('')
-    setPublishResult('')
+    resetCaptionFlow()
     try {
       const response = await fetch(`${API_BASE}/api/market/history/batch`, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({primaryTokens:primaryIds, comparisonAssets, period, scale})})
       const data = await response.json().catch(() => ({}))
@@ -420,8 +436,7 @@ export default function AnalyticsPage() {
     }
     setTemplateVariantId(id)
     if (id.startsWith('phone-')) setFormat('story')
-    setPublishDestination('')
-    setPublishResult('')
+    resetCaptionFlow()
   }
 
   async function generatePost() {
@@ -445,8 +460,7 @@ export default function AnalyticsPage() {
     setGenerating(true)
     setGeneratingTemplateId(selectedTemplate.id)
     setFinalApprovals(previous => ({...previous, [selectedTemplate.id]:''}))
-    setPublishDestination('')
-    setPublishResult('')
+    resetCaptionFlow()
     setError('')
     const lockedNode = frameRefs.current[selectedTemplate.id]
     try {
@@ -480,19 +494,76 @@ export default function AnalyticsPage() {
     }
   }
 
+  function chooseCaptionPlatform(destination) {
+    setPublishDestination(destination)
+    resetCaptionFlow({keepDestination:true})
+  }
+
+  function chooseCaptionModel(modelKey) {
+    setCaptionModelKey(modelKey)
+    resetCaptionFlow({keepDestination:true, keepModel:true})
+  }
+
+  function captionPostText(variant) {
+    if (!variant) return ''
+    return [variant.copy, (variant.hashtags || []).join(' ')].filter(Boolean).join('\n\n')
+  }
+
+  async function generateCaptionOptions() {
+    if (generatingCaptions || !finalImageApproved || !publishDestination || !captionModelKey || !marketData?.series?.length) return
+    setGeneratingCaptions(true)
+    setCaptionError('')
+    setCaptionVariants([])
+    setSelectedCaptionIndex(-1)
+    setPublishResult('')
+    const platform = CAPTION_PLATFORMS.find(item => item.id === publishDestination)
+    const marketFacts = marketData.series.map(item => {
+      const movement = `${item.changePercent >= 0 ? '+' : ''}${Number(item.changePercent).toFixed(2)}%`
+      return `${item.symbol}: ${formatPrice(item.startPrice)} to ${formatPrice(item.endPrice)} (${movement}), ${formatDate(item.coverageStart)} to ${formatDate(item.coverageEnd)}, source ${item.source?.provider || 'verified market feed'}`
+    }).join('; ')
+    const averageMovement = marketData.series.reduce((sum, item) => sum + Number(item.changePercent || 0), 0) / marketData.series.length
+    try {
+      const response = await fetch(`${API_BASE}/api/copy/generate`, {
+        method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          article:{
+            title:headline,
+            source:'RZWire verified Market Analytics',
+            desc:`${chartText}\nRequested period: ${period}. Chart scale: ${scale === 'relative' ? 'relative percentage performance' : 'absolute USD price'}. Verified facts: ${marketFacts}`,
+            matchedKeywords:allSelectedSymbols,
+          },
+          platform:platform?.apiName || 'Telegram',
+          mediaBrand:themeOwner.brand,
+          sentiment:averageMovement > 0.25 ? 'Bullish' : averageMovement < -0.25 ? 'Bearish' : 'Neutral',
+          modelKey:captionModelKey,
+          language:'en',
+          promoMode:false,
+          variantCount:3,
+        }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || data.variants?.length < 3) throw new Error(data.error || 'The editorial model did not return all three caption options.')
+      setCaptionVariants(data.variants.slice(0, 3))
+    } catch (err) {
+      setCaptionError(err.message || 'Caption generation failed.')
+    } finally {
+      setGeneratingCaptions(false)
+    }
+  }
+
   async function publishFinalImage() {
-    if (publishing || !finalImageApproved || !generatedPost || !publishDestination) return
+    const selectedCaption = captionVariants[selectedCaptionIndex]
+    if (publishing || !finalImageApproved || !generatedPost || !publishDestination || !selectedCaption) return
     setPublishing(true)
     setPublishResult('')
     setError('')
-    const copy = [headline, chartText].filter(Boolean).join('\n\n')
     try {
       const isTelegram = publishDestination === 'telegram'
       const response = await fetch(`${API_BASE}${isTelegram ? '/api/telegram/post' : '/api/twitter/post'}`, {
         method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
         body:JSON.stringify(isTelegram
-          ? {imageB64:generatedPost, headline, copy:chartText, hashtags:[], link:'', mediaBrand:themeOwner.brand}
-          : {imageB64:generatedPost, copy, hashtags:[], platform:'X', mediaBrand:themeOwner.brand}),
+          ? {imageB64:generatedPost, headline, copy:selectedCaption.copy, hashtags:selectedCaption.hashtags || [], link:'', mediaBrand:themeOwner.brand}
+          : {imageB64:generatedPost, copy:selectedCaption.copy, hashtags:selectedCaption.hashtags || [], platform:'X', mediaBrand:themeOwner.brand}),
       })
       const data = await response.json().catch(() => ({}))
       if (!response.ok || (isTelegram ? !data.ok : !data.success)) throw new Error(data.error || `The post could not be published to ${isTelegram ? 'Telegram' : 'X'}.`)
@@ -507,7 +578,7 @@ export default function AnalyticsPage() {
   return <div className="analytics-page">
     <NavBar />
     <main className="analytics-workspace">
-      <section className="analytics-intro"><div><p className="analytics-eyebrow"><LineChart size={16} /> Market Analytics</p><h1>Compare the complete RZWire market.</h1><p>Select up to three RZWire tokens and three outside assets, approve one exact chart, then turn it into a branded visual story.</p></div><div className="analytics-steps" aria-label="Analytics post workflow"><span className="active"><b>1</b>Market</span><i /><span><b>2</b>Chart</span><i /><span><b>3</b>Copy</span><i /><span><b>4</b>Style</span><i /><span><b>5</b>Generate</span></div></section>
+      <section className="analytics-intro"><div><p className="analytics-eyebrow"><LineChart size={16} /> Market Analytics</p><h1>Compare the complete RZWire market.</h1><p>Select up to three RZWire tokens and three outside assets, approve one exact chart, then turn it into a branded visual story.</p></div><div className="analytics-steps" aria-label="Analytics post workflow"><span className="active"><b>1</b>Market</span><i /><span><b>2</b>Chart</span><i /><span><b>3</b>Story</span><i /><span><b>4</b>Style</span><i /><span><b>5</b>Image</span><i /><span><b>6</b>Caption</span><i /><span><b>7</b>Publish</span></div></section>
       <div className="analytics-layout analytics-layout--storyboard">
         <aside className="analytics-controls">
           <section className="analytics-control-section analytics-setup-section">
@@ -558,8 +629,16 @@ export default function AnalyticsPage() {
           <div className="analytics-live-output-label"><span>{generatedPost ? 'Finished protected PNG' : 'Locked final composition'}</span><small>The exact device, chart, copy, logo, and footer shown here remain fixed. Only the atmosphere behind them may change.</small></div>
           {generatedPost ? <img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <CompositionPreview templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} />}
           <div className={`analytics-composition-approval ${selectedCompositionApproved ? 'approved' : ''}`}><div><strong>{selectedCompositionApproved ? 'Composition approved' : 'Approve this composition'}</strong><span>{selectedCompositionApproved ? 'Its exact state is ready for generation.' : 'Check hierarchy, palette, logo, footer, chart, and copy.'}</span></div><button type="button" onClick={() => setCompositionApprovals(previous => ({...previous, [selectedTemplate.id]:selectedFingerprint}))}>{selectedCompositionApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve {selectedTemplate.name}</>}</button></div>
-          {generatedPost && <div className={`analytics-final-approval ${finalImageApproved ? 'approved' : ''}`}><div><strong>{finalImageApproved ? 'Final image approved' : 'Approve the final image'}</strong><span>{finalImageApproved ? 'Publishing destinations are now unlocked.' : 'Inspect the finished image before any external publishing action becomes available.'}</span></div><button type="button" onClick={() => { setFinalApprovals(previous => ({...previous, [selectedTemplate.id]:generatedFingerprint})); setPublishResult('') }}>{finalImageApproved ? <><CircleCheck size={17} />Final approved</> : <><Check size={17} />Approve final image</>}</button></div>}
-          {generatedPost && finalImageApproved && <div className="analytics-publish-choice"><div><strong>Where do you want to publish it?</strong><span>Choose one destination. Nothing is posted until you press the final publish button.</span></div><div className="analytics-publish-destinations"><button type="button" className={publishDestination === 'telegram' ? 'selected' : ''} onClick={() => { setPublishDestination('telegram'); setPublishResult('') }}><Send size={18} /><span><strong>Telegram</strong><small>Publish to the configured RZWire channel</small></span>{publishDestination === 'telegram' && <Check size={16} />}</button><button type="button" className={publishDestination === 'x' ? 'selected' : ''} onClick={() => { setPublishDestination('x'); setPublishResult('') }}><MessageCircle size={18} /><span><strong>X</strong><small>Publish with the approved market copy</small></span>{publishDestination === 'x' && <Check size={16} />}</button></div><button type="button" className="analytics-publish-final" disabled={!publishDestination || publishing} onClick={publishFinalImage}>{publishing ? <><span className="analytics-spinner" />Publishing…</> : <>Publish final image to {publishDestination === 'telegram' ? 'Telegram' : publishDestination === 'x' ? 'X' : 'selected destination'}<ArrowRight size={17} /></>}</button>{publishResult && <p className="analytics-publish-success"><CircleCheck size={16} />{publishResult}</p>}</div>}
+          {generatedPost && <div className={`analytics-final-approval ${finalImageApproved ? 'approved' : ''}`}><div><strong>{finalImageApproved ? 'Final image approved' : 'Approve the final image'}</strong><span>{finalImageApproved ? 'The caption and publishing workflow is now unlocked.' : 'Inspect the finished image before creating any external post copy.'}</span></div><button type="button" onClick={() => { setFinalApprovals(previous => ({...previous, [selectedTemplate.id]:generatedFingerprint})); resetCaptionFlow() }}>{finalImageApproved ? <><CircleCheck size={17} />Final approved</> : <><Check size={17} />Approve final image</>}</button></div>}
+          {generatedPost && finalImageApproved && <div className="analytics-caption-workflow">
+            <div className="analytics-caption-heading"><span>06</span><div><strong>Create the post caption</strong><small>Use the same platform rules and editorial models as Multimedia. Nothing is published until the final step.</small></div></div>
+            <div className="analytics-caption-stage"><div><b>1</b><span><strong>Choose the platform</strong><small>The editorial rules change automatically for Telegram or X.</small></span></div><div className="analytics-publish-destinations">{CAPTION_PLATFORMS.map(item => <button type="button" key={item.id} className={publishDestination === item.id ? 'selected' : ''} onClick={() => chooseCaptionPlatform(item.id)}>{item.id === 'telegram' ? <Send size={18} /> : <MessageCircle size={18} />}<span><strong>{item.label}</strong><small>{item.description}</small></span>{publishDestination === item.id && <Check size={16} />}</button>)}</div></div>
+            {publishDestination && <div className="analytics-caption-stage"><div><b>2</b><span><strong>Choose the AI editorial model</strong><small>This model writes three captions from the verified chart facts.</small></span></div><div className="analytics-editorial-models">{EDITORIAL_MODELS.map(model => <button type="button" key={model.id} className={captionModelKey === model.id ? 'selected' : ''} style={{'--model-color':model.color}} onClick={() => chooseCaptionModel(model.id)}><i>{model.badge}</i><span><strong>{model.display}</strong><small>{model.desc}</small></span>{captionModelKey === model.id && <Check size={15} />}</button>)}</div></div>}
+            {publishDestination && captionModelKey && <button type="button" className="analytics-generate-captions" disabled={generatingCaptions} onClick={generateCaptionOptions}>{generatingCaptions ? <><span className="analytics-spinner" />Writing three {publishDestination === 'x' ? 'X posts' : 'Telegram captions'}…</> : <><Sparkles size={16} />Generate 3 caption options<ArrowRight size={16} /></>}</button>}
+            {captionError && <p className="analytics-error">{captionError}</p>}
+            {!!captionVariants.length && <div className="analytics-caption-stage"><div><b>3</b><span><strong>Select one caption</strong><small>Only the selected option will be published with the approved image.</small></span></div><div className="analytics-caption-options">{captionVariants.map((variant, index) => { const selected = selectedCaptionIndex === index; const text = captionPostText(variant); return <button type="button" key={`${variant.label}-${index}`} className={selected ? 'selected' : ''} onClick={() => { setSelectedCaptionIndex(index); setPublishResult('') }}><span><b>Option {index + 1}</b><em>{variant.label}</em>{selected && <Check size={15} />}</span><p>{variant.copy}</p>{!!variant.hashtags?.length && <small>{variant.hashtags.join(' ')}</small>}<i>{text.length} characters{publishDestination === 'x' ? ' / 280' : ''}</i></button> })}</div></div>}
+            {!!captionVariants.length && <div className="analytics-caption-stage analytics-caption-publish"><div><b>4</b><span><strong>Publish the approved image and selected caption</strong><small>RZWire sends both together to the configured {publishDestination === 'telegram' ? 'Telegram channel' : 'X account'}.</small></span></div><button type="button" className="analytics-publish-final" disabled={selectedCaptionIndex < 0 || publishing} onClick={publishFinalImage}>{publishing ? <><span className="analytics-spinner" />Publishing…</> : <>Publish to {publishDestination === 'telegram' ? 'Telegram' : 'X'}<ArrowRight size={17} /></>}</button>{publishResult && <p className="analytics-publish-success"><CircleCheck size={16} />{publishResult}</p>}</div>}
+          </div>}
           <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Protected composition</strong>The selected concept guides only the atmosphere. RZWire deterministically locks the device, chart, financial facts, copy, logo, and footer into the final export.</span></div>
         </section>}
       </div>
