@@ -162,6 +162,7 @@ def handle_generate_image(body):
             raw_brief = call_analytics_art_director(
                 article, copy_text, theme_owner, profile, template,
                 output_dimensions, series_metadata, image_direction,
+                sample_reference=ref_images[0],
             )
             brief = validate_analytics_brief(raw_brief, template, theme_owner, series_metadata)
         except Exception as exc:  # Keep image generation available if the brief model fails.

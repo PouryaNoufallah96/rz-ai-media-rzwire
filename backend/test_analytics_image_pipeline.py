@@ -1,8 +1,10 @@
 import unittest
+from unittest.mock import patch
 
 from analytics_image_pipeline import (
     ANALYTICS_TEMPLATE_FAMILIES,
     assemble_analytics_prompt,
+    call_analytics_art_director,
     fallback_analytics_brief,
     resolve_analytics_template,
     validate_analytics_brief,
@@ -29,11 +31,18 @@ SERIES = [
 
 class AnalyticsImagePipelineTests(unittest.TestCase):
     def test_all_eighteen_registered_variants_resolve(self):
+        required_contract_fields = {
+            'summary', 'skeleton', 'chart', 'typography',
+            'brandTranslation', 'finish', 'forbidden',
+        }
         variants = 0
         for category_id, category in ANALYTICS_TEMPLATE_FAMILIES.items():
             for variant_id in category['variants']:
                 resolved = resolve_analytics_template(category_id, variant_id)
                 self.assertEqual(resolved['variantId'], variant_id)
+                self.assertEqual(set(resolved['contract']), required_contract_fields)
+                for value in resolved['contract'].values():
+                    self.assertGreater(len(value), 40)
                 variants += 1
         self.assertEqual(variants, 18)
 
@@ -61,6 +70,44 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertIn('metagamescoin.io', prompt)
         self.assertIn('phone-centered', prompt)
         self.assertIn('61560', prompt)
+        self.assertIn('FULL IMMUTABLE FAMILY CONTRACT', prompt)
+        self.assertIn('FULL ART DIRECTOR PRODUCTION BRIEF', prompt)
+        self.assertIn('EXECUTION ORDER', prompt)
+        self.assertIn('first reproduce Reference 1 composition', prompt)
+
+    @patch('analytics_image_pipeline.openrouter_chat')
+    def test_art_director_receives_selected_sample_as_visual_reference(self, chat):
+        chat.return_value = fallback_analytics_brief(
+            resolve_analytics_template('phone', 'phone-centered'), THEME_OWNER, SERIES,
+        )
+        sample = 'data:image/png;base64,approved-template'
+        call_analytics_art_director(
+            {'title': 'MGC vs BTC'}, 'Thirty-day verified comparison.', THEME_OWNER,
+            {'frozen_style': {'visual_world': 'premium'}},
+            resolve_analytics_template('phone', 'phone-centered'),
+            {'width': 1080, 'height': 1920}, SERIES,
+            sample_reference=sample,
+        )
+        messages = chat.call_args.args[1]
+        self.assertIsInstance(messages[1]['content'], list)
+        self.assertEqual(messages[1]['content'][1]['type'], 'image_url')
+        self.assertEqual(messages[1]['content'][1]['image_url']['url'], sample)
+        self.assertIn('BINDING', messages[0]['content'])
+        self.assertIn('VARIANT CONTRACT', messages[0]['content'])
+        self.assertIn('chart/device aperture', messages[0]['content'])
+
+    def test_fallback_is_a_complete_production_brief(self):
+        template = resolve_analytics_template('laptop', 'laptop-cinematic')
+        brief = fallback_analytics_brief(template, THEME_OWNER, SERIES)
+        for field in (
+            'reference_analysis', 'composition_map', 'chart_integration',
+            'typography_system', 'data_hierarchy', 'brand_translation',
+            'materials_and_finish', 'logo_footer_system', 'quality_control',
+            'forbidden_changes',
+        ):
+            self.assertTrue(brief[field])
+        self.assertEqual(brief['composition_map'], template['contract']['skeleton'])
+        self.assertEqual(brief['chart_integration'], template['contract']['chart'])
 
 
 if __name__ == '__main__':
