@@ -22,7 +22,7 @@ function valuesFor(item, scale) {
   return scale === 'absolute' ? item.points.map(point => Number(point.close)) : percentValues(item.points)
 }
 
-function chartGeometry(series, scale, width=620, height=220, padding={left:28,right:18,top:22,bottom:34}) {
+function chartGeometry(series, scale, width=620, height=250, padding={left:36,right:22,top:24,bottom:36}) {
   const valueSets = series.map(item => valuesFor(item, scale))
   const all = valueSets.flat().filter(Number.isFinite)
   if (scale === 'relative') all.push(0)
@@ -40,20 +40,21 @@ function chartGeometry(series, scale, width=620, height=220, padding={left:28,ri
 }
 
 function marketTick(value, scale) {
-  if (scale === 'relative') return `${value >= 0 ? '+' : ''}${value.toFixed(0)}%`
+  if (scale === 'relative') return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`
   if (Math.abs(value) >= 1000) return `$${(value / 1000).toFixed(1)}k`
   if (Math.abs(value) >= 1) return `$${value.toFixed(2)}`
   return `$${value.toFixed(4)}`
 }
 
 function MarketChart({series, scale='relative', compact=false, dark=true, showDates=true, showValues=true}) {
-  const g = chartGeometry(series, scale, 620, compact ? 150 : 230, {left:28,right:18,top:18,bottom:showDates ? 34 : 12})
-  const ticks = Array.from({length:compact ? 3 : 4}, (_, index) => g.min + index * ((g.max - g.min) / (compact ? 2 : 3)))
+  const g = chartGeometry(series, scale, 620, compact ? 190 : 270, {left:38,right:20,top:22,bottom:showDates ? 38 : 14})
+  const ticks = Array.from({length:4}, (_, index) => g.min + index * ((g.max - g.min) / 3))
   const dates = Array.from({length:5}, (_, index) => g.first + index * ((g.last - g.first) / 4))
   return <svg className={`rz-composition-chart ${dark ? 'dark' : 'light'}`} viewBox={`0 0 ${g.width} ${g.height}`} role="img" aria-label={`${series.map(item => item.symbol).join(', ')} verified market chart`}>
-    {ticks.map((tick, index) => <g key={index}><line x1={g.padding.left} x2={g.width-g.padding.right} y1={g.y(tick)} y2={g.y(tick)} />{showValues && <text className="rz-chart-value" x={g.width-g.padding.right} y={g.y(tick)-4} textAnchor="end">{marketTick(tick, scale)}</text>}</g>)}
+    {ticks.map((tick, index) => <g key={index}><line x1={g.padding.left} x2={g.width-g.padding.right} y1={g.y(tick)} y2={g.y(tick)} />{showValues && <text className="rz-chart-value" x={g.padding.left} y={g.y(tick)-6}>{marketTick(tick, scale)}</text>}</g>)}
+    {scale === 'relative' && <line className="rz-zero-line" x1={g.padding.left} x2={g.width-g.padding.right} y1={g.y(0)} y2={g.y(0)} />}
     {series.map((item, index) => <polyline key={item.id} style={{stroke:item.color}} points={item.points.map((point, pointIndex) => `${g.x(point.timestamp).toFixed(1)},${g.y(g.valueSets[index][pointIndex]).toFixed(1)}`).join(' ')} />)}
-    {showDates && dates.map((date, index) => <text key={index} x={g.x(date)} y={g.height-8} textAnchor="middle">{shortDate(date)}</text>)}
+    {showDates && dates.map((date, index) => <text key={index} x={g.x(date)} y={g.height-8} textAnchor={index === 0 ? 'start' : index === 4 ? 'end' : 'middle'}>{shortDate(date)}</text>)}
   </svg>
 }
 
@@ -65,6 +66,13 @@ function TokenBadge({item, detailed=false}) {
   </span>
 }
 
+function BrandLockup({theme}) {
+  return <div className="rz-brand-lockup">
+    {theme.logo ? <img src={theme.logo} alt="" /> : <b>RZWire</b>}
+    <strong>{theme.label || theme.id}</strong>
+  </div>
+}
+
 function BrandFooter({theme, series}) {
   return <footer className="rz-composition-footer">
     <span>{theme.logo ? <img src={theme.logo} alt="" /> : <b>RZWire</b>}</span>
@@ -73,57 +81,46 @@ function BrandFooter({theme, series}) {
   </footer>
 }
 
-function RangeTabs({period}) {
-  const periods = ['1h', '24h', '7d', '30d', '90d', '1y']
-  return <div className="rz-range-tabs">
-    {periods.map(item => item === period ? <b key={item}>{item}</b> : <span key={item}>{item}</span>)}
-  </div>
+function PosterHeader({headline, chartText, period}) {
+  return <header className="rz-composition-header"><small>{period} verified market view</small><h2>{headline}</h2><p>{chartText}</p></header>
 }
 
-function PhoneView({series, period, scale}) {
+function RangeTabs({period}) {
+  const periods = ['1h', '24h', '7d', '30d', '90d', '1y']
+  return <div className="rz-range-tabs">{periods.map(item => item === period ? <b key={item}>{item}</b> : <span key={item}>{item}</span>)}</div>
+}
+
+function ResultCards({series}) {
+  return <div className="rz-result-cards" style={{'--asset-count':Math.min(series.length, 3)}}>{series.map(item => <article key={item.id} style={{'--series':item.color}}><TokenBadge item={item} detailed /><span>{formatPrice(item.startPrice)} → {formatPrice(item.endPrice)}</span></article>)}</div>
+}
+
+function PhoneView({series, period, scale, headline, theme}) {
   return <div className="rz-phone-shell">
     <div className="rz-phone-speaker" />
     <div className="rz-phone-screen">
-      <div className="rz-market-brand"><b>CoinMarketCap</b><span>Compare</span></div>
-      <div className="rz-phone-assets">{series.map(item => <TokenBadge key={item.id} item={item} />)}</div>
+      <BrandLockup theme={theme} />
+      <div className="rz-device-title"><h3>{headline}</h3><span>{period} market comparison</span></div>
+      <ResultCards series={series} />
       <RangeTabs period={period} />
       <MarketChart series={series} scale={scale} compact />
       <div className="rz-legend">{series.map(item => <TokenBadge key={item.id} item={item} detailed />)}</div>
-      <div className="rz-market-controls"><b>Price</b><span>Market Cap</span><span>Volume</span></div>
-      <h4>Market Stats</h4>
-      <div className="rz-stat-table">
-        <span>Asset</span><b>Price</b><b>Change</b>
-        {series.map(item => <span className="row" key={item.id}><TokenBadge item={item} /><b>{formatPrice(item.endPrice)}</b><em className={item.changePercent >= 0 ? 'up' : 'down'}>{item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%</em></span>)}
-      </div>
     </div>
   </div>
 }
 
-function DesktopView({series, period, scale}) {
-  const compact = series.length > 3
-  return <div className={`rz-laptop-shell ${compact ? 'is-dense' : ''}`}>
+function DesktopView({series, period, scale, headline, theme}) {
+  return <div className={`rz-laptop-shell ${series.length > 3 ? 'is-dense' : ''}`}>
     <div className="rz-laptop-lid">
       <div className="rz-laptop-camera" />
       <div className="rz-laptop-screen">
-        <div className="rz-desktop-top">
-          <b>RZWire Market</b>
-          <span>Cryptocurrencies</span><span>Markets</span><span>Community</span>
-          <i>Search assets</i><i className="rz-desktop-avatar" />
-        </div>
-        <div className="rz-desktop-asset-strip" style={{'--asset-count':series.length}}>
-          {series.map(item => <article key={item.id}><TokenBadge item={item} /><b>{formatPrice(item.endPrice)}</b><em className={item.changePercent >= 0 ? 'up' : 'down'}>{item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%</em></article>)}
-        </div>
+        <div className="rz-desktop-top"><BrandLockup theme={theme}/><b>Market overview</b><span>{period}</span><i>Verified</i></div>
         <main className="rz-desktop-market-card">
-          <div className="rz-desktop-chart-head"><div><small>Verified comparison</small><b>{series.map(item => item.symbol).join(' · ')}</b></div><span>{period}</span><span>{scale === 'relative' ? 'Relative performance' : 'USD price'}</span></div>
+          <div className="rz-desktop-chart-head"><div><small>Verified comparison</small><b>{headline}</b></div><span>{scale === 'relative' ? 'Relative %' : 'USD price'}</span></div>
+          <ResultCards series={series} />
           <RangeTabs period={period} />
-          <MarketChart series={series} scale={scale} dark compact={compact} />
+          <MarketChart series={series} scale={scale} dark />
           <div className="rz-legend">{series.map(item => <TokenBadge key={item.id} item={item} detailed />)}</div>
         </main>
-        <div className="rz-desktop-bottom-row">
-          <div><small>Market range</small><b>{shortDate(Math.min(...series.flatMap(item => item.points.map(point => point.timestamp))))} – {shortDate(Math.max(...series.flatMap(item => item.points.map(point => point.timestamp))))}</b></div>
-          <div><small>Data integrity</small><b>Verified histories</b></div>
-          <div><small>Series</small><b>{series.length} assets</b></div>
-        </div>
       </div>
     </div>
     <div className="rz-laptop-deck"><i /></div>
@@ -132,30 +129,24 @@ function DesktopView({series, period, scale}) {
 
 function GrowthView({series, scale}) {
   const lead = [...series].sort((a,b) => b.changePercent-a.changePercent)[0]
-  return <div className="rz-growth-view">
-    <div><p>{lead.symbol} moved from</p><h3>{formatPrice(lead.startPrice)} <span>to</span> {formatPrice(lead.endPrice)}</h3><b className={lead.changePercent >= 0 ? 'up' : 'down'}>{lead.changePercent >= 0 ? '+' : ''}{lead.changePercent.toFixed(2)}% over the selected period</b></div>
-    <div className="rz-growth-chart"><TokenBadge item={lead} detailed /><MarketChart series={[lead]} scale={scale} dark compact={false} /></div>
-  </div>
+  return <div className="rz-growth-view"><div><p>{lead.symbol} moved from</p><h3>{formatPrice(lead.startPrice)} <span>to</span> {formatPrice(lead.endPrice)}</h3><b className={lead.changePercent >= 0 ? 'up' : 'down'}>{lead.changePercent >= 0 ? '+' : ''}{lead.changePercent.toFixed(2)}% over the selected period</b></div><div className="rz-growth-chart"><TokenBadge item={lead} detailed /><MarketChart series={[lead]} scale={scale} dark /></div></div>
 }
 
 function ContrastView({series, scale}) {
   const ordered = [...series].sort((a,b) => b.changePercent-a.changePercent)
   const winner = ordered[0]
   const loser = ordered[ordered.length-1]
-  return <div className="rz-contrast-view">
-    <h3>{winner.symbol} led. {winner.id === loser.id ? 'A focused market story.' : `${loser.symbol} trailed.`}</h3>
-    <div className="rz-contrast-cards">{ordered.map(item => <article key={item.id} className={item.changePercent >= 0 ? 'positive' : 'negative'}><TokenBadge item={item} /><b>{formatPrice(item.endPrice)}</b><em>{item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%</em><MarketChart series={[item]} scale={scale} dark compact showDates={false} /></article>)}</div>
-  </div>
+  return <div className="rz-contrast-view"><h3>{winner.symbol} led. {winner.id === loser.id ? 'A focused market story.' : `${loser.symbol} trailed.`}</h3><div className="rz-contrast-cards">{ordered.map(item => <article key={item.id} className={item.changePercent >= 0 ? 'positive' : 'negative'}><TokenBadge item={item} /><b>{formatPrice(item.endPrice)}</b><em>{item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%</em><MarketChart series={[item]} scale={scale} dark compact showDates={false} /></article>)}</div></div>
 }
 
 function SeparatedCards({series, scale}) {
-  return <div className="rz-separated-grid">{series.map(item => <article key={item.id}><TokenBadge item={item} /><MarketChart series={[item]} scale={scale} dark compact showDates={false} /><dl><dt>Start</dt><dd>{formatPrice(item.startPrice)}</dd><dt>End</dt><dd>{formatPrice(item.endPrice)}</dd><dt>Move</dt><dd className={item.changePercent >= 0 ? 'up' : 'down'}>{item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%</dd></dl></article>)}</div>
+  return <div className="rz-separated-grid">{series.map(item => <article key={item.id}><TokenBadge item={item} detailed /><MarketChart series={[item]} scale={scale} dark compact showDates={false} /><dl><dt>Start</dt><dd>{formatPrice(item.startPrice)}</dd><dt>End</dt><dd>{formatPrice(item.endPrice)}</dd><dt>Move</dt><dd className={item.changePercent >= 0 ? 'up' : 'down'}>{item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%</dd></dl></article>)}</div>
 }
 
 function CombinedView({series, scale}) {
   const ordered = [...series].sort((a,b) => b.changePercent-a.changePercent)
-  const headline = ordered[0].changePercent < 0 ? 'Markets moved lower together.' : ordered.at(-1).changePercent >= 0 ? `${ordered[0].symbol} led a broad advance.` : `${ordered[0].symbol} rose while ${ordered.at(-1).symbol} fell.`
-  return <div className="rz-combined-view"><h3>{headline}</h3><div className="rz-combined-chart"><div className="rz-legend">{series.map(item => <TokenBadge key={item.id} item={item} detailed />)}</div><MarketChart series={series} scale={scale} dark /></div></div>
+  const copy = ordered[0].changePercent < 0 ? 'Markets moved lower together.' : ordered.at(-1).changePercent >= 0 ? `${ordered[0].symbol} led a broad advance.` : `${ordered[0].symbol} rose while ${ordered.at(-1).symbol} fell.`
+  return <div className="rz-combined-view"><h3>{copy}</h3><div className="rz-combined-chart"><div className="rz-legend">{series.map(item => <TokenBadge key={item.id} item={item} detailed />)}</div><MarketChart series={series} scale={scale} dark /></div></div>
 }
 
 function StaticFrameStage({templateCategoryId, series, period}) {
@@ -173,23 +164,21 @@ const CompositionPreview = forwardRef(function CompositionPreview({marketData, t
   const output = OUTPUT_FORMATS.find(item => item.id === format) || OUTPUT_FORMATS[0]
   const resolvedTheme = theme || analyticsTheme(themeOwnerTokenId, tokens)
   if (!resolvedTheme) return null
-  return <article ref={ref} className={`rz-composition rz-composition--${templateCategoryId} rz-composition--${templateVariantId} rz-composition--${resolvedTheme.id} rz-composition--${format} ${frameOnly ? 'rz-composition--frame' : ''}`} style={{'--ratio':`${output.width}/${output.height}`, '--accent':resolvedTheme.accent, '--accent-2':resolvedTheme.accent2, '--theme-bg':resolvedTheme.background, '--theme-bg-alt':resolvedTheme.backgroundAlt, '--theme-surface':resolvedTheme.surface, '--theme-surface-alt':resolvedTheme.surfaceAlt, '--theme-text':resolvedTheme.text, '--theme-muted':resolvedTheme.muted, '--theme-border':resolvedTheme.border}}>
-    <div className="rz-composition-atmosphere" />
-    <div className="rz-composition-content">
-      <header className="rz-composition-header"><small>{period} verified market view</small><h2>{headline}</h2><p>{chartText}</p></header>
-      <div className="rz-composition-stage">
-        {frameOnly ? <StaticFrameStage templateCategoryId={templateCategoryId} series={series} period={period} /> : <>
-          {templateCategoryId === 'phone' && <PhoneView series={series} period={period} scale={marketData.scale} />}
-          {templateCategoryId === 'laptop' && <DesktopView series={series} period={period} scale={marketData.scale} />}
-          {templateCategoryId === 'growth' && <GrowthView series={series} scale={marketData.scale} />}
-          {templateCategoryId === 'contrast' && <ContrastView series={series} scale={marketData.scale} />}
-          {templateCategoryId === 'separated' && <SeparatedCards series={series} scale={marketData.scale} />}
-          {templateCategoryId === 'combined' && <CombinedView series={series} scale={marketData.scale} />}
-        </>}
-      </div>
-      <BrandFooter theme={resolvedTheme} series={series} />
-    </div>
-  </article>
+  const css = {'--ratio':`${output.width}/${output.height}`, '--accent':resolvedTheme.accent, '--accent-2':resolvedTheme.accent2, '--theme-bg':resolvedTheme.background, '--theme-bg-alt':resolvedTheme.backgroundAlt, '--theme-surface':resolvedTheme.surface, '--theme-surface-alt':resolvedTheme.surfaceAlt, '--theme-text':resolvedTheme.text, '--theme-muted':resolvedTheme.muted, '--theme-border':resolvedTheme.border}
+  const classes = `rz-composition rz-composition--${templateCategoryId} rz-composition--${templateVariantId} rz-composition--${resolvedTheme.id} rz-composition--${format} ${frameOnly ? 'rz-composition--frame' : ''}`
+  const stage = frameOnly ? <StaticFrameStage templateCategoryId={templateCategoryId} series={series} period={period} /> : <>
+    {templateCategoryId === 'phone' && <PhoneView series={series} period={period} scale={marketData.scale} headline={headline} theme={resolvedTheme} />}
+    {templateCategoryId === 'laptop' && <DesktopView series={series} period={period} scale={marketData.scale} headline={headline} theme={resolvedTheme} />}
+    {templateCategoryId === 'growth' && <GrowthView series={series} scale={marketData.scale} />}
+    {templateCategoryId === 'contrast' && <ContrastView series={series} scale={marketData.scale} />}
+    {templateCategoryId === 'separated' && <SeparatedCards series={series} scale={marketData.scale} />}
+    {templateCategoryId === 'combined' && <CombinedView series={series} scale={marketData.scale} />}
+  </>
+  return <article ref={ref} className={classes} style={css}><div className="rz-composition-atmosphere" /><div className="rz-composition-content">
+    {templateCategoryId === 'phone' && !frameOnly ? <BrandLockup theme={resolvedTheme} /> : <PosterHeader headline={headline} chartText={chartText} period={period} />}
+    <div className="rz-composition-stage">{stage}</div>
+    <BrandFooter theme={resolvedTheme} series={series} />
+  </div></article>
 })
 
 export default CompositionPreview

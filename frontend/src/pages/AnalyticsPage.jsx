@@ -122,7 +122,7 @@ function finalImageFingerprint(image, composition) {
 async function captureComposition(node, output) {
   if (!node) throw new Error('The approved composition is not ready for capture.')
   const bounds = node.getBoundingClientRect()
-  const pixelRatio = Math.min(3, Math.max(1, output.width / Math.max(1, bounds.width)))
+  const pixelRatio = Math.min(4, Math.max(2, output.width / Math.max(1, bounds.width)))
   const capture = await toPng(node, {cacheBust:true, pixelRatio, backgroundColor:'#10151c'})
   return resizePng(capture, output.width, output.height)
 }
@@ -419,6 +419,7 @@ export default function AnalyticsPage() {
       return
     }
     setTemplateVariantId(id)
+    if (id.startsWith('phone-')) setFormat('story')
     setPublishDestination('')
     setPublishResult('')
   }

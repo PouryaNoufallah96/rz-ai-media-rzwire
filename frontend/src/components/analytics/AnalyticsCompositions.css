@@ -167,3 +167,82 @@
   .rz-contrast-cards,.rz-separated-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .rz-composition--landscape .rz-composition-header { position:relative; max-width:100%; top:auto; left:auto; }.rz-composition--landscape .rz-composition-stage { place-items:center; }.rz-composition--landscape .rz-phone-shell,.rz-composition--landscape .rz-laptop-shell { width:88%; margin:0; }.rz-composition--landscape .rz-composition-footer { position:relative; left:auto; right:auto; bottom:auto; }
 }
+
+/* Sample-faithful final compositions. The approved template controls geometry;
+   verified data only replaces copy, labels and chart lines. */
+.rz-brand-lockup { position:relative; z-index:4; display:flex; align-items:center; gap:1.25cqw; min-height:4.4cqw; color:var(--theme-text); }
+.rz-brand-lockup img { width:auto; height:4.2cqw; max-width:15cqw; object-fit:contain; }
+.rz-brand-lockup > b { font-size:clamp(12px,1.7cqw,20px); }
+.rz-brand-lockup strong { font-size:clamp(11px,1.55cqw,18px); font-weight:850; letter-spacing:.1em; text-transform:uppercase; }
+.rz-device-title { display:grid; gap:.35cqw; text-align:center; }
+.rz-device-title h3 { margin:0; font-size:clamp(17px,2.65cqw,30px); font-weight:850; letter-spacing:-.035em; line-height:1.04; }
+.rz-device-title span { color:#aeb5c2; font-size:clamp(8px,1.12cqw,13px); }
+.rz-result-cards { display:grid; grid-template-columns:repeat(var(--asset-count,2),minmax(0,1fr)); grid-auto-flow:row; gap:.8cqw; overflow:hidden; }
+.rz-result-cards article { min-width:0; display:grid; gap:.4cqw; padding:.85cqw; background:#1a202b; border:1px solid #323a49; border-top:2px solid var(--series); border-radius:.65cqw; }
+.rz-result-cards article > span { overflow:hidden; color:#aeb5c2; font-size:clamp(7px,.86cqw,10px); text-overflow:ellipsis; white-space:nowrap; }
+.rz-result-cards .rz-token-badge { font-size:clamp(8px,1.06cqw,12px); }
+.rz-zero-line { stroke:rgba(255,255,255,.38)!important; stroke-dasharray:5 5; }
+
+/* Phone samples: dominant premium device with the complete verified market view inside. */
+.rz-composition--phone .rz-composition-content { grid-template-rows:auto minmax(0,1fr) auto; gap:2.2cqw; padding:5.6cqw 5cqw 3.5cqw; }
+.rz-composition--phone .rz-composition-stage { place-items:stretch center; }
+.rz-composition--phone .rz-phone-shell { width:88%; max-width:none; height:100%; min-height:0; padding:1.35cqw .82cqw .88cqw; border-radius:8%/3.5%; }
+.rz-composition--phone .rz-phone-screen { display:grid; grid-template-rows:auto auto auto minmax(0,1fr) auto; gap:1.3cqw; padding:7.5% 5.5% 5%; }
+.rz-phone-screen > .rz-brand-lockup { display:none; }
+.rz-phone-screen .rz-range-tabs { padding:.62cqw; font-size:clamp(7px,1.02cqw,12px); }
+.rz-phone-screen .rz-range-tabs b { padding:.65cqw .3cqw; }
+.rz-phone-screen .rz-composition-chart { width:100%; height:100%; min-height:0; margin:0; }
+.rz-phone-screen .rz-composition-chart polyline { stroke-width:3.5; }
+.rz-phone-screen .rz-composition-chart text { font-size:11px; }
+.rz-phone-screen .rz-legend { align-self:end; min-height:2.6cqw; gap:.65cqw 1.15cqw; }
+.rz-composition--phone .rz-composition-footer { display:flex; justify-content:center; min-height:3cqw; font-size:clamp(10px,1.4cqw,16px); }
+.rz-composition--phone .rz-composition-footer > span { display:none; }
+.rz-composition--phone .rz-composition-footer strong { justify-self:auto; color:var(--accent); font-size:1.1em; }
+.rz-composition--phone.rz-composition--story .rz-composition-content { gap:2.7cqw; padding:7.2cqw 5cqw 4.6cqw; }
+.rz-composition--phone.rz-composition--story .rz-phone-shell { width:94%; }
+.rz-composition--phone-split-stat .rz-phone-shell { width:86%; transform:translateX(4%); }
+.rz-composition--phone-editorial .rz-phone-shell { width:89%; transform:translateX(2%); }
+
+/* Laptop samples: a large chart-led screen, not a compressed generic website. */
+.rz-composition--laptop .rz-composition-content { grid-template-rows:auto minmax(0,1fr) auto; gap:1.6cqw; padding:4.6cqw 4.8cqw 3.2cqw; }
+.rz-composition--laptop .rz-composition-stage { min-height:0; padding:0; place-items:stretch center; }
+.rz-composition--laptop .rz-laptop-shell { width:100%; height:100%; max-height:none; align-content:center; }
+.rz-composition--laptop .rz-laptop-lid { width:94%; padding:1.5cqw 1.2cqw 1.1cqw; }
+.rz-composition--laptop .rz-laptop-screen { display:grid; grid-template-rows:auto minmax(0,1fr); }
+.rz-composition--laptop .rz-desktop-top { min-height:4.5cqw; padding:.85cqw 1.25cqw; }
+.rz-composition--laptop .rz-desktop-top .rz-brand-lockup { min-height:0; margin-right:auto; gap:.65cqw; }
+.rz-composition--laptop .rz-desktop-top .rz-brand-lockup img { height:2.7cqw; max-width:9cqw; }
+.rz-composition--laptop .rz-desktop-top .rz-brand-lockup strong { font-size:clamp(7px,.8cqw,10px); }
+.rz-composition--laptop .rz-desktop-top > b { margin:0; font-size:clamp(7px,.85cqw,10px); }
+.rz-composition--laptop .rz-desktop-market-card { min-height:0; height:auto; display:grid; grid-template-rows:auto auto auto minmax(0,1fr) auto; gap:.65cqw; margin:.8cqw 1cqw 1cqw; padding:.75cqw .9cqw; }
+.rz-composition--laptop .rz-desktop-market-card .rz-range-tabs { width:72%; margin:0 auto; }
+.rz-composition--laptop .rz-desktop-market-card .rz-composition-chart { width:100%; height:100%; min-height:0; max-height:none; }
+.rz-composition--laptop .rz-desktop-market-card .rz-legend { min-height:2cqw; margin:0; }
+.rz-composition--laptop .rz-result-cards article { padding:.55cqw .65cqw; }
+.rz-composition--laptop .rz-result-cards .rz-token-badge { font-size:clamp(6px,.72cqw,9px); }
+.rz-composition--laptop .rz-result-cards article > span { font-size:clamp(6px,.64cqw,8px); }
+.rz-composition--laptop .rz-laptop-deck { height:2.8cqw; }
+.rz-composition--laptop .rz-composition-footer { min-height:2.5cqw; }
+.rz-composition--laptop .rz-composition-footer > span:first-child { display:none; }
+.rz-composition--laptop .rz-composition-footer > span:nth-child(2) { grid-column:1; }
+
+/* Data-led samples use the full stage and keep typography/chart lines large. */
+.rz-composition--growth .rz-composition-stage,
+.rz-composition--contrast .rz-composition-stage,
+.rz-composition--separated .rz-composition-stage,
+.rz-composition--combined .rz-composition-stage { place-items:stretch; }
+.rz-growth-view,.rz-contrast-view,.rz-separated-grid,.rz-combined-view { height:100%; min-height:0; }
+.rz-growth-chart { height:100%; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); gap:1.4cqw; padding:5%; }
+.rz-growth-chart .rz-composition-chart { height:100%; min-height:0; }
+.rz-contrast-view { align-content:center; gap:2.5cqw; }
+.rz-contrast-cards { grid-template-columns:repeat(auto-fit,minmax(27%,1fr)); align-items:stretch; }
+.rz-contrast-cards article { display:grid; grid-template-rows:auto auto auto minmax(0,1fr); }
+.rz-contrast-cards article .rz-composition-chart { height:100%; min-height:11cqw; }
+.rz-separated-grid { grid-template-columns:repeat(auto-fit,minmax(27%,1fr)); align-content:center; }
+.rz-separated-grid article { display:grid; grid-template-rows:auto minmax(0,1fr) auto; min-height:20cqw; }
+.rz-separated-grid article .rz-composition-chart { height:100%; min-height:11cqw; }
+.rz-combined-view { align-content:center; gap:2.2cqw; }
+.rz-combined-chart { min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); gap:1.3cqw; padding:4%; }
+.rz-combined-chart .rz-composition-chart { height:100%; min-height:0; }
+
+.analytics-export-renders .rz-composition { overflow:hidden; }
