@@ -1,6 +1,11 @@
 """Image generation routes: promo post ideas + full Art-Director image pipeline."""
+from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
 import json
 import sys
+import threading
+import time
+import uuid
 
 from config import BRAND_VISUAL_TONE, EDITORIAL_MODELS, OPENROUTER_IMAGE_MODELS
 from brand_profiles import BRAND_IMAGE_PROFILES
@@ -25,6 +30,71 @@ _LOGO_SAFE_ZONE = (
     'frames, divider lines, corners, geometric accents, ornaments, or focal details in that corner. '
     'Do not draw or invent any logo or watermark.'
 )
+
+
+# Image models can take several minutes. Keeping that work inside the original
+# browser request made some clients close an otherwise healthy connection after
+# roughly 45 seconds. Analytics uses these short-lived in-memory jobs so the
+# browser can poll without changing the Art Director, prompt, references, or
+# generated result. Multimedia keeps its existing synchronous endpoint.
+_IMAGE_JOB_TTL_SECONDS = 30 * 60
+_IMAGE_JOBS = {}
+_IMAGE_JOBS_LOCK = threading.Lock()
+_IMAGE_JOB_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix='rzwire-image')
+
+
+def _cleanup_image_jobs(now=None):
+    cutoff = (now or time.time()) - _IMAGE_JOB_TTL_SECONDS
+    expired = [job_id for job_id, job in _IMAGE_JOBS.items() if job.get('updatedAt', 0) < cutoff]
+    for job_id in expired:
+        _IMAGE_JOBS.pop(job_id, None)
+
+
+def _run_image_job(job_id, body):
+    with _IMAGE_JOBS_LOCK:
+        job = _IMAGE_JOBS.get(job_id)
+        if not job:
+            return
+        job.update(status='running', updatedAt=time.time())
+    try:
+        result = handle_generate_image(body)
+    except Exception as exc:  # noqa: BLE001 - surface the same clean API error through polling
+        with _IMAGE_JOBS_LOCK:
+            job = _IMAGE_JOBS.get(job_id)
+            if job:
+                job.update(status='failed', error=str(exc), updatedAt=time.time())
+        return
+    with _IMAGE_JOBS_LOCK:
+        job = _IMAGE_JOBS.get(job_id)
+        if job:
+            job.update(status='complete', result=result, updatedAt=time.time())
+
+
+def handle_start_image_job(body):
+    """Start the unchanged image pipeline and immediately return a polling ID."""
+    job_id = uuid.uuid4().hex
+    now = time.time()
+    with _IMAGE_JOBS_LOCK:
+        _cleanup_image_jobs(now)
+        _IMAGE_JOBS[job_id] = {'status': 'queued', 'createdAt': now, 'updatedAt': now}
+    # Detach the parsed request from the HTTP handler before its request thread exits.
+    _IMAGE_JOB_EXECUTOR.submit(_run_image_job, job_id, deepcopy(body))
+    return {'jobId': job_id, 'status': 'queued'}
+
+
+def handle_get_image_job(job_id):
+    """Return job state; completed responses retain the synchronous API shape."""
+    with _IMAGE_JOBS_LOCK:
+        _cleanup_image_jobs()
+        job = _IMAGE_JOBS.get(str(job_id or '').strip())
+        if not job:
+            raise KeyError('Image generation job was not found or has expired.')
+        response = {'jobId': job_id, 'status': job['status']}
+        if job['status'] == 'complete':
+            response['result'] = job.get('result') or {}
+        elif job['status'] == 'failed':
+            response['error'] = job.get('error') or 'Image generation failed.'
+        return response
 
 
 def handle_promo_ideas(body):

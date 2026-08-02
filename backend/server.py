@@ -27,7 +27,8 @@ from server_utils import _json_default
 
 # Handler functions — one import per domain module.
 from handlers.copy import handle_generate_copy
-from handlers.image import handle_promo_ideas, handle_generate_image
+from handlers.image import (handle_generate_image, handle_get_image_job,
+                            handle_promo_ideas, handle_start_image_job)
 from handlers.editorial import (handle_editorial_select, handle_filter_pipeline,
                                 handle_deepseek_filter)
 from handlers.account import (build_account_summary, handle_log_action,
@@ -121,6 +122,17 @@ class Handler(BaseHTTPRequestHandler):
                 self._error(400, str(exc))
             except Exception as exc:
                 self._error(502, f'Market asset search failed: {exc}')
+        elif self.path.startswith('/api/image/generation-status'):
+            user = auth.get_current_user(self)
+            if user is None:
+                return self._error(401, 'Not authenticated')
+            import urllib.parse as url_tools
+            params = url_tools.parse_qs(url_tools.urlparse(self.path).query)
+            job_id = (params.get('jobId') or [''])[0]
+            try:
+                self._json(handle_get_image_job(job_id))
+            except KeyError as exc:
+                self._error(404, str(exc.args[0]))
         elif self.path == '/api/auth/me':
             user = auth.get_current_user(self)
             if user is None:
@@ -300,6 +312,11 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(handle_promo_ideas(body))
             elif path == '/api/image/generate':
                 self._json(handle_generate_image(body))
+            elif path == '/api/image/generate-async':
+                user = auth.get_current_user(self)
+                if user is None:
+                    return self._error(401, 'Not authenticated')
+                self._json(handle_start_image_job(body), status=202)
             elif path == '/api/sheets/approve':
                 self._json(handle_sheets('approve', body))
             elif path == '/api/sheets/schedule':
@@ -372,7 +389,13 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header('Content-Encoding', 'gzip')
         self.send_header('Content-Length', len(body))
         self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            # The client may leave while a legacy long-running request is still
+            # completing. The async analytics route avoids this path, while this
+            # guard keeps the server log clean for any remaining sync callers.
+            return
 
     def _error(self, code, msg):
         self._json({'error': msg}, code)

@@ -469,7 +469,7 @@ export default function AnalyticsPage() {
       const approvalSample = await imageUrlToDataUrl(selectedTemplate.image)
       const movement = marketData.series.reduce((total, item) => total + item.changePercent, 0) / marketData.series.length
       const lockedComposition = await captureComposition(lockedNode, outputFormat)
-      const response = await fetch(`${API_BASE}/api/image/generate`, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+      const response = await fetch(`${API_BASE}/api/image/generate-async`, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
             article:{title:headline || summary}, platform:'Instagram', mediaBrand:themeOwner.brand, sentiment:movement >= 0 ? 'Bullish' : 'Bearish', model:imageModel, compositionMode:'analytics_art_directed', copy:chartText,
             templateId:selectedTemplate.id,
             templateCategoryId:selectedTemplate.categoryId,
@@ -481,8 +481,24 @@ export default function AnalyticsPage() {
             referenceImages:[approvalSample, lockedComposition, approvedChart],
             imageDirection:`Treat the approved ${selectedTemplate.name} sample as a binding publishing family. Recreate that same premium composition for ${brandTheme.label}; adapt its palette, identity, exact supplied copy, and verified market content. Keep the complete approved chart sharp and physically inside the sample's reserved chart aperture or device screen. ${direction}`,
           })})
-      const data = await response.json().catch(() => ({}))
-      if (!response.ok || !data.imageB64) throw new Error(data.error || 'The Analytics Art Director did not return a finished post.')
+      const started = await response.json().catch(() => ({}))
+      if (!response.ok || !started.jobId) throw new Error(started.error || 'The Analytics Art Director could not start the image job.')
+
+      const deadline = Date.now() + (10 * 60 * 1000)
+      let data = null
+      while (Date.now() < deadline) {
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        const statusResponse = await fetch(`${API_BASE}/api/image/generation-status?jobId=${encodeURIComponent(started.jobId)}`, {credentials:'include'})
+        const job = await statusResponse.json().catch(() => ({}))
+        if (!statusResponse.ok) throw new Error(job.error || 'The Analytics Art Director job could not be checked.')
+        if (job.status === 'failed') throw new Error(job.error || 'The Analytics Art Director could not generate the finished post.')
+        if (job.status === 'complete') {
+          data = job.result || {}
+          break
+        }
+      }
+      if (!data) throw new Error('The Analytics Art Director is taking longer than expected. Please try again.')
+      if (!data.imageB64) throw new Error(data.error || 'The Analytics Art Director did not return a finished post.')
       const finishedPost = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
       await preloadImage(finishedPost)
       setGeneratedPosts(previous => ({...previous, [selectedTemplate.id]:finishedPost}))
