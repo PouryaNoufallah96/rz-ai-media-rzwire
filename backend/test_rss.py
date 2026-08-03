@@ -63,6 +63,12 @@ class RSSFetchTests(unittest.TestCase):
         self.assertEqual(get.call_count, 2)
         self.assertIn("news.google.com", get.call_args_list[1].args[0])
 
+    def test_every_vps_blocked_publisher_has_a_recent_fallback(self):
+        self.assertIn("https://www.theblock.co/rss.xml", rss.FEED_FALLBACKS)
+        self.assertIn("https://blockworks.co/feed/", rss.FEED_FALLBACKS)
+        self.assertIn("https://cryptoslate.com/feed/", rss.FEED_FALLBACKS)
+        self.assertIn("when%3A7d", rss.FEED_FALLBACKS["https://cryptoslate.com/feed/"])
+
     def test_converts_chainlink_blog_page_to_rss(self):
         redirect = FakeResponse(status=301, location="https://chain.link/blog")
         page = FakeResponse(

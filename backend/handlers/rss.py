@@ -79,6 +79,9 @@ FEED_FALLBACKS = {
     "https://blockworks.co/feed/": (
         "https://news.google.com/rss/search?q=site%3Ablockworks.co%20when%3A30d&hl=en-US&gl=US&ceid=US%3Aen"
     ),
+    "https://cryptoslate.com/feed/": (
+        "https://news.google.com/rss/search?q=site%3Acryptoslate.com%20when%3A7d&hl=en-US&gl=US&ceid=US%3Aen"
+    ),
 }
 
 
