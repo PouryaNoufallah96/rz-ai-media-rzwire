@@ -37,7 +37,7 @@ _LOGO_SAFE_ZONE = (
 # browser request made some clients close an otherwise healthy connection after
 # roughly 45 seconds. Analytics uses these short-lived in-memory jobs so the
 # browser can poll without changing the Art Director, prompt, references, or
-# generated result. Multimedia keeps its existing synchronous endpoint.
+# generated result. Both Analytics and Multimedia use this job contract.
 _IMAGE_JOB_TTL_SECONDS = 30 * 60
 _IMAGE_JOBS = {}
 _IMAGE_JOBS_LOCK = threading.Lock()

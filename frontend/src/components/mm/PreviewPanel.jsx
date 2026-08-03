@@ -3,6 +3,7 @@ import { useMmStore, API_BASE, MEDIA_COLORS, PLAT_COLORS, IMAGE_MODEL_OPTIONS, M
 import { useLanguageStore, t } from '../../store/languageStore'
 import { useAccountStore } from '../../store/accountStore'
 import { PLAT_ICONS } from '../../utils/platformIcons'
+import { generateImageInBackground } from '../../utils/imageJobs'
 import mgcLogoUrl from '../../assets/brands/mgc-coin-logo.png'
 import rankingLogoUrl from '../../assets/brands/ranking-platform-logo.png'
 import oasisLogoUrl from '../../assets/brands/oasis-coin-logo.png'
@@ -260,6 +261,7 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
   const copyRef = useRef(null)
   const panelRef = useRef(null)
   const imageSectionRef = useRef(null)
+  const imageJobSessionRef = useRef(0)
 
   function showSchedMsg(text, type = 'error') { setSchedMsg({ text, type }) }
 
@@ -269,6 +271,10 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
       .then(setIntegrationStatus)
       .catch(() => setIntegrationStatus({ publishing:{enabled:false}, sheets:{enabled:false} }))
   }, [])
+
+  // Stop updating this panel if the user closes it or opens another card while
+  // the detached backend job continues safely to completion.
+  useEffect(() => () => { imageJobSessionRef.current += 1 }, [])
 
   // Whenever the image panel opens, scroll it into view. Otherwise the textarea
   // + reference-image picker render below the fold (after headline/scores/copy/
@@ -508,21 +514,39 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
 
   async function handleGenerateImage() {
     if (imgLoading) return
+    const sessionId = imageJobSessionRef.current + 1
+    imageJobSessionRef.current = sessionId
+    const requestedCardIdentity = cardIdentity
     setImgLoading(true); setGeneratedImg(''); setAiBrief(null); setImageGenError('')
     try {
-      const res = await fetch(`${API_BASE}/api/image/generate`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ article:{title:liveHeadline}, platform:card.platform||'X', mediaBrand:card.media||MEDIA_LIST[0], sentiment:card.sentiment||'Neutral', model:imageModel, copy:copyText, language:card.language || useLanguageStore.getState().language, ...(imagePrompt.trim() && {imageDirection:imagePrompt.trim()}), ...(refImages.length && {referenceImages:refImages.map(r=>r.b64)}) })
+      const payload = { article:{title:liveHeadline}, platform:card.platform||'X', mediaBrand:card.media||MEDIA_LIST[0], sentiment:card.sentiment||'Neutral', model:imageModel, copy:copyText, language:card.language || useLanguageStore.getState().language, ...(imagePrompt.trim() && {imageDirection:imagePrompt.trim()}), ...(refImages.length && {referenceImages:refImages.map(r=>r.b64)}) }
+      const data = await generateImageInBackground({
+        apiBase:API_BASE,
+        payload,
+        isCancelled:() => imageJobSessionRef.current !== sessionId,
       })
-      if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e?.error||res.statusText) }
-      const data = await res.json()
-      if (!data.imageB64) throw new Error('No image data returned')
+      if (!data) return
+      if (!data.imageB64) throw new Error(data.error || 'No image data returned')
+      if (imageJobSessionRef.current !== sessionId) return
       const finalImageB64 = await applyMediaLogo(data.imageB64, card.media||MEDIA_LIST[0])
+      if (imageJobSessionRef.current !== sessionId) return
       setGeneratedImg(finalImageB64)
-      if (mode === 'multimedia') useMmStore.getState().activeCard._generatedImageB64 = finalImageB64
+      if (mode === 'multimedia') {
+        const currentCard = useMmStore.getState().activeCard
+        const currentIdentity = currentCard?.id || currentCard?.card_id || currentCard?.link || currentCard?.sourceUrl || ''
+        if (currentCard && currentIdentity === requestedCardIdentity) currentCard._generatedImageB64 = finalImageB64
+      }
       if (data.brief) setAiBrief({ brief: data.brief, prompt: data.prompt })
-    } catch(e) { setImageGenError(e.message || 'Image generation failed after automatic retries.') }
-    finally { setImgLoading(false) }
+    } catch(e) {
+      if (imageJobSessionRef.current === sessionId) {
+        const message = e?.message === 'Failed to fetch'
+          ? 'The connection was interrupted while starting image generation. Please try again.'
+          : e?.message
+        setImageGenError(message || 'Image generation failed after automatic retries.')
+      }
+    } finally {
+      if (imageJobSessionRef.current === sessionId) setImgLoading(false)
+    }
   }
 
   async function handleDownloadImage() {
