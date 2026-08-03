@@ -29,8 +29,13 @@ ANALYTICS_BRANDS = {
             "accentAlt": "#b88a16", "border": "#64551c",
         },
         "motifs": ["signal-yellow horizon", "restrained gold light", "black editorial field", "precise market grid"],
+        "backgroundScenes": [
+            "A monumental black-metal metaverse skyline seen from a low angle, with a controlled signal-yellow sunrise breaking across the horizon, subtle gaming-arena architecture, fine volumetric haze, and generous dark editorial space.",
+            "An obsidian digital arena with layered architectural fins and a restrained gold energy core in the distance, cinematic side light, deep graphite atmosphere, and calm negative space.",
+            "A vast black orbital landscape crossed by precise gold signal paths and one luminous amber horizon, premium science-fiction scale, no literal coin, no text, and no chart-like graphics.",
+        ],
         "artDirectorProfile": "MGC Coin",
-        "imagePrompt": "Premium black-and-signal-yellow MGC market editorial with restrained gold, clean geometry, confident hierarchy, and generous negative space.",
+        "imagePrompt": "Premium black-and-signal-yellow MGC market editorial with monumental gaming and metaverse architecture, restrained gold, confident hierarchy, cinematic depth, and generous negative space.",
         "market": {
             "provider": "geckoterminal", "network": "bsc",
             "contract": "0xbb73BB2505AC4643d5C0a99c2A1F34B3DfD09D11",
@@ -54,8 +59,13 @@ ANALYTICS_BRANDS = {
             "accentAlt": "#4d8f7c", "border": "#454c55",
         },
         "motifs": ["lunar silver arc", "graphite city grid", "emerald data pulse", "orbital precision"],
+        "backgroundScenes": [
+            "A colossal silver lunar body rising behind a black graphite ridge, with one emerald crescent accent, hard rim light, deep space atmosphere, and a quiet editorial field for typography.",
+            "A futuristic graphite lunar outpost at blue hour, precise monolithic towers fading into haze, a restrained emerald horizon glow, and expansive institutional negative space.",
+            "An orbital view over a shadowed moon surface with a distant silver sunrise, subtle emerald navigation light, premium cinematic scale, no literal coin, no text, and no chart-like graphics.",
+        ],
         "artDirectorProfile": "Oasis Coin",
-        "imagePrompt": "Cinematic black and graphite Oasis market editorial with lunar silver, restrained emerald data accents, quiet depth, and institutional clarity.",
+        "imagePrompt": "Cinematic black and graphite Oasis market editorial with monumental lunar scenery, silver rim light, restrained emerald accents, atmospheric depth, and institutional clarity.",
         "market": {
             "provider": "geckoterminal", "network": "bsc",
             "contract": "0x1a4D41219C547f3A0EE36cf3d9E68F80699cF283",
@@ -79,8 +89,13 @@ ANALYTICS_BRANDS = {
             "accentAlt": "#d68add", "border": "#c9bdf0",
         },
         "motifs": ["crystal refraction", "platinum ring", "lavender glass", "soft pearl light"],
+        "backgroundScenes": [
+            "A luminous landscape of monumental faceted lavender crystal catching a soft pearl sunrise, with platinum reflections, elegant depth, and clean luxury-editorial negative space.",
+            "A sculptural platinum orbital ring surrounding a deep violet gemstone form, soft diffused gallery light, refined shadows, and a calm pearl-white field for typography.",
+            "An abstract luxury pavilion built from translucent lavender glass and polished platinum planes, subtle crystal refraction, airy cinematic scale, no literal coin, no text, and no chart-like graphics.",
+        ],
         "artDirectorProfile": "Jewelry Coin",
-        "imagePrompt": "Luminous pearl-white and lavender Jewelry market editorial with violet crystal refraction, platinum details, elegant softness, and luxury-tech clarity.",
+        "imagePrompt": "Luminous pearl-white and lavender Jewelry market editorial with monumental crystal scenery, violet refraction, platinum details, cinematic elegance, and luxury-tech clarity.",
         "market": {
             "provider": "geckoterminal", "network": "bsc",
             "contract": "0xf04FaB6Dda66261eaBfD65e92A6b81dDaF6a950a",
@@ -127,6 +142,9 @@ def validate_analytics_brand_registry(registry=None) -> dict:
                 raise ValueError(f"Enabled analytics brand {token_id} has an invalid market mapping.")
             if not item.get("motifs"):
                 raise ValueError(f"Enabled analytics brand {token_id} is missing motifs.")
+            scenes = item.get("backgroundScenes") or []
+            if len(scenes) < 3 or any(len(str(scene).strip()) < 80 for scene in scenes):
+                raise ValueError(f"Enabled analytics brand {token_id} needs three detailed background scenes.")
             if item["artDirectorProfile"] not in BRAND_IMAGE_PROFILES:
                 raise ValueError(
                     f"Enabled analytics brand {token_id} references an unknown Art Director profile."

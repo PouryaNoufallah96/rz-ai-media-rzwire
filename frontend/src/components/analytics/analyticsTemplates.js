@@ -33,7 +33,7 @@ export const TEMPLATE_CATEGORIES = [
     variant('laptop-wide', 'C', 'Wide dashboard laptop', 'Desk-set laptop with a wider multi-series presentation.', desktopC, 'Laptop on a realistic editorial desk, wide chart screen, soft environmental lighting and restrained header/footer.'),
   ]},
   {id:'growth', name:'Growth Spotlight', description:'Focused performance story', variants:[
-    variant('growth-card', 'A', 'Performance card', 'Headline, verified chart and two exact result strips.', growthA, 'Protected chart card, concise headline, start/end and movement strips, crisp brand-owned information hierarchy.'),
+    variant('growth-card', 'A', 'Cinematic performance card', 'Coin-themed hero scene, compact verified chart, and two exact result strips.', growthA, 'Dramatic owner-specific background scene, compact protected chart, concise editorial headline, exact result strips, and crisp brand-owned hierarchy.'),
     variant('growth-hero', 'B', 'Growth hero', 'Large percentage-led hero with a dominant chart.', growthB, 'Oversized verified percentage, large protected chart, energetic but refined brand gradient and compact footer.'),
     variant('growth-milestone', 'C', 'Milestone result', 'Editorial headline and a refined milestone chart.', growthC, 'Editorial headline, premium serif/sans contrast, protected chart panel, spacious luxury financial composition.'),
   ]},

@@ -14,6 +14,7 @@ class AnalyticsBrandRegistryTests(unittest.TestCase):
         validated = validate_analytics_brand_registry()
         self.assertEqual(set(validated), {"mgc", "oasis", "jewelry"})
         self.assertTrue(all(item["enabled"] for item in validated.values()))
+        self.assertTrue(all(len(item["backgroundScenes"]) >= 3 for item in validated.values()))
 
     def test_public_registry_contains_theme_and_market_identity(self):
         brands = public_analytics_brands()
@@ -46,6 +47,14 @@ class AnalyticsBrandRegistryTests(unittest.TestCase):
         incomplete["symbol"] = "UNKNOWNDIRECTOR"
         incomplete["artDirectorProfile"] = "Missing Art Director"
         with self.assertRaisesRegex(ValueError, "unknown Art Director"):
+            validate_analytics_brand_registry([incomplete])
+
+    def test_enabled_brand_requires_detailed_background_scenes(self):
+        incomplete = copy.deepcopy(ANALYTICS_BRANDS["mgc"])
+        incomplete["id"] = "no-scenes"
+        incomplete["symbol"] = "NOSCENES"
+        incomplete["backgroundScenes"] = ["too short"]
+        with self.assertRaisesRegex(ValueError, "three detailed background scenes"):
             validate_analytics_brand_registry([incomplete])
 
     def test_disabled_incomplete_brand_is_not_public(self):

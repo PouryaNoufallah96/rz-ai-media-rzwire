@@ -18,6 +18,11 @@ THEME_OWNER = {
     'theme': {'background': '#050505', 'accent': '#f1c40f'},
     'motifs': ['signal yellow', 'restrained gold'],
     'imagePrompt': 'Premium black and signal-yellow gaming utility editorial.',
+    'backgroundScenes': [
+        'A monumental black gaming city with a controlled signal-yellow sunrise, cinematic architecture, restrained haze, and generous editorial negative space.',
+        'An obsidian digital arena with a restrained gold energy core, deep graphite atmosphere, cinematic side light, and calm editorial negative space.',
+        'A black orbital landscape with precise gold signal paths, a luminous horizon, premium scale, quiet typography space, and no data graphics.',
+    ],
 }
 SERIES = [
     {'id': 'rz:mgc', 'tokenId': 'mgc', 'symbol': 'MGC', 'name': 'MGC Coin', 'role': 'primary', 'color': '#F0C419',
@@ -92,6 +97,10 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertIn('overlay-top-right', prompt)
         self.assertIn('#0072B2', prompt)
         self.assertIn('"lineWidth":6', prompt)
+        self.assertIn('CHART SCALE LIMIT', prompt)
+        self.assertIn('SELECTED DRAMATIC OWNER BACKGROUND', prompt)
+        self.assertIn(THEME_OWNER['backgroundScenes'][0], prompt)
+        self.assertIn('show each exactly once', prompt)
 
     @patch('analytics_image_pipeline.openrouter_chat')
     def test_art_director_receives_selected_sample_as_visual_reference(self, chat):
@@ -115,6 +124,9 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertIn('chart/device aperture', messages[0]['content'])
         self.assertIn('NO captured composition reference', messages[0]['content'])
         self.assertIn('complete construction specification', messages[0]['content'])
+        self.assertIn('APPROVED OWNER BACKGROUND SCENES', messages[0]['content'])
+        self.assertIn('IMMUTABLE CHART SCALE RULE', messages[0]['content'])
+        self.assertIn('do not recreate either outside it', messages[0]['content'])
         self.assertIn('Approved chart presentation', messages[1]['content'][0]['text'])
         self.assertIn('overlay-top-right', messages[1]['content'][0]['text'])
 
@@ -130,6 +142,23 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
             self.assertTrue(brief[field])
         self.assertEqual(brief['composition_map'], template['contract']['skeleton'])
         self.assertEqual(brief['chart_integration'], template['contract']['chart'])
+
+    def test_growth_card_uses_smaller_chart_and_owner_scene(self):
+        template = resolve_analytics_template('growth', 'growth-card')
+        brief = fallback_analytics_brief(template, THEME_OWNER, SERIES)
+        self.assertIn('30-38%', brief['chart_scale'])
+        self.assertEqual(brief['background_scene'], THEME_OWNER['backgroundScenes'][0])
+        self.assertIn('no more than three lines', template['contract']['typography'])
+        self.assertIn('no chart taller than 38%', template['contract']['forbidden'])
+
+    def test_unapproved_art_director_background_is_replaced(self):
+        template = resolve_analytics_template('growth', 'growth-card')
+        raw = fallback_analytics_brief(template, THEME_OWNER, SERIES)
+        raw['background_scene'] = 'Generic neon crypto wallpaper.'
+        raw['chart_scale'] = 'Fill the entire canvas.'
+        brief = validate_analytics_brief(raw, template, THEME_OWNER, SERIES)
+        self.assertEqual(brief['background_scene'], THEME_OWNER['backgroundScenes'][0])
+        self.assertIn('30-38%', brief['chart_scale'])
 
 
 if __name__ == '__main__':

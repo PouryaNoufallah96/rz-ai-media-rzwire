@@ -103,13 +103,13 @@ ANALYTICS_TEMPLATE_FAMILIES = {
         "name": "Growth Spotlight",
         "variants": {
             "growth-card": _variant(
-                "Protected performance card with exact start, end, movement, and trend.",
-                "A single large rounded result card occupies 55-72% of the canvas. The headline sits above and a concise outcome plaque or footer sits below. The card is straight, centered, and visually substantial.",
-                "Embed the approved chart in the card's main plotting area with exact axes and dates. Start price, end price, and movement are presented as protected factual fields around it.",
-                "Bold outcome-led headline, large numeric change, medium asset label, small but readable axes and footer.",
-                "Use owner colors for canvas, card edge, highlights, logo, and footer while keeping gain/loss semantics and series colors accurate.",
-                "Premium molded card, subtle glass or metal details appropriate to the brand, crisp typography, clean financial-product finish.",
-                "No multiple tilted cards; no chart separated from its card; no small card lost in empty canvas; no invented rank or alert controls.",
+                "Dramatic coin-owned editorial story with a compact protected performance card and exact result strips.",
+                "Reserve the upper 28-34% for one dramatic owner-specific environment plus a compact two-to-three-line editorial headline. The approved chart panel occupies roughly 30-38% of the canvas height in the middle-lower field. Exact result strips and a quiet official footer complete the bottom 20-25%.",
+                "Scale the complete approved chart proportionally into one compact panel with exact axes, dates, and its single approved legend. Present start price, end price, and movement in separate protected result strips outside the plotting area. Never recreate the chart title or legend elsewhere.",
+                "Compact editorial headline, no more than three lines; medium chart title; clear result-strip values; small but readable axes and deliberate footer. The headline must not overpower the scene or force the chart downward.",
+                "Preserve the sample's information order but replace its literal environment with one approved dramatic scene belonging to the selected owner. Use owner colors for atmosphere, card edge, highlights, logo, and footer while series colors remain exact.",
+                "Cinematic campaign depth in the background, controlled localized light behind the hero subject, premium molded chart card, crisp typography, and restrained borders without a halo around the full chart.",
+                "No flat empty black field; no chart taller than 38% of the canvas; no duplicate chart title or legend; no multiple tilted cards; no chart separated from its card; no invented rank, alert controls, glow box, or generic crypto decoration.",
             ),
             "growth-hero": _variant(
                 "Large chart-led performance hero with one unmistakable market outcome.",
@@ -200,12 +200,12 @@ ANALYTICS_TEMPLATE_FAMILIES = {
         "variants": {
             "combined-rounded": _variant(
                 "Large rounded multi-series chart with exact callouts and horizon-like depth.",
-                "A single generous rounded chart panel dominates 58-72% of the canvas. Outcome headline above; exact endpoint callouts live inside the panel; official logo and footer sit below.",
+                "A single rounded chart panel occupies a controlled 40-48% of the canvas, leaving a substantial owner-specific cinematic environment around it. Outcome headline sits above; exact endpoint callouts live inside the panel; official logo and footer sit below.",
                 "Use the approved chart in full as the panel content. Preserve every line, date, axis, legend, and relative shape; endpoint callouts may repeat exact metadata only.",
                 "Bold concise headline, medium callouts, highly readable axes and legend, visible footer/domain.",
                 "Owner theme shapes the background, rounded frame, horizon light, logo, and footer; chart colors remain asset-specific.",
                 "Premium dark or light chart surface appropriate to the owner, fine grid, clean depth, sharp vector-like data.",
-                "No device mockup; no second chart; no chart smaller than half the canvas; no dead lower half; no invented ticks or values.",
+                "No device mockup; no second chart; no chart larger than half the canvas; no dead lower half; no invented ticks or values; no duplicate legend.",
             ),
             "combined-minimal": _variant(
                 "Quiet chart-first spotlight with restrained information and generous purposeful space.",
@@ -233,6 +233,57 @@ ANALYTICS_TEMPLATE_FAMILIES = {
 _ALLOWED_DEPTH = {"flat editorial", "soft dimensional", "cinematic dimensional"}
 _ALLOWED_LIGHTING = {"quiet studio", "directional editorial", "cinematic atmospheric"}
 _ALLOWED_DENSITY = {"minimal", "balanced", "information-rich"}
+
+
+_CHART_SCALE_RULES = {
+    "phone": "Keep the approved chart inside the device screen; the phone itself may remain prominent, but preserve meaningful owner-scene atmosphere around the device.",
+    "laptop": "Keep the approved chart inside the laptop screen; the laptop may remain prominent, but preserve a visible owner-scene environment around the hardware.",
+    "growth": "The chart panel must occupy about 30-38% of the canvas height and no more than 42% of the total visual area. Reserve the upper field for the dramatic owner scene and editorial headline, then keep result strips and footer clearly separate below.",
+    "contrast": "The protected chart evidence must occupy about 32-42% of the total visual area. Reserve the remaining space for the owner scene, decisive headline, exact result modules, and footer.",
+    "separated": "All chart modules together must occupy about 32-42% of the total visual area. Keep each chart readable while reserving substantial space for the owner scene, asset facts, headline, and footer.",
+    "combined": "The single approved chart panel must occupy about 38-48% of the total visual area and never exceed half of the canvas. The dramatic owner scene, headline, exact result summary, and footer must remain visibly substantial.",
+}
+
+
+def _chart_scale_rule(template: dict) -> str:
+    return _CHART_SCALE_RULES.get(
+        template.get("categoryId"),
+        "Keep the approved chart compact but fully readable, using no more than half of the total visual area.",
+    )
+
+
+def _approved_background_scenes(theme_owner: dict) -> list[str]:
+    scenes = [
+        str(scene).strip()
+        for scene in (theme_owner.get("backgroundScenes") or [])
+        if str(scene).strip()
+    ]
+    if scenes:
+        return scenes[:6]
+    fallback = str(theme_owner.get("imagePrompt") or "premium coin-owned cinematic environment").strip()
+    return [fallback]
+
+
+def _fallback_background_scene(theme_owner: dict, series: list[dict]) -> str:
+    """Pick a safe owner scene when the Art Director is unavailable.
+
+    Registry scene order is aspirational/positive, resilient/negative, then
+    neutral/mixed. The choice affects atmosphere only, never market facts.
+    """
+    scenes = _approved_background_scenes(theme_owner)
+    owner_id = str(theme_owner.get("id") or "").strip().lower()
+    owner_symbol = str(theme_owner.get("symbol") or "").strip().upper()
+    owner = next((
+        item for item in series
+        if str(item.get("tokenId") or "").strip().lower() == owner_id
+        or str(item.get("symbol") or "").strip().upper() == owner_symbol
+    ), series[0] if series else {})
+    try:
+        movement = float(owner.get("changePercent") or 0)
+    except (TypeError, ValueError):
+        movement = 0
+    index = 0 if movement > 0.05 else 1 if movement < -0.05 else 2
+    return scenes[min(index, len(scenes) - 1)]
 
 
 def resolve_analytics_template(category_id: str, variant_id: str) -> dict:
@@ -304,12 +355,13 @@ def fallback_analytics_brief(template: dict, theme_owner: dict, series_metadata)
         "forbidden_changes": contract.get("forbidden") or "no invented data, extra panels, layout drift, detached charts or generic crypto decoration",
         "chart_strategy": contract.get("chart") or "place the complete approved chart inside the sample's reserved chart aperture",
         "layout_hierarchy": contract.get("skeleton") or "headline, supporting statement, protected chart, exact result summary, brand footer",
-        "background_scene": theme_owner["imagePrompt"],
+        "background_scene": _fallback_background_scene(theme_owner, series),
+        "chart_scale": _chart_scale_rule(template),
         "lighting": "cinematic atmospheric" if category in {"phone", "laptop", "contrast"} else "directional editorial",
         "depth": "cinematic dimensional" if category in {"phone", "laptop"} else "soft dimensional",
         "density": density,
         "brand_expression": ", ".join(theme_owner.get("motifs") or []),
-        "negative_space": "preserve the sample's breathing room around the headline, chart, and footer",
+        "negative_space": "preserve the sample's breathing room around the headline, chart, and footer; give the selected dramatic owner scene enough visible area to create depth and influence without reducing readability",
         "factual_protection": "all visible chart geometry and market facts come only from the approved chart and supplied metadata",
     }
 
@@ -321,6 +373,8 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
     series = _clean_series(series_metadata)
     chart_style = normalize_chart_style(chart_style)
     profile_style = profile.get("frozen_style") or {}
+    background_scenes = _approved_background_scenes(theme_owner)
+    chart_scale = _chart_scale_rule(template)
     system_prompt = (
         f'You are the specialist Market Analytics Art Director for {theme_owner["name"]}. '
         'You do not invent market data and you do not write a short generic image prompt. You create a complete production '
@@ -340,6 +394,17 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         f'PALETTE: {json.dumps(theme_owner["theme"], ensure_ascii=False)}\n'
         f'MOTIFS: {", ".join(theme_owner.get("motifs") or [])}\n'
         f'BRAND DIRECTION: {theme_owner["imagePrompt"]}\n'
+        f'APPROVED OWNER BACKGROUND SCENES: {json.dumps(background_scenes, ensure_ascii=False)}\n'
+        'BACKGROUND SELECTION RULE: choose exactly one approved owner background scene and return that complete scene text '
+        'verbatim in background_scene. Select the scene whose emotional direction best fits the verified owner movement and '
+        'headline. Preserve the sample background\'s spatial role, crop, depth, and negative-space behavior, but do not copy the '
+        'example coin\'s literal world. The selected owner scene must be visibly present and dramatic, never reduced to a flat '
+        'black field, plain gradient, uncontrolled glow, generic dashboard, or decorative crypto wallpaper. Keep a quiet local '
+        'area behind typography and the protected chart.\n'
+        f'IMMUTABLE CHART SCALE RULE: {chart_scale}\n'
+        'This revised chart scale is a deliberate family constraint and overrides any looser interpretation that would let the '
+        'chart dominate the poster. The chart remains fully readable and factual, but the owner scene and editorial story must '
+        'have meaningful visual presence.\n'
         f'FROZEN PROFILE STYLE: {json.dumps(profile_style, ensure_ascii=False)}\n\n'
         f'TEMPLATE FAMILY: {template["categoryName"]}\n'
         f'EXACT VARIANT: {template["variantId"]}\n'
@@ -348,7 +413,8 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         'the palette, official logo/domain, approved motifs, materials and atmosphere. Market data changes only headline, '
         'supporting text, chart, legends, endpoint values and verified statistics. If the sample contains separate performance '
         'cards, keep series separate. If it contains one combined chart, keep them combined. If it contains a phone or laptop, '
-        'the complete chart and legends belong inside the screen. Do not turn a family into another family.\n\n'
+        'the complete chart and legends belong inside the screen. Do not turn a family into another family. The approved chart '
+        'already contains its title and selected legend; do not recreate either outside it or add a second legend inside it.\n\n'
         'BRIEF DETAIL RULES: reference_analysis must explain the sample\'s visible construction. composition_map and layout_hierarchy '
         'must describe the canvas in reading order with relative proportions and alignment. device_strategy must specify silhouette, '
         'pose, crop, bezel or card boundaries, and screen/aperture behavior. typography_system must specify headline scale, line count, '
@@ -358,12 +424,12 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         'quality_control must together make the brief executable without another layout image. forbidden_changes must be exhaustive.\n\n'
         'Return ONLY one JSON object with exactly these keys: family, variant, concept, sample_fidelity, '
         'reference_analysis, composition_map, device_strategy, chart_integration, chart_strategy, typography_system, '
-        'data_hierarchy, layout_hierarchy, background_scene, lighting, depth, density, brand_translation, '
+        'data_hierarchy, layout_hierarchy, background_scene, chart_scale, lighting, depth, density, brand_translation, '
         'brand_expression, materials_and_finish, logo_footer_system, negative_space, quality_control, '
         'forbidden_changes, factual_protection. '
         'sample_fidelity must be "binding". lighting must be one of: quiet studio, directional editorial, '
         'cinematic atmospheric. depth must be one of: flat editorial, soft dimensional, cinematic dimensional. '
-        'density must be one of: minimal, balanced, information-rich.'
+        'density must be one of: minimal, balanced, information-rich. chart_scale must repeat the immutable chart scale rule exactly.'
     )
     user_prompt = (
         f'Exact headline: {article.get("title", "")}\n'
@@ -400,13 +466,21 @@ def validate_analytics_brief(raw_brief, template, theme_owner, series_metadata) 
     brief = deepcopy(fallback)
     for key in (
         "concept", "reference_analysis", "composition_map", "device_strategy", "chart_integration",
-        "chart_strategy", "typography_system", "data_hierarchy", "layout_hierarchy", "background_scene",
+        "chart_strategy", "typography_system", "data_hierarchy", "layout_hierarchy",
         "brand_translation", "brand_expression", "materials_and_finish", "logo_footer_system",
         "negative_space", "quality_control", "forbidden_changes", "factual_protection",
     ):
         value = str(raw_brief.get(key) or "").strip()
         if value:
             brief[key] = value[:1600]
+    # Background subjects are controlled by the selected coin registry. The Art
+    # Director may choose among them but cannot replace them with a generic scene.
+    requested_scene = str(raw_brief.get("background_scene") or "").strip().casefold()
+    for approved_scene in _approved_background_scenes(theme_owner):
+        if requested_scene == approved_scene.casefold():
+            brief["background_scene"] = approved_scene
+            break
+    brief["chart_scale"] = _chart_scale_rule(template)
     brief["sample_fidelity"] = "binding"
     brief["lighting"] = raw_brief.get("lighting") if raw_brief.get("lighting") in _ALLOWED_LIGHTING else fallback["lighting"]
     brief["depth"] = raw_brief.get("depth") if raw_brief.get("depth") in _ALLOWED_DEPTH else fallback["depth"]
@@ -414,6 +488,7 @@ def validate_analytics_brief(raw_brief, template, theme_owner, series_metadata) 
     # These two clauses are non-negotiable even if the model omitted them.
     brief["chart_strategy"] += "; preserve the full approved chart without redrawing or moving it outside the aperture"
     brief["chart_integration"] += "; use only the supplied approved chart and preserve its complete factual content"
+    brief["chart_integration"] += "; use exactly one chart title and exactly the approved legend already inside the chart"
     brief["forbidden_changes"] = fallback["forbidden_changes"]
     brief["factual_protection"] = fallback["factual_protection"]
     return brief
@@ -453,6 +528,12 @@ def assemble_analytics_prompt(brief, template, theme_owner, profile, article, co
         f'INFORMATION HIERARCHY: {brief["data_hierarchy"]}. '
         f'CHART APERTURE AND INTEGRATION: {brief["chart_integration"]}. '
         f'CHART PROTECTION STRATEGY: {brief["chart_strategy"]}. '
+        f'CHART SCALE LIMIT: {brief["chart_scale"]}. This scale limit is mandatory even if Reference 1 could be interpreted '
+        'more loosely; the chart must remain fully legible but must not dominate the full poster. '
+        f'SELECTED DRAMATIC OWNER BACKGROUND: {brief["background_scene"]}. Build this actual scene as the poster environment, '
+        'preserving the reference\'s scene placement and negative-space behavior while translating the literal subject to the '
+        'selected coin. The scene must be clearly visible around the smaller chart, not replaced by flat black, a plain gradient, '
+        'a full-card halo, generic crypto wallpaper, or empty space. '
         f'BRAND TRANSLATION: {brief["brand_translation"]}. '
         f'BRAND EXPRESSION: {brief["brand_expression"]}. '
         f'MATERIALS, LIGHTING, AND DEPTH: {brief["materials_and_finish"]}; {brief["lighting"]}; {brief["depth"]}. '
@@ -473,7 +554,9 @@ def assemble_analytics_prompt(brief, template, theme_owner, profile, article, co
         'theme; third replace the sample headline/supporting text with the supplied exact copy; fourth place Reference 2 into '
         'the defined chart area; fifth rebuild exact legends and verified result labels from the supplied metadata; sixth add '
         'the official logo/footer in the sample-defined position; finally apply premium lighting and finish. Major modules '
-        'must cover the canvas with the same confidence as Reference 1. Do not create a large unintended empty region. '
+        'must cover the canvas with the same confidence as Reference 1. Do not create a large unintended empty region. The '
+        'approved chart already contains its chart title and selected legend: show each exactly once and never add a duplicate '
+        'title, detached legend, tooltip, or second legend. '
         'For separate-card variants, keep separate mini charts plus the sample-defined combined factual view when specified. '
         'For combined-chart variants, use one combined chart only. Comparison assets may keep their own line/marker colors '
         'but may never control the background theme. '
