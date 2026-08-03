@@ -93,6 +93,12 @@ def handle_editorial_select(body):
         # enrichment is off, and the fallback (when scraping fails) is richer.
         desc = (a.get('desc') or '')[:450].replace('\n', ' ')
         summary = (a.get('_enriched') or '').replace('\n', ' ')
+        eligible_brands = a.get('_brands') or []
+        brand_scores = a.get('brandScores') or {}
+        eligibility = ', '.join(
+            f"{brand} ({brand_scores.get(brand, {}).get('embeddingFit', 0):g})"
+            for brand in eligible_brands
+        ) or r.get('primary_media', '')
         # Only include the Summary line when enrichment actually produced text
         # beyond the lede — otherwise omit it to keep the prompt tight.
         summary_line = f'\n    Summary: {summary}' if summary else ''
@@ -100,7 +106,7 @@ def handle_editorial_select(body):
             f"[{idx}] {a.get('source','')} | "
             f"Score:{s.get('final',0)} Vir:{s.get('virality',0)} "
             f"Fresh:{s.get('freshness',0)} Auth:{s.get('authority',0)} "
-            f"Brand→{r.get('primary_media','')}\n"
+            f"Eligible→{eligibility}\n"
             f"    \"{a.get('title','')}\"\n"
             f"    {a.get('link','')}\n"
             f"    {desc}"
@@ -134,7 +140,8 @@ def handle_editorial_select(body):
         f'Available platforms: {plat_list}\n\n'
         f'Media brands you must cover:\n{brand_descs_text}\n\n'
         'Your task: For EACH media brand listed above, independently select the BEST 5 articles '
-        'from the shortlist that fit that brand\'s identity. '
+        'from that brand\'s 10 embedding-ranked eligible candidates. '
+        'For a brand, select only articles whose Eligible list includes that brand. '
         'An article may appear in multiple brands if genuinely relevant to both.\n'
         'Base your judgment on: news value, real-world impact, brand fit, virality potential, freshness, and topic relevance.\n'
         'Each model is making this selection independently — bring your own editorial perspective.\n\n'

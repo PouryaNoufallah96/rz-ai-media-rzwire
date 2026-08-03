@@ -264,11 +264,6 @@ export function useAnalyzeAndRoute() {
           allTracked,
         }
 
-        if (window.innerWidth <= 768) {
-          const bc = {}
-          shortlistPayload = shortlistPayload.filter(a => { const b=a.routing?.primary_media||'_'; bc[b]=(bc[b]||0)+1; return bc[b]<=10 })
-        }
-
         setProgress(62, `Sending ${shortlistPayload.length} articles to ${selectedModels.length} AI editor${selectedModels.length===1?'':'s'}…`)
 
         // Phase 3: Editorial AI (streamed)

@@ -248,12 +248,14 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
         'dropped_clustered': 0,
         'no_media_fit':      0,
         'cap_exceeded':      0,
+        'embedding_backfill': 0,
         'embedded':          0,
         'api_calls':         0,
         'cached_hits':       0,
     }
     for key in selected_keys:
         stats[f'brand_{key}'] = 0
+        stats[f'brand_{key}_backfilled'] = 0
 
     # ── Stage 1: Date gate ────────────────────────────────────────────────────
     stage1_pass: list[dict] = []
@@ -305,6 +307,11 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
     if not stage2_pass:
         return {'shortlist': [], 'stats': stats, 'all_tracked': all_tracked}
 
+    # Stable identity for one fetched article. The final payload is de-duplicated
+    # by this id, not title, so matching headlines cannot reduce a brand's count.
+    for candidate_id, art in enumerate(stage2_pass):
+        art['_candidate_id'] = candidate_id
+
     # ── Stage 3: Embed ────────────────────────────────────────────────────────
     emb   = _get_embedder()
     texts = [
@@ -350,23 +357,42 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
             clusters.append({'centroid': vec, 'members': [art]})
 
     stage4_pass: list[dict] = []
+    clustered_candidates: list[dict] = []
     for cl in clusters:
         members = cl['members']
+        for member in members:
+            member['_cluster_size'] = len(members)
         if len(members) == 1:
-            members[0]['_cluster_size'] = 1
             stage4_pass.append(members[0])
             continue
         # Keep best by authority×0.4 + freshness×0.35
         best = max(members,
                    key=lambda a: _authority(a) * 0.4 + _freshness(a) * 0.35)
-        best['_cluster_size'] = len(members)
         stage4_pass.append(best)
         for loser in members:
             if loser is not best:
-                all_tracked.append({**loser,
-                                     '_pipelineStatus': 'clustered_out',
-                                     '_scores': None, '_routing': None})
-                stats['dropped_clustered'] += 1
+                clustered_candidates.append(loser)
+
+    # Prefer one representative per event. If clustering leaves fewer than ten
+    # candidates, restore the best alternate reports so each brand can still
+    # receive ten real articles whenever ten valid fetched articles exist.
+    minimum_pool = min(TOP_N_PER_BRAND, len(stage2_pass))
+    if len(stage4_pass) < minimum_pool:
+        clustered_candidates.sort(
+            key=lambda a: (_authority(a) * 0.4 + _freshness(a) * 0.35),
+            reverse=True,
+        )
+        needed = minimum_pool - len(stage4_pass)
+        for art in clustered_candidates[:needed]:
+            art['_semantic_backfill'] = True
+            stage4_pass.append(art)
+        clustered_candidates = clustered_candidates[needed:]
+
+    for loser in clustered_candidates:
+        all_tracked.append({**loser,
+                             '_pipelineStatus': 'clustered_out',
+                             '_scores': None, '_routing': None})
+        stats['dropped_clustered'] += 1
 
     # ── Stage 5: Media routing ────────────────────────────────────────────────
     stage5_pass: list[dict] = []
@@ -379,6 +405,7 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
         if topic_vec is not None:
             art['_topic_rel'] = float(np.max(vec @ topic_vec.T)) * 100
         brand_scores: dict[str, float] = {}
+        passing_brands: list[str] = []
 
         for key in selected_keys:
             cfg        = BRAND_CONFIGS[key]
@@ -390,16 +417,15 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
                 brand_scores[key] = 0.0
                 continue
 
+            # Keep every brand score. The threshold identifies strong matches,
+            # but Stage 6 fills any remaining slots with the next-highest
+            # embedding matches instead of starving the editorial models.
+            brand_scores[key] = media_fit
             if media_fit >= cfg['threshold'] * 100:
-                brand_scores[key] = media_fit
-
-        if not brand_scores:
-            all_tracked.append({**art, '_pipelineStatus': 'no_media_fit',
-                                 '_scores': None, '_routing': None})
-            stats['no_media_fit'] += 1
-            continue
+                passing_brands.append(key)
 
         art['_brand_scores'] = brand_scores
+        art['_passing_brands'] = passing_brands
         # Primary = highest scoring brand
         sorted_brands = sorted(brand_scores.items(), key=lambda x: x[1], reverse=True)
         art['_primary_brand']   = sorted_brands[0][0]
@@ -413,7 +439,7 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
             brand_buckets[key].append((art, fit))
 
     selected_arts: list[dict] = []
-    selected_titles: set      = set()
+    selected_candidate_ids: set[int] = set()
 
     for key in selected_keys:
         cfg     = BRAND_CONFIGS[key]
@@ -431,39 +457,58 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
                                      has_topic=(topic_vec is not None))
             scored.append((art, media_fit, fscore, vir, fresh, auth))
 
-        scored.sort(key=lambda x: x[2], reverse=True)
-        count = 0
-        for art, media_fit, fscore, vir, fresh, auth in scored:
-            if count >= TOP_N_PER_BRAND:
-                if art.get('title', '') not in selected_titles:
-                    all_tracked.append({**art, '_pipelineStatus': 'cap_exceeded',
-                                         '_scores': None, '_routing': None})
-                    stats['cap_exceeded'] += 1
-                continue
-            if art.get('title', '') not in selected_titles:
-                art.setdefault('_final_scores', {})[key] = {
-                    'media_fit':      round(media_fit, 1),
-                    'final':          fscore,
-                    'virality':       round(vir, 1),
-                    'freshness':      round(fresh, 1),
-                    'authority':      auth,
-                    'topic_relevance': round(art.get('_topic_rel', 0.0), 1),
-                    'user_topic':     round(_score_topic_fit(
-                        art.get('title', ''), art.get('desc', ''), topics), 1),
-                }
-                selected_arts.append((art, key, media_fit, fscore, vir, fresh, auth))
-                selected_titles.add(art.get('title', ''))
-                stats[f'brand_{key}'] += 1
-                count += 1
+        # Embedding similarity is the primary ordering signal. The blended
+        # editorial score breaks ties between equally relevant stories.
+        scored.sort(key=lambda x: (x[1], x[2]), reverse=True)
+        for art, media_fit, fscore, vir, fresh, auth in scored[:TOP_N_PER_BRAND]:
+            is_backfill = key not in art['_passing_brands']
+            art.setdefault('_final_scores', {})[key] = {
+                'media_fit':      round(media_fit, 1),
+                'final':          fscore,
+                'virality':       round(vir, 1),
+                'freshness':      round(fresh, 1),
+                'authority':      auth,
+                'topic_relevance': round(art.get('_topic_rel', 0.0), 1),
+                'user_topic':     round(_score_topic_fit(
+                    art.get('title', ''), art.get('desc', ''), topics), 1),
+                'embedding_backfill': is_backfill,
+            }
+            selected_arts.append((art, key, media_fit, fscore, vir, fresh, auth))
+            selected_candidate_ids.add(art['_candidate_id'])
+            stats[f'brand_{key}'] += 1
+            if is_backfill:
+                stats['embedding_backfill'] += 1
+                stats[f'brand_{key}_backfilled'] += 1
+
+    # An article that missed the old threshold can now still be selected as one
+    # of a brand's ten highest embedding matches.
+    for art in stage5_pass:
+        if art['_candidate_id'] in selected_candidate_ids:
+            continue
+        if art['_passing_brands']:
+            status = 'cap_exceeded'
+            stats['cap_exceeded'] += 1
+        else:
+            status = 'no_media_fit'
+            stats['no_media_fit'] += 1
+        all_tracked.append({**art, '_pipelineStatus': status,
+                             '_scores': None, '_routing': None})
 
     # ── Stage 7: Build output payload ─────────────────────────────────────────
     # De-duplicate: one entry per unique article, _brands lists all brands it joined
-    seen_in_payload: dict[str, dict] = {}   # title → payload entry
+    seen_in_payload: dict[int, dict] = {}
     for art, brand_key, media_fit, fscore, vir, fresh, auth in selected_arts:
+        candidate_id = art['_candidate_id']
         title = art.get('title', '')
-        if title not in seen_in_payload:
+        brand_name = BRAND_CONFIGS[brand_key]['name']
+        if candidate_id not in seen_in_payload:
             ut = _score_topic_fit(art.get('title', ''), art.get('desc', ''), topics)
-            conf = round((media_fit + ut + fresh + auth) / 4)
+            display_key = (art['_primary_brand']
+                           if art['_primary_brand'] in art['_final_scores']
+                           else brand_key)
+            display_score = art['_final_scores'][display_key]
+            conf = round((display_score['media_fit'] + ut
+                          + display_score['freshness'] + display_score['authority']) / 4)
             primary_name   = BRAND_CONFIGS[art['_primary_brand']]['name']
             secondary_name = (BRAND_CONFIGS[art['_secondary_brand']]['name']
                               if art.get('_secondary_brand') else '')
@@ -474,10 +519,10 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
                 'desc':     (art.get('desc') or '')[:220],
                 'pub_date': art.get('pub_date', ''),
                 'scores': {
-                    'final':          round(fscore),
-                    'virality':       round(vir),
-                    'freshness':      round(fresh),
-                    'authority':      round(auth),
+                    'final':          round(display_score['final']),
+                    'virality':       round(display_score['virality']),
+                    'freshness':      round(display_score['freshness']),
+                    'authority':      round(display_score['authority']),
                     'topicRelevance': round(art.get('_topic_rel', 0.0)),
                     'userTopic':      round(ut),
                     'confidence':     conf,
@@ -486,26 +531,37 @@ def run_pipeline(articles: list[dict], selected_media: list[str],
                     'primary_media':   primary_name,
                     'secondary_media': secondary_name,
                 },
-                '_brands': [BRAND_CONFIGS[brand_key]['name']],
+                '_brands': [brand_name],
+                'brandScores': {
+                    brand_name: {
+                        'embeddingFit': round(media_fit, 1),
+                        'final': round(fscore, 1),
+                    },
+                },
                 '_cluster_size': art.get('_cluster_size', 1),
             }
-            seen_in_payload[title] = entry
+            seen_in_payload[candidate_id] = entry
             all_tracked.append({**art, '_pipelineStatus': 'selected',
                                  '_scores': entry['scores'],
                                  '_routing': entry['routing']})
         else:
             # Article already in payload under another brand — just append brand
-            seen_in_payload[title]['_brands'].append(
-                BRAND_CONFIGS[brand_key]['name'])
+            entry = seen_in_payload[candidate_id]
+            if brand_name not in entry['_brands']:
+                entry['_brands'].append(brand_name)
+            entry['brandScores'][brand_name] = {
+                'embeddingFit': round(media_fit, 1),
+                'final': round(fscore, 1),
+            }
 
     shortlist = list(seen_in_payload.values())
     for i, item in enumerate(shortlist):
         item['input_index'] = i
 
     # Strip internal non-JSON-serialisable fields (_vec, _dt, _brand_scores, etc.)
-    _INTERNAL = {'_vec', '_brand_scores', '_primary_brand',
+    _INTERNAL = {'_vec', '_brand_scores', '_passing_brands', '_primary_brand',
                  '_secondary_brand', '_final_scores', '_urlSlug', '_entities',
-                 '_topic_rel'}
+                 '_topic_rel', '_candidate_id', '_semantic_backfill'}
 
     def _clean(d: dict) -> dict:
         return {k: v for k, v in d.items() if k not in _INTERNAL}
