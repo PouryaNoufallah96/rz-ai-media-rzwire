@@ -48,6 +48,7 @@ from handlers.chat import (
     start_chat_indexer,
 )
 from handlers.translation import handle_translate_cards
+from handlers.rss import RSSFetchError, fetch_rss_feed
 from handlers.market import (
     handle_market_assets,
     handle_market_brands,
@@ -168,28 +169,33 @@ class Handler(BaseHTTPRequestHandler):
                 return self._error(401, 'Not authenticated')
             self._json(handle_chat_history(user['id']))
         elif self.path.startswith('/api/rss'):
-            from urllib.parse import urlparse, parse_qs, unquote
+            from urllib.parse import urlparse, parse_qs
             params = parse_qs(urlparse(self.path).query)
-            url    = unquote(params.get('url', [''])[0])
+            url = params.get('url', [''])[0]
             if not url:
                 return self._error(400, 'url parameter required')
             try:
-                r = requests.get(url, timeout=15,
-                                 headers={'User-Agent': 'Mozilla/5.0 (compatible; RZWire/1.0)'})
-                r.raise_for_status()
-                body = r.content
+                result = fetch_rss_feed(url)
+                body = result.body
                 self.send_response(200)
                 self.send_cors()
-                self.send_header('Content-Type', r.headers.get('Content-Type', 'application/xml'))
+                self.send_header('Content-Type', result.content_type)
+                self.send_header('Cache-Control', 'public, max-age=60')
+                self.send_header('X-RZWire-RSS-Cache', result.cache_status)
+                if result.used_fallback:
+                    self.send_header('X-RZWire-RSS-Fallback', '1')
                 accepts_gzip = 'gzip' in self.headers.get('Accept-Encoding', '')
                 if accepts_gzip and len(body) > 1024:
                     body = gzip.compress(body)
                     self.send_header('Content-Encoding', 'gzip')
                 self.send_header('Content-Length', len(body))
                 self.end_headers()
-                self.wfile.write(body)
-            except Exception as e:
-                self._error(502, f'RSS fetch failed: {e}')
+                try:
+                    self.wfile.write(body)
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
+            except RSSFetchError as e:
+                self._error(e.status, str(e))
         elif self.path.startswith('/api/telegram/public-posts'):
             from urllib.parse import urlparse, parse_qs
             params = parse_qs(urlparse(self.path).query)

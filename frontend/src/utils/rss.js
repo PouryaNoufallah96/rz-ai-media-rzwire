@@ -1,30 +1,42 @@
 import { API_BASE } from '../store/mmStore'
 
-const CORS_PROXIES = [
-  u => `${API_BASE}/api/rss?url=${encodeURIComponent(u)}`,
-  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
-  u => `https://thingproxy.freeboard.io/fetch/${u}`,
-]
-
-function fetchWithTimeout(url, ms = 11000) {
+async function fetchWithTimeout(url, ms = 30000) {
   const ctrl = new AbortController()
   const id = setTimeout(() => ctrl.abort(), ms)
-  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(id))
+  try {
+    const response = await fetch(url, {
+      signal: ctrl.signal,
+      headers: { Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml' },
+    })
+    const text = await response.text()
+    return { response, text }
+  } finally {
+    clearTimeout(id)
+  }
 }
 
 export async function fetchRSS(url) {
-  for (const proxy of CORS_PROXIES) {
-    try {
-      const r = await fetchWithTimeout(proxy(url))
-      if (!r.ok) continue
-      let text = await r.text()
-      if (text.trim().startsWith('{')) { try { text = JSON.parse(text).contents || text } catch(_){} }
-      if (text.includes('<item') || text.includes('<entry') || text.includes('<rss') || text.includes('<feed')) return text
-    } catch(_) {}
+  let response, text
+  try {
+    const result = await fetchWithTimeout(`${API_BASE}/api/rss?url=${encodeURIComponent(url)}`)
+    response = result.response
+    text = result.text
+  } catch (error) {
+    if (error?.name === 'AbortError') throw new Error('News source timed out. Please retry.', { cause: error })
+    throw new Error('Cannot reach the RZWire news service. Check that the backend is running.', { cause: error })
   }
-  throw new Error(`Proxies failed for ${url}`)
+
+  if (!response.ok) {
+    let message = `News source returned HTTP ${response.status}.`
+    try { message = JSON.parse(text)?.error || message } catch { /* keep HTTP message */ }
+    throw new Error(message)
+  }
+
+  const sample = text.toLowerCase()
+  if (!sample.includes('<item') && !sample.includes('<entry') && !sample.includes('<rss') && !sample.includes('<feed')) {
+    throw new Error('Publisher returned a web page instead of an RSS feed.')
+  }
+  return text
 }
 
 function stripHTML(h) {

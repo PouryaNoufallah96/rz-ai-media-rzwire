@@ -140,6 +140,7 @@ export default function FilteringReportModal() {
   const articles = mmReport.allArticles || []
   const rejected = mmReport.rejected || {}
   const perMedia = mmReport.perMedia || {}
+  const sourceErrors = Object.entries(mmReport.sourceErrors || {})
   const afterQuality = mmReport.afterRecency - (rejected.duplicate || 0)
   const ts = mmReport.runAt ? new Date(mmReport.runAt).toLocaleTimeString() : ''
 
@@ -193,6 +194,13 @@ export default function FilteringReportModal() {
             </div>
           ))}
         </div>
+
+        {sourceErrors.length > 0 && (
+          <div style={{ padding: '9px 18px', borderBottom: '1px solid rgba(240,160,64,.16)', background: 'rgba(240,160,64,.06)', color: '#d6aa70', fontSize: 10, lineHeight: 1.5 }}>
+            <strong>{sourceErrors.length} source{sourceErrors.length === 1 ? '' : 's'} skipped:</strong>{' '}
+            {sourceErrors.map(([name, reason]) => `${name} (${reason})`).join(' · ')}
+          </div>
+        )}
 
         {/* Tabs */}
         <div style={{ padding: '8px 12px 0', borderBottom: '1px solid rgba(255,255,255,.06)' }}>

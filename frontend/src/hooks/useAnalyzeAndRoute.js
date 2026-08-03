@@ -18,7 +18,7 @@ async function postJSON(url, obj) {
         headers: { 'Content-Type': 'application/json', 'Content-Encoding': 'gzip' },
         body,
       })
-    } catch (_) { /* fall through to uncompressed */ }
+    } catch { /* fall through to uncompressed */ }
   }
   return fetch(url, {
     method: 'POST',
@@ -28,8 +28,6 @@ async function postJSON(url, obj) {
 }
 
 export function useAnalyzeAndRoute() {
-  const store = useMmStore()
-
   const run = useCallback(async (topics) => {
     const { selectedSources, selectedMedia, selectedPlatforms, selectedModels,
             recencyHours, enrichArticles, setProgress, setAnalyzing,
@@ -54,7 +52,7 @@ export function useAnalyzeAndRoute() {
       }
     } else {
       promoBrands = []
-      editorialBrands = selectedMedia.filter(m => true)
+      editorialBrands = [...selectedMedia]
     }
 
     if (!editorialBrands.length && !promoBrands.length) { setErrorMsg('Select at least one media brand.'); return }
@@ -85,6 +83,7 @@ export function useAnalyzeAndRoute() {
       let allArticles = [], tooOldCount = 0, recent = [], tooOldArticles = []
       let shortlistPayload = [], allTracked = [], preResult = null
       let telegramRanked = [], telegramErrors = {}, telegramFetchedTotal = 0
+      const sourceErrors = {}
       const editorial = {}
       setTelegramLanes({})
 
@@ -196,25 +195,36 @@ export function useAnalyzeAndRoute() {
         } else {
         // Phase 1: RSS Fetch
         selectedSources.forEach(s => { sourceCounts[s] = 0 })
-        let fetchedCount = 0
+        let fetchedCount = 0, successfulSourceCount = 0
         const perSource = await Promise.allSettled(selectedSources.map(async name => {
           const url = MM_SOURCES[name]
           if (!url) return []
           try {
             const xml  = await fetchRSS(url)
             const arts = parseRSS(xml, name)
+            if (!arts.length) throw new Error('Feed contained no readable articles.')
             sourceCounts[name] = arts.length
+            successfulSourceCount++
             return arts.slice(0, 15)
           } catch(e) {
+            sourceErrors[name] = e.message || 'Unknown feed error.'
             console.warn(`Skip ${name}:`, e.message)
             return []
           } finally {
             fetchedCount++
-            setProgress(5 + Math.round((fetchedCount / selectedSources.length) * 35), `Fetched ${fetchedCount}/${selectedSources.length} sources…`)
+            setProgress(
+              5 + Math.round((fetchedCount / selectedSources.length) * 35),
+              `Checked ${fetchedCount}/${selectedSources.length} sources · ${successfulSourceCount} loaded…`,
+            )
           }
         }))
         allArticles = perSource.flatMap(r => r.status === 'fulfilled' ? r.value : [])
-        if (!allArticles.length && !telegramRanked.length) throw new Error('Could not load any feeds. Check your connection.')
+        if (!allArticles.length && !telegramRanked.length) {
+          const failed = Object.entries(sourceErrors)
+            .map(([name, reason]) => `${name}: ${reason}`)
+            .join(' · ')
+          throw new Error(failed || 'Could not load any feeds. Check that the RZWire backend is running.')
+        }
 
         tooOldCount = allArticles.length - allArticles.filter(a => {
           if (!a.pubDate) return true
@@ -333,7 +343,7 @@ export function useAnalyzeAndRoute() {
       // when every promo fetch failed and the lanes were empty).
       const perMedia = {}
       selectedMedia.forEach(m=>{perMedia[m]=0})
-      Object.values(editorial).forEach(md => { const bm=md.brands||{}; Object.entries(bm).forEach(([brand,arts]) => { if(perMedia.hasOwnProperty(brand)) perMedia[brand]+=(arts?.length||0) }) })
+      Object.values(editorial).forEach(md => { const bm=md.brands||{}; Object.entries(bm).forEach(([brand,arts]) => { if(Object.prototype.hasOwnProperty.call(perMedia, brand)) perMedia[brand]+=(arts?.length||0) }) })
       let actualPromoTotal = 0
       promoBrands.forEach(m => {
         const n = selectedModels.reduce((s,k) => s + (useMmStore.getState().modelLanes[k]?.[m]?.length||0), 0)
@@ -346,12 +356,11 @@ export function useAnalyzeAndRoute() {
         perMedia[m] = (perMedia[m]||0) + n
         actualTelegramTotal += n
       })
-      const shortlisted = preResult?.shortlisted || shortlistPayload
       const trackedTelegram = telegramRanked.map(a => ({ ...a, _pipelineStatus:'telegram_ranked', _scores:null, _keywords:a.matchedKeywords||null, _routing:null }))
       setMmReport({
         runAt:Date.now(), selectedSources:[...selectedSources], selectedMedia:[...selectedMedia],
         telegramSources: useTelegramSources ? [...selectedTelegramSources] : [],
-        telegramSortMode, telegramErrors,
+        telegramSortMode, telegramErrors, sourceErrors,
         recencyHours, sourceCounts, fetchedTotal:allArticles.length + telegramFetchedTotal, tooOld:tooOldCount,
         afterRecency:recent.length, rejected:preResult?.rejected||{duplicate:0,noMediaFit:0,lowScore:0},
         shortlistedCount:shortlistPayload.length + actualPromoTotal + actualTelegramTotal, perMedia, filterMode:'openai_embedding',
