@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { AlertTriangle, ArrowRight, CalendarDays, Check, CircleCheck, Database, ImageIcon, LineChart, MessageCircle, Plus, RefreshCw, Search, Send, Sparkles, X } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CalendarDays, Check, CircleCheck, Database, ImageIcon, LineChart, MessageCircle, Pencil, Plus, RefreshCw, Search, Send, Sparkles, X } from 'lucide-react'
 import NavBar from '../components/NavBar'
 import ChatWidget from '../components/chat/ChatWidget'
 import { API_BASE, EDITORIAL_MODEL_META, IMAGE_MODEL_OPTIONS } from '../store/mmStore'
@@ -262,6 +262,8 @@ export default function AnalyticsPage() {
   const [captionModelKey, setCaptionModelKey] = useState('')
   const [captionVariants, setCaptionVariants] = useState([])
   const [selectedCaptionIndex, setSelectedCaptionIndex] = useState(-1)
+  const [editingCaptionIndex, setEditingCaptionIndex] = useState(-1)
+  const [captionEditDraft, setCaptionEditDraft] = useState({copy:'', hashtags:''})
   const [generatingCaptions, setGeneratingCaptions] = useState(false)
   const [captionError, setCaptionError] = useState('')
   const [publishing, setPublishing] = useState(false)
@@ -374,6 +376,8 @@ export default function AnalyticsPage() {
     if (!keepModel) setCaptionModelKey('')
     setCaptionVariants([])
     setSelectedCaptionIndex(-1)
+    setEditingCaptionIndex(-1)
+    setCaptionEditDraft({copy:'', hashtags:''})
     setCaptionError('')
     setPublishResult('')
   }
@@ -644,12 +648,53 @@ export default function AnalyticsPage() {
     return [variant.copy, (variant.hashtags || []).join(' ')].filter(Boolean).join('\n\n')
   }
 
+  function parseCaptionHashtags(value) {
+    return value.split(/[\s,]+/).map(tag => tag.trim()).filter(Boolean).map(tag => tag.startsWith('#') ? tag : `#${tag}`)
+  }
+
+  function beginCaptionEdit(index) {
+    const variant = captionVariants[index]
+    if (!variant) return
+    setEditingCaptionIndex(index)
+    setCaptionEditDraft({copy:variant.copy || '', hashtags:(variant.hashtags || []).join(' ')})
+    setSelectedCaptionIndex(index)
+    setCaptionError('')
+    setPublishResult('')
+  }
+
+  function cancelCaptionEdit() {
+    setEditingCaptionIndex(-1)
+    setCaptionEditDraft({copy:'', hashtags:''})
+    setCaptionError('')
+  }
+
+  function saveCaptionEdit(index) {
+    const copy = captionEditDraft.copy.trim()
+    const hashtags = parseCaptionHashtags(captionEditDraft.hashtags)
+    const postLength = captionPostText({copy, hashtags}).length
+    if (!copy) {
+      setCaptionError('Caption text cannot be empty.')
+      return
+    }
+    if (publishDestination === 'x' && postLength > 280) {
+      setCaptionError('The edited X post must be 280 characters or fewer, including hashtags.')
+      return
+    }
+    setCaptionVariants(previous => previous.map((variant, variantIndex) => variantIndex === index ? {...variant, copy, hashtags} : variant))
+    setEditingCaptionIndex(-1)
+    setCaptionEditDraft({copy:'', hashtags:''})
+    setCaptionError('')
+    setPublishResult('')
+  }
+
   async function generateCaptionOptions() {
     if (generatingCaptions || !finalImageApproved || !publishDestination || !captionModelKey || !marketData?.series?.length) return
     setGeneratingCaptions(true)
     setCaptionError('')
     setCaptionVariants([])
     setSelectedCaptionIndex(-1)
+    setEditingCaptionIndex(-1)
+    setCaptionEditDraft({copy:'', hashtags:''})
     setPublishResult('')
     const platform = CAPTION_PLATFORMS.find(item => item.id === publishDestination)
     const marketFacts = marketData.series.map(item => {
@@ -792,8 +837,39 @@ export default function AnalyticsPage() {
             {publishDestination && <div className="analytics-caption-stage"><div><b>2</b><span><strong>Choose the AI editorial model</strong><small>This model writes three captions from the verified chart facts.</small></span></div><div className="analytics-editorial-models">{EDITORIAL_MODELS.map(model => <button type="button" key={model.id} className={captionModelKey === model.id ? 'selected' : ''} style={{'--model-color':model.color}} onClick={() => chooseCaptionModel(model.id)}><i>{model.badge}</i><span><strong>{model.display}</strong><small>{model.desc}</small></span>{captionModelKey === model.id && <Check size={15} />}</button>)}</div></div>}
             {publishDestination && captionModelKey && <button type="button" className="analytics-generate-captions" disabled={generatingCaptions} onClick={generateCaptionOptions}>{generatingCaptions ? <><span className="analytics-spinner" />Writing three {publishDestination === 'x' ? 'X posts' : 'Telegram captions'}…</> : <><Sparkles size={16} />Generate 3 caption options<ArrowRight size={16} /></>}</button>}
             {captionError && <p className="analytics-error">{captionError}</p>}
-            {!!captionVariants.length && <div className="analytics-caption-stage"><div><b>3</b><span><strong>Select one caption</strong><small>Only the selected option will be published with the approved image.</small></span></div><div className="analytics-caption-options">{captionVariants.map((variant, index) => { const selected = selectedCaptionIndex === index; const text = captionPostText(variant); return <button type="button" key={`${variant.label}-${index}`} className={selected ? 'selected' : ''} onClick={() => { setSelectedCaptionIndex(index); setPublishResult('') }}><span><b>Option {index + 1}</b><em>{variant.label}</em>{selected && <Check size={15} />}</span><p>{variant.copy}</p>{!!variant.hashtags?.length && <small>{variant.hashtags.join(' ')}</small>}<i>{text.length} characters{publishDestination === 'x' ? ' / 280' : ''}</i></button> })}</div></div>}
-            {!!captionVariants.length && <div className="analytics-caption-stage analytics-caption-publish"><div><b>4</b><span><strong>Publish the approved image and selected caption</strong><small>RZWire sends both together to the configured {publishDestination === 'telegram' ? 'Telegram channel' : 'X account'}.</small></span></div><button type="button" className="analytics-publish-final" disabled={selectedCaptionIndex < 0 || publishing} onClick={publishFinalImage}>{publishing ? <><span className="analytics-spinner" />Publishing…</> : <>Publish to {publishDestination === 'telegram' ? 'Telegram' : 'X'}<ArrowRight size={17} /></>}</button>{publishResult && <p className="analytics-publish-success"><CircleCheck size={16} />{publishResult}</p>}</div>}
+            {!!captionVariants.length && <div className="analytics-caption-stage">
+              <div><b>3</b><span><strong>Select and edit one caption</strong><small>Edit any option, then select the version that should be published with the approved image.</small></span></div>
+              <div className="analytics-caption-options">{captionVariants.map((variant, index) => {
+                const selected = selectedCaptionIndex === index
+                const editingCaption = editingCaptionIndex === index
+                const text = captionPostText(variant)
+                const draftHashtags = editingCaption ? parseCaptionHashtags(captionEditDraft.hashtags) : []
+                const draftLength = editingCaption ? captionPostText({copy:captionEditDraft.copy, hashtags:draftHashtags}).length : 0
+                const draftInvalid = editingCaption && (!captionEditDraft.copy.trim() || (publishDestination === 'x' && draftLength > 280))
+                return <article key={`${variant.label}-${index}`} className={`analytics-caption-option ${selected ? 'selected' : ''} ${editingCaption ? 'editing' : ''}`}>
+                  <div className="analytics-caption-option-head">
+                    <span><b>Option {index + 1}</b><em>{variant.label}</em></span>
+                    <span>
+                      {!editingCaption && <button type="button" className="analytics-caption-edit" onClick={() => beginCaptionEdit(index)}><Pencil size={12} />Edit</button>}
+                      {selected && <Check size={15} />}
+                    </span>
+                  </div>
+                  {editingCaption ? <>
+                    <label className="analytics-caption-edit-field">Caption<textarea autoFocus rows="6" value={captionEditDraft.copy} onChange={event => { setCaptionEditDraft(previous => ({...previous, copy:event.target.value})); setCaptionError('') }} /></label>
+                    <label className="analytics-caption-edit-field">Hashtags<input value={captionEditDraft.hashtags} onChange={event => { setCaptionEditDraft(previous => ({...previous, hashtags:event.target.value})); setCaptionError('') }} placeholder="#MGC #CryptoMarkets" /></label>
+                    <div className="analytics-caption-edit-footer">
+                      <i className={draftInvalid ? 'invalid' : ''}>{draftLength} characters{publishDestination === 'x' ? ' / 280' : ''}</i>
+                      <span><button type="button" onClick={cancelCaptionEdit}>Cancel</button><button type="button" className="save" disabled={draftInvalid} onClick={() => saveCaptionEdit(index)}>Save changes</button></span>
+                    </div>
+                  </> : <button type="button" className="analytics-caption-choice" onClick={() => { setSelectedCaptionIndex(index); setPublishResult('') }}>
+                    <p>{variant.copy}</p>
+                    {!!variant.hashtags?.length && <small>{variant.hashtags.join(' ')}</small>}
+                    <i>{text.length} characters{publishDestination === 'x' ? ' / 280' : ''}</i>
+                  </button>}
+                </article>
+              })}</div>
+            </div>}
+            {!!captionVariants.length && <div className="analytics-caption-stage analytics-caption-publish"><div><b>4</b><span><strong>Publish the approved image and selected caption</strong><small>{editingCaptionIndex >= 0 ? 'Save or cancel the open caption edit before publishing.' : `RZWire sends both together to the configured ${publishDestination === 'telegram' ? 'Telegram channel' : 'X account'}.`}</small></span></div><button type="button" className="analytics-publish-final" disabled={selectedCaptionIndex < 0 || editingCaptionIndex >= 0 || publishing} onClick={publishFinalImage}>{publishing ? <><span className="analytics-spinner" />Publishing…</> : <>Publish to {publishDestination === 'telegram' ? 'Telegram' : 'X'}<ArrowRight size={17} /></>}</button>{publishResult && <p className="analytics-publish-success"><CircleCheck size={16} />{publishResult}</p>}</div>}
           </div>}
           <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Two-reference Art Director pipeline</strong>The image model receives only the approved publishing sample and approved factual chart. A fully detailed production brief specifies the card structure, copy, branding, chart placement, and finish.</span></div>
         </section>}
