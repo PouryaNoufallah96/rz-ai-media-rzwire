@@ -33,6 +33,8 @@ from handlers.editorial import (handle_editorial_select, handle_filter_pipeline,
                                 handle_deepseek_filter)
 from handlers.account import (build_account_summary, handle_log_action,
                               handle_log_keywords, handle_brand_keywords,
+                              handle_get_analytics_chart_default,
+                              handle_save_analytics_chart_default,
                               handle_saved_discard, handle_saved_update,
                               handle_saved_confirm_schedule)
 from handlers.schedule import (handle_schedule_create, handle_schedule_list,
@@ -153,6 +155,17 @@ class Handler(BaseHTTPRequestHandler):
             params = parse_qs(urlparse(self.path).query)
             brands_param = params.get('brands', [''])[0]
             self._json(handle_brand_keywords(user['id'], brands_param))
+        elif self.path.split('?', 1)[0] == '/api/account/analytics-chart-default':
+            user = auth.get_current_user(self)
+            if user is None:
+                return self._error(401, 'Not authenticated')
+            from urllib.parse import urlparse, parse_qs
+            params = parse_qs(urlparse(self.path).query)
+            brand_id = (params.get('brandId') or [''])[0]
+            try:
+                self._json(handle_get_analytics_chart_default(user['id'], brand_id))
+            except ValueError as exc:
+                self._error(400, str(exc))
         elif self.path == '/api/account/saved':
             user = auth.get_current_user(self)
             if user is None:
@@ -267,6 +280,11 @@ class Handler(BaseHTTPRequestHandler):
                 if user is None:
                     return self._error(401, 'Not authenticated')
                 self._json(handle_log_keywords(user['id'], body))
+            elif path == '/api/account/analytics-chart-default':
+                user = auth.get_current_user(self)
+                if user is None:
+                    return self._error(401, 'Not authenticated')
+                self._json(handle_save_analytics_chart_default(user['id'], body))
             elif path == '/api/account/save':
                 user = auth.get_current_user(self)
                 if user is None:

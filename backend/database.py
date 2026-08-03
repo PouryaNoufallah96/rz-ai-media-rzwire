@@ -152,6 +152,15 @@ def init_db():
         if 'metadata_json' not in chat_message_columns:
             conn.execute('ALTER TABLE chat_messages ADD COLUMN metadata_json TEXT')
         conn.execute('CREATE INDEX IF NOT EXISTS idx_chat_messages_user_time ON chat_messages (user_id, created_at)')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS analytics_chart_defaults (
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                brand_id TEXT NOT NULL,
+                style_json TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                PRIMARY KEY (user_id, brand_id)
+            )
+        ''')
         conn.commit()
     finally:
         conn.close()
@@ -208,6 +217,44 @@ def get_user_by_id(user_id):
     try:
         row = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
         return _user_to_dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def get_analytics_chart_default(user_id, brand_id):
+    conn = _connect()
+    try:
+        row = conn.execute(
+            'SELECT style_json, updated_at FROM analytics_chart_defaults WHERE user_id = ? AND brand_id = ?',
+            (user_id, brand_id),
+        ).fetchone()
+        if not row:
+            return None
+        return {
+            'style': json.loads(row['style_json']),
+            'updatedAt': row['updated_at'],
+        }
+    finally:
+        conn.close()
+
+
+def save_analytics_chart_default(user_id, brand_id, style):
+    updated_at = _now_iso()
+    encoded = json.dumps(style, ensure_ascii=False, separators=(',', ':'))
+    conn = _connect()
+    try:
+        conn.execute(
+            '''
+            INSERT INTO analytics_chart_defaults (user_id, brand_id, style_json, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(user_id, brand_id) DO UPDATE SET
+                style_json = excluded.style_json,
+                updated_at = excluded.updated_at
+            ''',
+            (user_id, brand_id, encoded, updated_at),
+        )
+        conn.commit()
+        return {'style': style, 'updatedAt': updated_at}
     finally:
         conn.close()
 

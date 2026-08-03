@@ -3,8 +3,19 @@ import { AlertTriangle, ArrowRight, CalendarDays, Check, CircleCheck, Database, 
 import NavBar from '../components/NavBar'
 import ChatWidget from '../components/chat/ChatWidget'
 import { API_BASE, EDITORIAL_MODEL_META, IMAGE_MODEL_OPTIONS } from '../store/mmStore'
+import ChartDesigner from '../components/analytics/ChartDesigner'
 import CompositionPreview from '../components/analytics/AnalyticsCompositions'
 import { OUTPUT_FORMATS, EXTERNAL_COLORS, analyticsTheme, compositionFingerprint } from '../components/analytics/analyticsCompositionConfig'
+import {
+  DEFAULT_CHART_STYLE,
+  chartForeground,
+  chartGridOpacity,
+  chartStyleIssues,
+  colorisedChartSeries,
+  materializeCurrentSeriesColors,
+  normalizeChartStyle,
+  presetChartStyle,
+} from '../components/analytics/chartStyle'
 import { TEMPLATE_CATEGORIES, TEMPLATE_VARIANTS, findTemplateVariant } from '../components/analytics/analyticsTemplates'
 import '../components/analytics/AnalyticsCompositions.css'
 import './AnalyticsPage.css'
@@ -51,19 +62,20 @@ function chartToPngDataUrl(svgElement) {
   const clone = svgElement.cloneNode(true)
   clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
   const style = document.createElementNS('http://www.w3.org/2000/svg', 'style')
-  style.textContent = `text{font-family:Inter,Arial,sans-serif}.analytics-chart-grid-line{stroke:#dcd9d2;stroke-width:1}.analytics-axis-text{fill:#626870;font-size:12px}.analytics-axis-text--left{text-anchor:end}.analytics-axis-text--date{text-anchor:middle}.analytics-chart-zero{stroke:#969a9f;stroke-width:1;stroke-dasharray:5 4}.analytics-series{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}`
+  style.textContent = 'text{font-family:Inter,Arial,sans-serif}'
   clone.prepend(style)
   const source = new XMLSerializer().serializeToString(clone)
+  const viewBox = (clone.getAttribute('viewBox') || '0 0 900 460').split(/\s+/).map(Number)
+  const aspectWidth = Number.isFinite(viewBox[2]) && viewBox[2] > 0 ? viewBox[2] : 900
+  const aspectHeight = Number.isFinite(viewBox[3]) && viewBox[3] > 0 ? viewBox[3] : 460
   const blobUrl = URL.createObjectURL(new Blob([source], {type:'image/svg+xml;charset=utf-8'}))
   return new Promise((resolve, reject) => {
     const image = new Image()
     image.onload = () => {
       const canvas = document.createElement('canvas')
       canvas.width = 1800
-      canvas.height = 820
+      canvas.height = Math.round(canvas.width * (aspectHeight / aspectWidth))
       const context = canvas.getContext('2d')
-      context.fillStyle = '#fbfaf7'
-      context.fillRect(0, 0, canvas.width, canvas.height)
       context.drawImage(image, 0, 0, canvas.width, canvas.height)
       URL.revokeObjectURL(blobUrl)
       resolve(canvas.toDataURL('image/png'))
@@ -133,17 +145,48 @@ function suggestedCopy(series, period) {
   }
 }
 
-function colorisedSeries(data, tokens) {
-  let comparisonIndex = 0
-  return (data?.series || []).map(item => {
-    const primary = tokens.find(token => token.id === item.tokenId || token.symbol === item.symbol)
-    const color = primary?.color || EXTERNAL_COLORS[comparisonIndex++ % EXTERNAL_COLORS.length]
-    return {...item, color}
-  })
+function legendGeometry(position, count) {
+  if (position === 'left') return {left:258, right:858, top:34, bottom:378, x:22, y:72, columns:1, columnWidth:205, rowHeight:42}
+  if (position === 'right') return {left:92, right:650, top:34, bottom:378, x:684, y:72, columns:1, columnWidth:190, rowHeight:42}
+  if (position === 'top') return {left:92, right:858, top:104, bottom:388, x:100, y:30, columns:Math.min(3, count), columnWidth:250, rowHeight:34}
+  if (position === 'bottom') return {left:92, right:858, top:34, bottom:326, x:100, y:374, columns:Math.min(3, count), columnWidth:250, rowHeight:34}
+  return {left:92, right:858, top:34, bottom:388, x:0, y:0, columns:1, columnWidth:190, rowHeight:36}
 }
 
-function VerifiedChart({ data, chartRef, tokens }) {
-  const series = colorisedSeries(data, tokens)
+function markerIndexes(pointCount, markerMode) {
+  if (markerMode === 'all') return Array.from({length:pointCount}, (_, index) => index)
+  if (markerMode === 'endpoints' && pointCount > 1) return [0, pointCount - 1]
+  if (markerMode === 'endpoints' && pointCount === 1) return [0]
+  return []
+}
+
+function SvgLegend({ series, chartStyle, geometry, foreground }) {
+  const position = chartStyle.legend.position
+  const overlay = position.startsWith('overlay-')
+  const columns = geometry.columns
+  const itemWidth = overlay ? 190 : geometry.columnWidth
+  const rows = Math.ceil(series.length / columns)
+  const panelWidth = overlay ? 204 : 0
+  const panelHeight = overlay ? rows * geometry.rowHeight + 18 : 0
+  const overlayX = geometry.right - panelWidth - 12
+  const overlayY = position === 'overlay-top-right' ? geometry.top + 12 : geometry.bottom - panelHeight - 12
+  const originX = overlay ? overlayX + 12 : geometry.x
+  const originY = overlay ? overlayY + 10 : geometry.y
+  return <g className="analytics-svg-legend">
+    {overlay && <rect x={overlayX} y={overlayY} width={panelWidth} height={panelHeight} rx="10" fill={chartStyle.backgroundColor} fillOpacity=".94" stroke={foreground} strokeOpacity=".18" />}
+    {series.map((item, index) => {
+      const column = overlay ? 0 : index % columns
+      const row = overlay ? index : Math.floor(index / columns)
+      const x = originX + column * itemWidth
+      const y = originY + row * geometry.rowHeight + 12
+      const change = `${item.changePercent >= 0 ? '+' : ''}${Number(item.changePercent).toFixed(2)}%`
+      return <g key={item.id} transform={`translate(${x} ${y})`}><circle cx="6" cy="0" r="6" fill={item.color} /><text x="19" y="4" fill={foreground} fontSize="15" fontWeight="750">{item.symbol}{chartStyle.legend.format === 'symbol-change' ? `  ${change}` : ''}</text></g>
+    })}
+  </g>
+}
+
+function VerifiedChart({ data, chartRef, tokens, chartStyle }) {
+  const series = colorisedChartSeries(data, tokens, chartStyle)
   const scale = data.scale || 'relative'
   const valueSets = series.map(item => chartValues(item, scale))
   const allValues = valueSets.flat().filter(Number.isFinite)
@@ -153,7 +196,7 @@ function VerifiedChart({ data, chartRef, tokens }) {
   const padding = Math.max(scale === 'relative' ? 1 : Math.abs(rawMax || 1) * .02, (rawMax - rawMin) * .1)
   const min = rawMin - padding
   const max = rawMax + padding
-  const chart = {left:132, right:790, top:34, bottom:330}
+  const chart = legendGeometry(chartStyle.legend.position, series.length)
   const timestamps = series.flatMap(item => item.points.map(point => Number(point.timestamp))).filter(Number.isFinite)
   const firstTimestamp = Math.min(...timestamps)
   const lastTimestamp = Math.max(...timestamps)
@@ -163,19 +206,27 @@ function VerifiedChart({ data, chartRef, tokens }) {
   const yTicks = Array.from({length:6}, (_, index) => max - index * ((max - min) / 5))
   const dateTicks = Array.from({length:6}, (_, index) => firstTimestamp + index * ((lastTimestamp - firstTimestamp) / 5))
 
+  const foreground = chartForeground(chartStyle.backgroundColor)
+  const gridOpacity = chartGridOpacity(chartStyle.gridStrength)
+  const dateLabelY = chart.bottom + 32
+
   return <div className="analytics-verified-chart">
     <div className="analytics-proof-title"><div><strong>{series.map(item => item.symbol).join(' / ')}</strong><span>{data.period} verified price history</span></div><b>{scale === 'relative' ? 'Relative %' : 'Absolute USD'}</b></div>
-    <svg ref={chartRef} className="analytics-proof-svg" viewBox="0 0 900 410" role="img" aria-label={`${series.map(item => item.symbol).join(', ')} complete ${data.period} price chart`}>
+    <svg ref={chartRef} className="analytics-proof-svg" viewBox="0 0 900 460" role="img" aria-label={`${series.map(item => item.symbol).join(', ')} complete ${data.period} price chart`}>
+      <rect width="900" height="460" fill={chartStyle.backgroundColor} />
       {yTicks.map((tick, index) => {
         const y = yFor(tick)
         const label = scale === 'absolute' ? formatPrice(tick) : `${tick >= 0 ? '+' : ''}${tick.toFixed(1)}%`
-        return <g key={`y-${index}`}><line className="analytics-chart-grid-line" x1={chart.left} y1={y} x2={chart.right} y2={y} /><text className="analytics-axis-text analytics-axis-text--left" x={chart.left - 12} y={y + 4}>{label}</text></g>
+        return <g key={`y-${index}`}><line className="analytics-chart-grid-line" x1={chart.left} y1={y} x2={chart.right} y2={y} stroke={foreground} strokeOpacity={gridOpacity} strokeWidth="1" /><text className="analytics-axis-text analytics-axis-text--left" x={chart.left - 12} y={y + 4} fill={foreground} fillOpacity=".7" fontSize="12" textAnchor="end">{label}</text></g>
       })}
-      {dateTicks.map((timestamp, index) => <text key={`x-${index}`} className="analytics-axis-text analytics-axis-text--date" x={xFor(timestamp)} y="382">{new Date(timestamp * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</text>)}
-      {scale === 'relative' && min <= 0 && max >= 0 && <line className="analytics-chart-zero" x1={chart.left} y1={yFor(0)} x2={chart.right} y2={yFor(0)} />}
-      {series.map((item, index) => <polyline key={item.id} className="analytics-series analytics-series--verified" style={{stroke:item.color}} points={lineFor(item, valueSets[index])} />)}
+      {dateTicks.map((timestamp, index) => <text key={`x-${index}`} className="analytics-axis-text analytics-axis-text--date" x={xFor(timestamp)} y={dateLabelY} fill={foreground} fillOpacity=".7" fontSize="12" textAnchor="middle">{new Date(timestamp * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</text>)}
+      {scale === 'relative' && min <= 0 && max >= 0 && <line className="analytics-chart-zero" x1={chart.left} y1={yFor(0)} x2={chart.right} y2={yFor(0)} stroke={foreground} strokeOpacity=".42" strokeWidth="1" strokeDasharray="5 4" />}
+      {series.map((item, index) => <g key={item.id}>
+        <polyline className="analytics-series analytics-series--verified" fill="none" stroke={item.color} strokeWidth={chartStyle.lineWidth} strokeLinecap="round" strokeLinejoin="round" points={lineFor(item, valueSets[index])} />
+        {markerIndexes(item.points.length, chartStyle.markers).map(pointIndex => <circle key={pointIndex} cx={xFor(item.points[pointIndex].timestamp)} cy={yFor(valueSets[index][pointIndex])} r={Math.max(4, chartStyle.lineWidth + 1)} fill={chartStyle.backgroundColor} stroke={item.color} strokeWidth={Math.max(2, chartStyle.lineWidth / 2)} />)}
+      </g>)}
+      <SvgLegend series={series} chartStyle={chartStyle} geometry={chart} foreground={foreground} />
     </svg>
-    <div className="analytics-chart-legend analytics-chart-legend--multi">{series.map(item => <span key={item.id}><i style={{background:item.color}} />{item.symbol} <b>{item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%</b></span>)}</div>
     <div className="analytics-series-status-grid">{series.map(item => <article key={item.id}><div><i style={{background:item.color}} /><strong>{item.symbol}</strong><span>{item.role === 'primary' ? 'RZWire' : item.type === 'dex' ? 'DEX' : 'Binance'}</span></div><dl><dt>Start</dt><dd>{formatPrice(item.startPrice)}</dd><dt>End</dt><dd>{formatPrice(item.endPrice)}</dd><dt>Coverage</dt><dd>{formatDate(item.coverageStart)} - {formatDate(item.coverageEnd)}</dd></dl></article>)}</div>
     {!!data.warnings?.length && <div className="analytics-warning-list">{data.warnings.map(warning => <p key={warning}><AlertTriangle size={14} />{warning}</p>)}</div>}
     <div className="analytics-source-list"><strong>Verified sources</strong>{series.map(item => <a key={item.id} href={item.source?.attributionUrl} target="_blank" rel="noreferrer">{item.symbol} - {item.source?.provider}</a>)}</div>
@@ -184,6 +235,7 @@ function VerifiedChart({ data, chartRef, tokens }) {
 
 export default function AnalyticsPage() {
   const chartSvgRef = useRef(null)
+  const latestCompositionFingerprint = useRef('')
   const [tokens, setTokens] = useState([])
   const [brandsLoading, setBrandsLoading] = useState(true)
   const [brandsError, setBrandsError] = useState('')
@@ -221,6 +273,10 @@ export default function AnalyticsPage() {
   const [verifying, setVerifying] = useState(false)
   const [verificationError, setVerificationError] = useState('')
   const [chartApproved, setChartApproved] = useState(false)
+  const [chartStyle, setChartStyle] = useState(DEFAULT_CHART_STYLE)
+  const [chartDefaultLoading, setChartDefaultLoading] = useState(false)
+  const [chartDefaultSaving, setChartDefaultSaving] = useState(false)
+  const [chartDefaultMessage, setChartDefaultMessage] = useState(null)
   const [headline, setHeadline] = useState('30-day market comparison')
   const [chartText, setChartText] = useState('Verified movement, presented with exact market data.')
 
@@ -231,9 +287,12 @@ export default function AnalyticsPage() {
   const themeOwnerValid = selectedPrimary.some(token => token.id === themeOwnerTokenId)
   const themeOwner = tokens.find(token => token.id === themeOwnerTokenId)
   const brandTheme = themeOwnerValid ? analyticsTheme(themeOwnerTokenId, tokens) : null
+  const styledSeries = colorisedChartSeries(marketData, tokens, chartStyle)
+  const chartIssues = marketData ? chartStyleIssues(chartStyle, styledSeries) : []
   const outputFormat = OUTPUT_FORMATS.find(item => item.id === format) || OUTPUT_FORMATS[0]
   const generatedPost = generatedPosts[selectedTemplate.id] || ''
-  const selectedFingerprint = marketData && brandTheme ? compositionFingerprint({templateCategoryId:selectedTemplate.categoryId, templateVariantId:selectedTemplate.id, themeOwnerTokenId, marketData, period, scale, format, headline, chartText, direction}) : ''
+  const selectedFingerprint = marketData && brandTheme ? compositionFingerprint({templateCategoryId:selectedTemplate.categoryId, templateVariantId:selectedTemplate.id, themeOwnerTokenId, marketData, period, scale, format, headline, chartText, direction, chartStyle}) : ''
+  latestCompositionFingerprint.current = selectedFingerprint
   const selectedCompositionApproved = Boolean(selectedFingerprint && compositionApprovals[selectedTemplate.id] === selectedFingerprint)
   const generatedFingerprint = finalImageFingerprint(generatedPost, selectedFingerprint)
   const finalImageApproved = Boolean(generatedFingerprint && finalApprovals[selectedTemplate.id] === generatedFingerprint)
@@ -264,6 +323,31 @@ export default function AnalyticsPage() {
     loadBrands()
     return () => { active = false }
   }, [])
+
+  useEffect(() => {
+    if (!themeOwnerTokenId || !tokens.some(token => token.id === themeOwnerTokenId)) return undefined
+    const controller = new AbortController()
+    setChartDefaultLoading(true)
+    setChartDefaultMessage(null)
+    fetch(`${API_BASE}/api/account/analytics-chart-default?brandId=${encodeURIComponent(themeOwnerTokenId)}`, {credentials:'include', signal:controller.signal})
+      .then(async response => {
+        const data = await response.json().catch(() => ({}))
+        if (!response.ok) throw new Error(data.error || 'The saved chart default could not be loaded.')
+        const next = normalizeChartStyle(data.style || DEFAULT_CHART_STYLE, analyticsTheme(themeOwnerTokenId, tokens), null, tokens)
+        setChartStyle(next)
+        setChartApproved(false)
+        setCompositionApprovals({})
+        setGeneratedPosts({})
+        setFinalApprovals({})
+        resetCaptionFlow()
+        if (data.style) setChartDefaultMessage({type:'success', text:'Your private brand chart default is loaded.'})
+      })
+      .catch(err => {
+        if (err.name !== 'AbortError') setChartDefaultMessage({type:'warning', text:err.message || 'The saved chart default could not be loaded. The current chart remains usable.'})
+      })
+      .finally(() => { if (!controller.signal.aborted) setChartDefaultLoading(false) })
+    return () => controller.abort()
+  }, [themeOwnerTokenId, tokens])
 
   useEffect(() => {
     const query = assetQuery.trim()
@@ -312,6 +396,61 @@ export default function AnalyticsPage() {
     setError('')
   }
 
+  function invalidateChartStyleApprovals() {
+    setChartApproved(false)
+    setCompositionApprovals({})
+    setGeneratedPosts({})
+    setFinalApprovals({})
+    resetCaptionFlow()
+    setError('')
+  }
+
+  function commitChartStyle(next) {
+    setChartStyle(normalizeChartStyle(next, brandTheme, marketData, tokens))
+    setChartDefaultMessage(null)
+    invalidateChartStyleApprovals()
+  }
+
+  function applyChartPreset(presetId) {
+    commitChartStyle(presetChartStyle(presetId, brandTheme, marketData, tokens))
+  }
+
+  function updateChartStyle(path, value) {
+    if (path.startsWith('legend.')) {
+      const legendKey = path.split('.')[1]
+      commitChartStyle({...chartStyle, presetId:'custom', legend:{...chartStyle.legend, [legendKey]:value}})
+      return
+    }
+    commitChartStyle({...chartStyle, presetId:'custom', [path]:value})
+  }
+
+  function updateSeriesColor(seriesId, color) {
+    commitChartStyle({...chartStyle, presetId:'custom', seriesColors:{...chartStyle.seriesColors, [seriesId]:color}})
+  }
+
+  function resetSeriesColor(seriesId) {
+    const seriesColors = {...chartStyle.seriesColors}
+    delete seriesColors[seriesId]
+    commitChartStyle({...chartStyle, presetId:'custom', seriesColors})
+  }
+
+  async function saveChartDefault() {
+    if (!themeOwnerValid || chartDefaultSaving || chartIssues.length) return
+    setChartDefaultSaving(true)
+    setChartDefaultMessage(null)
+    const completeStyle = materializeCurrentSeriesColors(chartStyle, marketData, tokens)
+    try {
+      const response = await fetch(`${API_BASE}/api/account/analytics-chart-default`, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({brandId:themeOwnerTokenId, style:completeStyle})})
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.ok) throw new Error(data.error || 'The chart default could not be saved.')
+      setChartDefaultMessage({type:'success', text:`Saved as your ${themeOwner?.symbol || ''} chart default.`})
+    } catch (err) {
+      setChartDefaultMessage({type:'warning', text:err.message || 'The chart default could not be saved. The current chart remains usable.'})
+    } finally {
+      setChartDefaultSaving(false)
+    }
+  }
+
   function togglePrimary(id) {
     setSelectionError('')
     const selected = primaryIds.includes(id)
@@ -334,6 +473,7 @@ export default function AnalyticsPage() {
   function chooseThemeOwner(id) {
     if (!primaryIds.includes(id)) return
     setThemeOwnerTokenId(id)
+    setChartApproved(false)
     setCompositionApprovals({})
     setGeneratedPosts({})
     setFinalApprovals({})
@@ -433,6 +573,7 @@ export default function AnalyticsPage() {
       return
     }
     setGenerating(true)
+    const requestedFingerprint = selectedFingerprint
     setGeneratingTemplateId(selectedTemplate.id)
     setFinalApprovals(previous => ({...previous, [selectedTemplate.id]:''}))
     resetCaptionFlow()
@@ -440,6 +581,8 @@ export default function AnalyticsPage() {
     try {
       const approvedChart = await chartToPngDataUrl(chartSvgRef.current)
       const approvalSample = await imageUrlToDataUrl(selectedTemplate.image)
+      const approvedStyle = materializeCurrentSeriesColors(chartStyle, marketData, tokens)
+      const approvedSeries = colorisedChartSeries(marketData, tokens, approvedStyle)
       const movement = marketData.series.reduce((total, item) => total + item.changePercent, 0) / marketData.series.length
       const response = await fetch(`${API_BASE}/api/image/generate-async`, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
             article:{title:headline || summary}, platform:'Instagram', mediaBrand:themeOwner.brand, sentiment:movement >= 0 ? 'Bullish' : 'Bearish', model:imageModel, compositionMode:'analytics_art_directed', copy:chartText,
@@ -449,7 +592,8 @@ export default function AnalyticsPage() {
             themeOwnerTokenId,
             brandTheme:brandTheme.id,
             outputDimensions:{width:outputFormat.width, height:outputFormat.height, ratio:format},
-            seriesMetadata:marketData.series.map(item => ({id:item.id, tokenId:item.tokenId, symbol:item.symbol, name:item.name, role:item.role, startPrice:item.startPrice, endPrice:item.endPrice, changePercent:item.changePercent, coverageStart:item.coverageStart, coverageEnd:item.coverageEnd})),
+            seriesMetadata:approvedSeries.map(item => ({id:item.id, tokenId:item.tokenId, symbol:item.symbol, name:item.name, role:item.role, color:item.color, startPrice:item.startPrice, endPrice:item.endPrice, changePercent:item.changePercent, coverageStart:item.coverageStart, coverageEnd:item.coverageEnd})),
+            chartStyle:approvedStyle,
             referenceImages:[approvalSample, approvedChart],
             imageDirection:`Treat the approved ${selectedTemplate.name} sample as a binding publishing family. Recreate that same premium composition for ${brandTheme.label}; adapt its palette, identity, exact supplied copy, and verified market content. Keep the complete approved chart sharp and physically inside the sample's reserved chart aperture or device screen. The Art Director brief must fully specify the card's geometry, module proportions, hierarchy, typography, spacing, materials, lighting, logo and footer placement, and forbidden changes. ${direction}`,
           })})
@@ -473,6 +617,9 @@ export default function AnalyticsPage() {
       if (!data.imageB64) throw new Error(data.error || 'The Analytics Art Director did not return a finished post.')
       const finishedPost = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
       await preloadImage(finishedPost)
+      if (latestCompositionFingerprint.current !== requestedFingerprint) {
+        throw new Error('The chart or composition changed during generation. Approve the current version and generate it again.')
+      }
       setGeneratedPosts(previous => ({...previous, [selectedTemplate.id]:finishedPost}))
     } catch (err) {
       setError(err.message || 'Post generation failed.')
@@ -589,11 +736,32 @@ export default function AnalyticsPage() {
             <div className="analytics-data-note"><span>Live check</span>RZWire and custom contracts use verified GeckoTerminal pools. Search comparisons use Binance public spot history.</div>
           </section>
           <section className="analytics-control-section analytics-verification-controls">
-            <div className="analytics-section-heading"><span>02</span><div><h2>Approve the complete white chart</h2><p>Inspect every selected series, date, scale, price, movement, and source before choosing a publishing design.</p></div></div>
+            <div className="analytics-section-heading"><span>02</span><div><h2>Customize and approve the verified chart</h2><p>Style the presentation while every selected price, date, axis, movement, and line remains locked.</p></div></div>
             <button type="button" className="analytics-verify" disabled={verifying || !primaryIds.length} onClick={verifyMarketData}>{verifying ? <><span className="analytics-spinner" />Extracting {seriesCount} price histories…</> : <><RefreshCw size={16} />Fetch and verify {seriesCount} chart {seriesCount === 1 ? 'line' : 'lines'}</>}</button>
             {verificationError && <p className="analytics-error">{verificationError}</p>}
             {!marketData && !verifying && <div className="analytics-proof-empty"><LineChart size={28} /><strong>Your complete verified chart will appear here</strong><span>RZWire will fetch every selected history concurrently and keep available lines if another provider fails.</span></div>}
-            {marketData && <><VerifiedChart data={marketData} chartRef={chartSvgRef} tokens={tokens} />{!!marketData.failures?.length && <div className="analytics-failure-summary"><AlertTriangle size={16} /><span><strong>{marketData.failures.length} selected {marketData.failures.length === 1 ? 'asset was' : 'assets were'} unavailable.</strong>{marketData.failures.map(item => <small key={item.id}>{item.symbol} — {item.error}</small>)}<small>The verified lines above can still be approved.</small></span></div>}<div className="analytics-chart-approval"><div><strong>{chartApproved ? 'Chart approved' : 'Check every line and label before continuing'}</strong><span>{chartApproved ? 'Story and publishing choices are unlocked.' : 'Confirm the prices, axes, dates, warnings, and source attribution.'}</span></div><button type="button" className={chartApproved ? 'approved' : ''} onClick={() => setChartApproved(true)}>{chartApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve complete chart</>}</button></div></>}
+            {marketData && <>
+              <ChartDesigner
+                style={chartStyle}
+                series={styledSeries}
+                tokens={tokens}
+                ownerSelected={themeOwnerValid}
+                loading={chartDefaultLoading}
+                saving={chartDefaultSaving}
+                message={chartDefaultMessage}
+                issues={chartIssues}
+                onPreset={applyChartPreset}
+                onBackground={color => updateChartStyle('backgroundColor', color)}
+                onSeriesColor={updateSeriesColor}
+                onResetSeries={resetSeriesColor}
+                onOption={updateChartStyle}
+                onReset={() => commitChartStyle(presetChartStyle('clean-light', brandTheme, marketData, tokens))}
+                onSave={saveChartDefault}
+              />
+              <VerifiedChart data={marketData} chartRef={chartSvgRef} tokens={tokens} chartStyle={chartStyle} />
+              {!!marketData.failures?.length && <div className="analytics-failure-summary"><AlertTriangle size={16} /><span><strong>{marketData.failures.length} selected {marketData.failures.length === 1 ? 'asset was' : 'assets were'} unavailable.</strong>{marketData.failures.map(item => <small key={item.id}>{item.symbol} — {item.error}</small>)}<small>The verified lines above can still be approved.</small></span></div>}
+              <div className="analytics-chart-approval"><div><strong>{chartApproved ? 'Chart approved' : chartIssues.length ? 'Resolve the chart color warnings' : 'Check every line and label before continuing'}</strong><span>{chartApproved ? 'Story and publishing choices are unlocked.' : chartIssues.length ? 'Approval is blocked until every series is distinct and readable.' : 'Confirm the prices, axes, dates, warnings, source attribution, and styling.'}</span></div><button type="button" disabled={!!chartIssues.length} className={chartApproved ? 'approved' : ''} onClick={() => { if (!chartIssues.length) setChartApproved(true) }}>{chartApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve complete chart</>}</button></div>
+            </>}
           </section>
           {chartApproved && <section className="analytics-control-section analytics-copy-section"><div className="analytics-section-heading"><span>03</span><div><h2>Write the story</h2><p>Set the beautiful header and supporting statement that guide every static publishing frame.</p></div></div><label>Header<input value={headline} onChange={event => { setHeadline(event.target.value); invalidateCompositions() }} /></label><label>Chart text<textarea rows="4" value={chartText} onChange={event => { setChartText(event.target.value); invalidateCompositions() }} /></label></section>}
           {chartApproved && <section className={`analytics-control-section analytics-template-section ${!themeOwnerValid ? 'is-locked' : ''}`}>
@@ -603,7 +771,7 @@ export default function AnalyticsPage() {
               <div><strong>{category.name}</strong><span>{category.description}</span></div>
               <div className="analytics-template-grid analytics-template-grid--exact">{category.variants.map(variant => {
                 const selected = templateVariantId === variant.id
-                const approved = compositionApprovals[variant.id] === compositionFingerprint({templateCategoryId:category.id, templateVariantId:variant.id, themeOwnerTokenId, marketData, period, scale, format, headline, chartText, direction})
+                const approved = compositionApprovals[variant.id] === compositionFingerprint({templateCategoryId:category.id, templateVariantId:variant.id, themeOwnerTokenId, marketData, period, scale, format, headline, chartText, direction, chartStyle})
                 return <button key={variant.id} type="button" disabled={!themeOwnerValid} className={selected ? 'selected' : ''} onClick={() => chooseTemplate(variant.id)}><img src={variant.image} alt={`${variant.name} publishing concept ${variant.conceptLabel}`} /><span><b>Concept {variant.conceptLabel}</b><strong>{variant.name}</strong><small>{variant.description}</small>{selected && <em className={approved ? 'approved' : ''}>{approved ? 'Approved' : 'Needs approval'}</em>}</span>{selected && <Check size={18} />}</button>
               })}</div>
             </div>)}
@@ -615,7 +783,7 @@ export default function AnalyticsPage() {
           <div className="analytics-preview-head"><div><p>Final composition preview</p><h2>{selectedTemplate.name}</h2><small>{themeOwner.name} visual system</small></div><span>{outputFormat.label}</span></div>
           <div className="analytics-reference-sample"><div><strong>Exact approved concept {selectedTemplate.conceptLabel}</strong><span>This image is the primary style target. The selected coin owner supplies its palette, logo, and footer while the verified chart replaces the sample market data.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact approval concept`} /></div>
           <div className="analytics-live-output-label"><span>{generatedPost ? 'Finished Art Director PNG' : 'Approved composition specification'}</span><small>The approved sample defines the visual family. The detailed Art Director brief defines the complete card, while the approved chart supplies its factual market content.</small></div>
-          {generatedPost ? <img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <CompositionPreview templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} />}
+          {generatedPost ? <img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <CompositionPreview templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} chartStyle={chartStyle} />}
           <div className={`analytics-composition-approval ${selectedCompositionApproved ? 'approved' : ''}`}><div><strong>{selectedCompositionApproved ? 'Composition approved' : 'Approve this composition'}</strong><span>{selectedCompositionApproved ? 'Its exact state is ready for generation.' : 'Check hierarchy, palette, logo, footer, chart, and copy.'}</span></div><button type="button" onClick={() => setCompositionApprovals(previous => ({...previous, [selectedTemplate.id]:selectedFingerprint}))}>{selectedCompositionApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve {selectedTemplate.name}</>}</button></div>
           {generatedPost && <div className={`analytics-final-approval ${finalImageApproved ? 'approved' : ''}`}><div><strong>{finalImageApproved ? 'Final image approved' : 'Approve the final image'}</strong><span>{finalImageApproved ? 'The caption and publishing workflow is now unlocked.' : 'Inspect the finished image before creating any external post copy.'}</span></div><button type="button" onClick={() => { setFinalApprovals(previous => ({...previous, [selectedTemplate.id]:generatedFingerprint})); resetCaptionFlow() }}>{finalImageApproved ? <><CircleCheck size={17} />Final approved</> : <><Check size={17} />Approve final image</>}</button></div>}
           {generatedPost && finalImageApproved && <div className="analytics-caption-workflow">

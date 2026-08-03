@@ -82,6 +82,17 @@
 .rz-composition-chart .rz-chart-value { fill: rgba(238,240,244,.72); font-weight: 750; }
 .rz-composition-chart.light text { fill: rgba(25,32,42,.55); }
 .rz-legend { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .5cqw 1.05cqw; }
+.rz-styled-chart { position:relative; min-width:0; min-height:0; display:grid; gap:.65cqw; padding:.45cqw; overflow:hidden; border-radius:.55cqw; }
+.rz-styled-chart > .rz-composition-chart { min-width:0; min-height:0; }
+.rz-styled-chart--top > .rz-legend { order:-1; }
+.rz-styled-chart--left,.rz-styled-chart--right { grid-template-columns:minmax(8cqw,.34fr) minmax(0,1fr); align-items:stretch; }
+.rz-styled-chart--right { grid-template-columns:minmax(0,1fr) minmax(8cqw,.34fr); }
+.rz-styled-chart--left > .rz-legend,.rz-styled-chart--right > .rz-legend { align-content:center; align-items:flex-start; flex-direction:column; flex-wrap:nowrap; overflow:hidden; }
+.rz-styled-chart--right > .rz-legend { grid-column:2; }
+.rz-styled-chart--right > .rz-composition-chart { grid-column:1; grid-row:1; }
+.rz-styled-chart--overlay-top-right > .rz-legend,.rz-styled-chart--overlay-bottom-right > .rz-legend { position:absolute; z-index:2; right:2.5%; max-width:48%; align-items:flex-start; flex-direction:column; gap:.45cqw; padding:.7cqw .85cqw; background:color-mix(in srgb,var(--chart-background,#11161f) 92%,transparent); border:1px solid rgba(255,255,255,.16); border-radius:.65cqw; }
+.rz-styled-chart--overlay-top-right > .rz-legend { top:5%; }
+.rz-styled-chart--overlay-bottom-right > .rz-legend { right:2.5%; bottom:6%; }
 .up { color: #26c890 !important; }
 .down { color: #ef5c63 !important; }
 

@@ -12,6 +12,7 @@ import json
 from copy import deepcopy
 
 from config import EDITORIAL_MODELS
+from analytics_chart_style import normalize_chart_style, normalize_hex_color
 from llm import openrouter_chat
 
 
@@ -255,7 +256,7 @@ def _clean_series(series_metadata) -> list[dict]:
     for item in series_metadata or []:
         if not isinstance(item, dict) or not str(item.get("symbol") or "").strip():
             continue
-        clean.append({
+        clean_item = {
             "symbol": str(item.get("symbol") or "").strip().upper(),
             "name": str(item.get("name") or item.get("symbol") or "").strip(),
             "role": str(item.get("role") or "comparison").strip(),
@@ -264,7 +265,10 @@ def _clean_series(series_metadata) -> list[dict]:
             "changePercent": item.get("changePercent"),
             "coverageStart": item.get("coverageStart"),
             "coverageEnd": item.get("coverageEnd"),
-        })
+        }
+        if item.get("color"):
+            clean_item["color"] = normalize_hex_color(item.get("color"), "series color")
+        clean.append(clean_item)
     if not clean:
         raise ValueError("Analytics Art Director requires verified series metadata.")
     if len(clean) > 6:
@@ -312,9 +316,10 @@ def fallback_analytics_brief(template: dict, theme_owner: dict, series_metadata)
 
 def call_analytics_art_director(article, copy_text, theme_owner, profile, template,
                                 output_dimensions, series_metadata, creative_direction="",
-                                sample_reference=""):
+                                sample_reference="", chart_style=None):
     """Stage 1: ask the same editorial model used by Multimedia for a JSON brief."""
     series = _clean_series(series_metadata)
+    chart_style = normalize_chart_style(chart_style)
     profile_style = profile.get("frozen_style") or {}
     system_prompt = (
         f'You are the specialist Market Analytics Art Director for {theme_owner["name"]}. '
@@ -365,6 +370,7 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         f'Exact supporting text: {copy_text}\n'
         f'Canvas: {output_dimensions.get("width", 1080)}x{output_dimensions.get("height", 1350)}\n'
         f'Verified series: {json.dumps(series, ensure_ascii=False)}\n'
+        f'Approved chart presentation: {json.dumps(chart_style, ensure_ascii=False)}\n'
         f'Additional creative direction: {creative_direction or "none"}\n\n'
         'Design the complete visual production brief now. State exactly which elements are replaced with the new headline, '
         'support copy, verified chart, legends, prices, movements, logo and footer, and which sample geometry must never move. '
@@ -414,9 +420,10 @@ def validate_analytics_brief(raw_brief, template, theme_owner, series_metadata) 
 
 
 def assemble_analytics_prompt(brief, template, theme_owner, profile, article, copy_text,
-                              output_dimensions, series_metadata) -> str:
+                              output_dimensions, series_metadata, chart_style=None) -> str:
     """Stage 2: deterministically assemble the final two-reference prompt."""
     series = _clean_series(series_metadata)
+    chart_style = normalize_chart_style(chart_style)
     width = int(output_dimensions.get("width") or 1080)
     height = int(output_dimensions.get("height") or 1350)
     facts = json.dumps(series, ensure_ascii=False, separators=(",", ":"))
@@ -459,6 +466,9 @@ def assemble_analytics_prompt(brief, template, theme_owner, profile, article, co
         f'BRAND ART DIRECTION: {theme_owner["imagePrompt"]}. '
         f'EXACT HEADLINE: "{headline}". EXACT SUPPORTING TEXT: "{copy_text}". '
         f'EXACT FOOTER/DOMAIN: "{footer}". VERIFIED SERIES METADATA: {facts}. '
+        f'APPROVED CHART PRESENTATION: {json.dumps(chart_style, ensure_ascii=False, separators=(",", ":"))}. '
+        'Preserve the approved background, series colors, line weight, markers, grid strength, legend position, and legend format '
+        'when integrating the chart into the publishing design. '
         'EXECUTION ORDER: first reproduce Reference 1 composition and major module proportions; second apply the brand-owner '
         'theme; third replace the sample headline/supporting text with the supplied exact copy; fourth place Reference 2 into '
         'the defined chart area; fifth rebuild exact legends and verified result labels from the supplied metadata; sixth add '

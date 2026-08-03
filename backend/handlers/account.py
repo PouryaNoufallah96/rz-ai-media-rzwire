@@ -1,6 +1,8 @@
 """Account: activity logging, saved cards, brand keywords, summary aggregation."""
 import database
 
+from analytics_brands import get_analytics_brand
+from analytics_chart_style import normalize_chart_style
 from config import MEDIA_LIST, BATCH_WINDOW, VALID_ACTIONS, EDITORIAL_MODELS, PLAT_RULES
 from handlers.sheets import call_apps_script
 from datetime import datetime as _datetime, timedelta as _timedelta
@@ -83,6 +85,27 @@ def handle_brand_keywords(user_id, brands_param):
     if not brands:
         return {'keywords': []}
     return {'keywords': database.get_brand_keywords(user_id, brands)}
+
+
+def handle_get_analytics_chart_default(user_id, brand_id):
+    brand = get_analytics_brand(str(brand_id or '').strip().lower())
+    saved = database.get_analytics_chart_default(user_id, brand['id'])
+    if not saved:
+        return {'brandId': brand['id'], 'style': None, 'updatedAt': None}
+    try:
+        style = normalize_chart_style(saved.get('style'))
+    except ValueError:
+        style = None
+    return {'brandId': brand['id'], 'style': style, 'updatedAt': saved.get('updatedAt')}
+
+
+def handle_save_analytics_chart_default(user_id, body):
+    brand = get_analytics_brand(str(body.get('brandId') or '').strip().lower())
+    if not isinstance(body.get('style'), dict):
+        raise ValueError('style is required and must be an object')
+    style = normalize_chart_style(body.get('style'))
+    saved = database.save_analytics_chart_default(user_id, brand['id'], style)
+    return {'ok': True, 'brandId': brand['id'], **saved}
 
 
 def handle_saved_discard(user_id, body):

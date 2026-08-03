@@ -1,3 +1,5 @@
+import { FALLBACK_SERIES_COLORS, chartStyleFingerprint, colorisedChartSeries } from './chartStyle'
+
 export const OUTPUT_FORMATS = [
   { id:'portrait', label:'Portrait · 1080 × 1350', width:1080, height:1350 },
   { id:'square', label:'Square · 1080 × 1080', width:1080, height:1080 },
@@ -5,13 +7,12 @@ export const OUTPUT_FORMATS = [
   { id:'landscape', label:'Landscape · 1600 × 900', width:1600, height:900 },
 ]
 
-export const EXTERNAL_COLORS = ['#c9877f', '#3978c7', '#b878cf']
+export const EXTERNAL_COLORS = FALLBACK_SERIES_COLORS
 
-export function compositionSeries(marketData, tokens) {
-  let comparisonIndex = 0
-  return (marketData?.series || []).map(item => {
+export function compositionSeries(marketData, tokens, chartStyle) {
+  return colorisedChartSeries(marketData, tokens, chartStyle).map(item => {
     const primary = tokens.find(token => token.id === item.tokenId || token.symbol === item.symbol)
-    return {...item, logo:primary?.logo || '', color:primary?.color || EXTERNAL_COLORS[comparisonIndex++ % EXTERNAL_COLORS.length]}
+    return {...item, logo:primary?.logo || ''}
   })
 }
 
@@ -40,9 +41,10 @@ export function analyticsTheme(themeOwnerTokenId, tokens) {
   }
 }
 
-export function compositionFingerprint({marketData, period, scale, format, headline, chartText, themeOwnerTokenId, templateCategoryId, templateVariantId, direction}) {
+export function compositionFingerprint({marketData, period, scale, format, headline, chartText, themeOwnerTokenId, templateCategoryId, templateVariantId, direction, chartStyle}) {
   return JSON.stringify({
     templateCategoryId, templateVariantId, themeOwnerTokenId, period, scale, format, headline, chartText, direction,
+    chartStyle:chartStyle ? chartStyleFingerprint(chartStyle) : '',
     series:(marketData?.series || []).map(item => ({
       id:item.id, tokenId:item.tokenId, symbol:item.symbol, start:item.startPrice, end:item.endPrice, change:item.changePercent,
       points:(item.points || []).map(point => [point.timestamp, point.close]),

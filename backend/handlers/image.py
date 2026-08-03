@@ -10,6 +10,7 @@ import uuid
 from config import BRAND_VISUAL_TONE, EDITORIAL_MODELS, OPENROUTER_IMAGE_MODELS
 from brand_profiles import BRAND_IMAGE_PROFILES
 from analytics_brands import get_analytics_brand
+from analytics_chart_style import normalize_chart_style
 from llm import openrouter_chat, openrouter_image
 from image_pipeline import (_RECENT_BRIEFS, _remember_brief, _article_mentions_brand,
                             call_art_director, validate_brief, assemble_prompt, _fallback_brief)
@@ -188,6 +189,7 @@ def handle_generate_image(body):
     brand_theme = body.get('brandTheme', '').strip()
     output_dimensions = body.get('outputDimensions') or {}
     series_metadata = body.get('seriesMetadata') or []
+    chart_style = body.get('chartStyle')
     language = body.get('language', 'en')
     if model not in OPENROUTER_IMAGE_MODELS:
         raise ValueError('Unsupported image generation model')
@@ -221,6 +223,7 @@ def handle_generate_image(body):
             raise ValueError('The selected analytics theme owner has no approved Art Director profile.')
 
         template = resolve_analytics_template(template_category_id, template_variant_id)
+        chart_style = normalize_chart_style(chart_style)
         width = int(output_dimensions.get('width') or 1080)
         height = int(output_dimensions.get('height') or 1350)
         if width < 512 or height < 512 or width > 4096 or height > 4096:
@@ -232,7 +235,7 @@ def handle_generate_image(body):
             raw_brief = call_analytics_art_director(
                 article, copy_text, theme_owner, profile, template,
                 output_dimensions, series_metadata, image_direction,
-                sample_reference=ref_images[0],
+                sample_reference=ref_images[0], chart_style=chart_style,
             )
             brief = validate_analytics_brief(raw_brief, template, theme_owner, series_metadata)
         except Exception as exc:  # Keep image generation available if the brief model fails.
@@ -241,7 +244,7 @@ def handle_generate_image(body):
 
         prompt = assemble_analytics_prompt(
             brief, template, theme_owner, profile, article, copy_text,
-            output_dimensions, series_metadata,
+            output_dimensions, series_metadata, chart_style=chart_style,
         )
         append_image_direction = False
         apply_logo_safe_zone = False

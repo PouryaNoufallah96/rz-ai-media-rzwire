@@ -20,13 +20,19 @@ THEME_OWNER = {
     'imagePrompt': 'Premium black and signal-yellow gaming utility editorial.',
 }
 SERIES = [
-    {'tokenId': 'mgc', 'symbol': 'MGC', 'name': 'MGC Coin', 'role': 'primary',
+    {'id': 'rz:mgc', 'tokenId': 'mgc', 'symbol': 'MGC', 'name': 'MGC Coin', 'role': 'primary', 'color': '#F0C419',
      'startPrice': 2.4, 'endPrice': 2.8, 'changePercent': 16.67,
      'coverageStart': '2026-07-01', 'coverageEnd': '2026-08-01'},
-    {'symbol': 'BTC', 'name': 'Bitcoin', 'role': 'comparison',
+    {'id': 'binance:BTC', 'symbol': 'BTC', 'name': 'Bitcoin', 'role': 'comparison', 'color': '#0072B2',
      'startPrice': 61560, 'endPrice': 63081.9, 'changePercent': 2.47,
      'coverageStart': '2026-07-01', 'coverageEnd': '2026-08-01'},
 ]
+CHART_STYLE = {
+    'version': 1, 'presetId': 'custom', 'backgroundColor': '#101820',
+    'seriesColors': {'rz:mgc': '#F0C419', 'binance:BTC': '#0072B2'},
+    'legend': {'position': 'overlay-top-right', 'format': 'symbol-change'},
+    'lineWidth': 6, 'markers': 'all', 'gridStrength': 'standard',
+}
 
 
 class AnalyticsImagePipelineTests(unittest.TestCase):
@@ -62,6 +68,7 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         prompt = assemble_analytics_prompt(
             brief, template, THEME_OWNER, {}, {'title': 'MGC vs BTC'},
             'Thirty-day verified comparison.', {'width': 1080, 'height': 1350}, SERIES,
+            chart_style=CHART_STYLE,
         )
         self.assertIn('exactly TWO ordered references', prompt)
         self.assertIn('REFERENCE 1', prompt)
@@ -81,6 +88,10 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertIn('FORBIDDEN CHANGES', prompt)
         self.assertIn('EXECUTION ORDER', prompt)
         self.assertIn('first reproduce Reference 1 composition', prompt)
+        self.assertIn('APPROVED CHART PRESENTATION', prompt)
+        self.assertIn('overlay-top-right', prompt)
+        self.assertIn('#0072B2', prompt)
+        self.assertIn('"lineWidth":6', prompt)
 
     @patch('analytics_image_pipeline.openrouter_chat')
     def test_art_director_receives_selected_sample_as_visual_reference(self, chat):
@@ -93,7 +104,7 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
             {'frozen_style': {'visual_world': 'premium'}},
             resolve_analytics_template('phone', 'phone-centered'),
             {'width': 1080, 'height': 1920}, SERIES,
-            sample_reference=sample,
+            sample_reference=sample, chart_style=CHART_STYLE,
         )
         messages = chat.call_args.args[1]
         self.assertIsInstance(messages[1]['content'], list)
@@ -104,6 +115,8 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertIn('chart/device aperture', messages[0]['content'])
         self.assertIn('NO captured composition reference', messages[0]['content'])
         self.assertIn('complete construction specification', messages[0]['content'])
+        self.assertIn('Approved chart presentation', messages[1]['content'][0]['text'])
+        self.assertIn('overlay-top-right', messages[1]['content'][0]['text'])
 
     def test_fallback_is_a_complete_production_brief(self):
         template = resolve_analytics_template('laptop', 'laptop-cinematic')
