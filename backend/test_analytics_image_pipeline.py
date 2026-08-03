@@ -56,22 +56,29 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertEqual(brief['sample_fidelity'], 'binding')
         self.assertEqual(brief['device_strategy'], 'premium phone frame')
 
-    def test_prompt_protects_device_chart_and_brand_facts(self):
+    def test_prompt_is_a_complete_two_reference_card_specification(self):
         template = resolve_analytics_template('phone', 'phone-centered')
         brief = fallback_analytics_brief(template, THEME_OWNER, SERIES)
         prompt = assemble_analytics_prompt(
             brief, template, THEME_OWNER, {}, {'title': 'MGC vs BTC'},
             'Thirty-day verified comparison.', {'width': 1080, 'height': 1350}, SERIES,
         )
+        self.assertIn('exactly TWO ordered references', prompt)
         self.assertIn('REFERENCE 1', prompt)
         self.assertIn('REFERENCE 2', prompt)
-        self.assertIn('REFERENCE 3', prompt)
+        self.assertNotIn('REFERENCE 3', prompt)
         self.assertIn('inside the device screen', prompt)
         self.assertIn('metagamescoin.io', prompt)
         self.assertIn('phone-centered', prompt)
         self.assertIn('61560', prompt)
         self.assertIn('FULL IMMUTABLE FAMILY CONTRACT', prompt)
         self.assertIn('FULL ART DIRECTOR PRODUCTION BRIEF', prompt)
+        self.assertIn('CANVAS AND MODULE MAP', prompt)
+        self.assertIn('DEVICE OR CARD CONSTRUCTION', prompt)
+        self.assertIn('TYPOGRAPHY SYSTEM', prompt)
+        self.assertIn('CHART APERTURE AND INTEGRATION', prompt)
+        self.assertIn('LOGO AND FOOTER SYSTEM', prompt)
+        self.assertIn('FORBIDDEN CHANGES', prompt)
         self.assertIn('EXECUTION ORDER', prompt)
         self.assertIn('first reproduce Reference 1 composition', prompt)
 
@@ -95,6 +102,8 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertIn('BINDING', messages[0]['content'])
         self.assertIn('VARIANT CONTRACT', messages[0]['content'])
         self.assertIn('chart/device aperture', messages[0]['content'])
+        self.assertIn('NO captured composition reference', messages[0]['content'])
+        self.assertIn('complete construction specification', messages[0]['content'])
 
     def test_fallback_is_a_complete_production_brief(self):
         template = resolve_analytics_template('laptop', 'laptop-cinematic')

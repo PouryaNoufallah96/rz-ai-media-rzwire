@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { toPng } from 'html-to-image'
 import { AlertTriangle, ArrowRight, CalendarDays, Check, CircleCheck, Database, ImageIcon, LineChart, MessageCircle, Plus, RefreshCw, Search, Send, Sparkles, X } from 'lucide-react'
 import NavBar from '../components/NavBar'
 import ChatWidget from '../components/chat/ChatWidget'
@@ -23,6 +22,7 @@ const CAPTION_PLATFORMS = [
   {id:'x', label:'X', apiName:'X', description:'Concise post · maximum 280 characters · no emoji'},
 ]
 const EDITORIAL_MODELS = Object.entries(EDITORIAL_MODEL_META).map(([id, meta]) => ({id, ...meta}))
+const ANALYTICS_IMAGE_MODEL_OPTIONS = IMAGE_MODEL_OPTIONS.filter(model => (model.maxReferences || 0) >= 2)
 
 function formatPrice(value) {
   const amount = Number(value)
@@ -76,22 +76,6 @@ function chartToPngDataUrl(svgElement) {
   })
 }
 
-function resizePng(dataUrl, width, height) {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.onload = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      const context = canvas.getContext('2d')
-      context.drawImage(image, 0, 0, width, height)
-      resolve(canvas.toDataURL('image/png'))
-    }
-    image.onerror = () => reject(new Error('The composition capture could not be resized.'))
-    image.src = dataUrl
-  })
-}
-
 async function imageUrlToDataUrl(url) {
   if (!url) throw new Error('The selected approval sample is unavailable.')
   if (url.startsWith('data:')) return url
@@ -123,14 +107,6 @@ async function preloadImage(dataUrl) {
 function finalImageFingerprint(image, composition) {
   if (!image || !composition) return ''
   return `${composition}:${image.length}:${image.slice(-48)}`
-}
-
-async function captureComposition(node, output) {
-  if (!node) throw new Error('The approved composition is not ready for capture.')
-  const bounds = node.getBoundingClientRect()
-  const pixelRatio = Math.min(4, Math.max(2, output.width / Math.max(1, bounds.width)))
-  const capture = await toPng(node, {cacheBust:true, pixelRatio, backgroundColor:'#10151c'})
-  return resizePng(capture, output.width, output.height)
 }
 
 function suggestedCopy(series, period) {
@@ -208,7 +184,6 @@ function VerifiedChart({ data, chartRef, tokens }) {
 
 export default function AnalyticsPage() {
   const chartSvgRef = useRef(null)
-  const frameRefs = useRef({})
   const [tokens, setTokens] = useState([])
   const [brandsLoading, setBrandsLoading] = useState(true)
   const [brandsError, setBrandsError] = useState('')
@@ -462,13 +437,10 @@ export default function AnalyticsPage() {
     setFinalApprovals(previous => ({...previous, [selectedTemplate.id]:''}))
     resetCaptionFlow()
     setError('')
-    const lockedNode = frameRefs.current[selectedTemplate.id]
     try {
-      if (!lockedNode) throw new Error('The approved composition is not ready for export yet. Please try again.')
       const approvedChart = await chartToPngDataUrl(chartSvgRef.current)
       const approvalSample = await imageUrlToDataUrl(selectedTemplate.image)
       const movement = marketData.series.reduce((total, item) => total + item.changePercent, 0) / marketData.series.length
-      const lockedComposition = await captureComposition(lockedNode, outputFormat)
       const response = await fetch(`${API_BASE}/api/image/generate-async`, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
             article:{title:headline || summary}, platform:'Instagram', mediaBrand:themeOwner.brand, sentiment:movement >= 0 ? 'Bullish' : 'Bearish', model:imageModel, compositionMode:'analytics_art_directed', copy:chartText,
             templateId:selectedTemplate.id,
@@ -478,8 +450,8 @@ export default function AnalyticsPage() {
             brandTheme:brandTheme.id,
             outputDimensions:{width:outputFormat.width, height:outputFormat.height, ratio:format},
             seriesMetadata:marketData.series.map(item => ({id:item.id, tokenId:item.tokenId, symbol:item.symbol, name:item.name, role:item.role, startPrice:item.startPrice, endPrice:item.endPrice, changePercent:item.changePercent, coverageStart:item.coverageStart, coverageEnd:item.coverageEnd})),
-            referenceImages:[approvalSample, lockedComposition, approvedChart],
-            imageDirection:`Treat the approved ${selectedTemplate.name} sample as a binding publishing family. Recreate that same premium composition for ${brandTheme.label}; adapt its palette, identity, exact supplied copy, and verified market content. Keep the complete approved chart sharp and physically inside the sample's reserved chart aperture or device screen. ${direction}`,
+            referenceImages:[approvalSample, approvedChart],
+            imageDirection:`Treat the approved ${selectedTemplate.name} sample as a binding publishing family. Recreate that same premium composition for ${brandTheme.label}; adapt its palette, identity, exact supplied copy, and verified market content. Keep the complete approved chart sharp and physically inside the sample's reserved chart aperture or device screen. The Art Director brief must fully specify the card's geometry, module proportions, hierarchy, typography, spacing, materials, lighting, logo and footer placement, and forbidden changes. ${direction}`,
           })})
       const started = await response.json().catch(() => ({}))
       if (!response.ok || !started.jobId) throw new Error(started.error || 'The Analytics Art Director could not start the image job.')
@@ -637,12 +609,12 @@ export default function AnalyticsPage() {
             </div>)}
             <div className="analytics-template-selection-note"><strong>1 sample selected</strong><span>{selectedCompositionApproved ? 'This composition is approved and ready for generation.' : 'Review and approve this exact composition before generation.'}</span></div>
           </section>}
-          {chartApproved && <section className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished post</h2><p>The Analytics Art Director combines the approved publishing sample, selected coin identity, locked composition, and verified chart into one finished post.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => { setDirection(event.target.value); invalidateCompositions() }} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !themeOwnerValid || !selectedCompositionApproved} onClick={generatePost}>{generating ? <><span className="analytics-spinner" />Creating {findTemplateVariant(generatingTemplateId)?.name || 'selected version'}…</> : <><Sparkles size={17} />Generate one finished post<ArrowRight size={17} /></>}</button>{!selectedCompositionApproved && <p className="analytics-generation-lock">Approve the selected composition in the preview panel to unlock generation.</p>}{error && <p className="analytics-error">{error}</p>}</section>}
+          {chartApproved && <section className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished post</h2><p>The Analytics Art Director combines the approved publishing sample, selected coin identity, fully detailed production brief, and verified chart into one finished post.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{ANALYTICS_IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => { setDirection(event.target.value); invalidateCompositions() }} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !themeOwnerValid || !selectedCompositionApproved} onClick={generatePost}>{generating ? <><span className="analytics-spinner" />Creating {findTemplateVariant(generatingTemplateId)?.name || 'selected version'}…</> : <><Sparkles size={17} />Generate one finished post<ArrowRight size={17} /></>}</button>{!selectedCompositionApproved && <p className="analytics-generation-lock">Approve the selected composition in the preview panel to unlock generation.</p>}{error && <p className="analytics-error">{error}</p>}</section>}
         </aside>
         {chartApproved && themeOwnerValid && <section className="analytics-preview-column">
           <div className="analytics-preview-head"><div><p>Final composition preview</p><h2>{selectedTemplate.name}</h2><small>{themeOwner.name} visual system</small></div><span>{outputFormat.label}</span></div>
           <div className="analytics-reference-sample"><div><strong>Exact approved concept {selectedTemplate.conceptLabel}</strong><span>This image is the primary style target. The selected coin owner supplies its palette, logo, and footer while the verified chart replaces the sample market data.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact approval concept`} /></div>
-          <div className="analytics-live-output-label"><span>{generatedPost ? 'Finished protected PNG' : 'Locked final composition'}</span><small>The exact device, chart, copy, logo, and footer shown here remain fixed. Only the atmosphere behind them may change.</small></div>
+          <div className="analytics-live-output-label"><span>{generatedPost ? 'Finished Art Director PNG' : 'Approved composition specification'}</span><small>The approved sample defines the visual family. The detailed Art Director brief defines the complete card, while the approved chart supplies its factual market content.</small></div>
           {generatedPost ? <img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <CompositionPreview templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} />}
           <div className={`analytics-composition-approval ${selectedCompositionApproved ? 'approved' : ''}`}><div><strong>{selectedCompositionApproved ? 'Composition approved' : 'Approve this composition'}</strong><span>{selectedCompositionApproved ? 'Its exact state is ready for generation.' : 'Check hierarchy, palette, logo, footer, chart, and copy.'}</span></div><button type="button" onClick={() => setCompositionApprovals(previous => ({...previous, [selectedTemplate.id]:selectedFingerprint}))}>{selectedCompositionApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve {selectedTemplate.name}</>}</button></div>
           {generatedPost && <div className={`analytics-final-approval ${finalImageApproved ? 'approved' : ''}`}><div><strong>{finalImageApproved ? 'Final image approved' : 'Approve the final image'}</strong><span>{finalImageApproved ? 'The caption and publishing workflow is now unlocked.' : 'Inspect the finished image before creating any external post copy.'}</span></div><button type="button" onClick={() => { setFinalApprovals(previous => ({...previous, [selectedTemplate.id]:generatedFingerprint})); resetCaptionFlow() }}>{finalImageApproved ? <><CircleCheck size={17} />Final approved</> : <><Check size={17} />Approve final image</>}</button></div>}
@@ -655,11 +627,10 @@ export default function AnalyticsPage() {
             {!!captionVariants.length && <div className="analytics-caption-stage"><div><b>3</b><span><strong>Select one caption</strong><small>Only the selected option will be published with the approved image.</small></span></div><div className="analytics-caption-options">{captionVariants.map((variant, index) => { const selected = selectedCaptionIndex === index; const text = captionPostText(variant); return <button type="button" key={`${variant.label}-${index}`} className={selected ? 'selected' : ''} onClick={() => { setSelectedCaptionIndex(index); setPublishResult('') }}><span><b>Option {index + 1}</b><em>{variant.label}</em>{selected && <Check size={15} />}</span><p>{variant.copy}</p>{!!variant.hashtags?.length && <small>{variant.hashtags.join(' ')}</small>}<i>{text.length} characters{publishDestination === 'x' ? ' / 280' : ''}</i></button> })}</div></div>}
             {!!captionVariants.length && <div className="analytics-caption-stage analytics-caption-publish"><div><b>4</b><span><strong>Publish the approved image and selected caption</strong><small>RZWire sends both together to the configured {publishDestination === 'telegram' ? 'Telegram channel' : 'X account'}.</small></span></div><button type="button" className="analytics-publish-final" disabled={selectedCaptionIndex < 0 || publishing} onClick={publishFinalImage}>{publishing ? <><span className="analytics-spinner" />Publishing…</> : <>Publish to {publishDestination === 'telegram' ? 'Telegram' : 'X'}<ArrowRight size={17} /></>}</button>{publishResult && <p className="analytics-publish-success"><CircleCheck size={16} />{publishResult}</p>}</div>}
           </div>}
-          <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Protected composition</strong>The selected concept guides only the atmosphere. RZWire deterministically locks the device, chart, financial facts, copy, logo, and footer into the final export.</span></div>
+          <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Two-reference Art Director pipeline</strong>The image model receives only the approved publishing sample and approved factual chart. A fully detailed production brief specifies the card structure, copy, branding, chart placement, and finish.</span></div>
         </section>}
       </div>
     </main>
-    {chartApproved && themeOwnerValid && <div className="analytics-export-renders" aria-hidden="true"><div key={`capture-${selectedTemplate.id}`} style={{width:`${outputFormat.width}px`}}><CompositionPreview ref={node => { frameRefs.current[selectedTemplate.id] = node }} templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} /></div></div>}
     <ChatWidget />
   </div>
 }

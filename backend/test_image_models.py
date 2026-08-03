@@ -83,14 +83,14 @@ class ImageModelAllowlistTests(unittest.TestCase):
 
     @patch('handlers.image.call_analytics_art_director')
     @patch('handlers.image.openrouter_image')
-    def test_analytics_art_director_uses_family_brand_and_three_references(self, generate, direct):
+    def test_analytics_art_director_uses_family_brand_and_two_references(self, generate, direct):
         generate.return_value = ('finished-art', 'openai/gpt-5.4-image-2')
         direct.return_value = {
             'family': 'phone', 'variant': 'phone-centered', 'sample_fidelity': 'binding',
             'lighting': 'cinematic atmospheric', 'depth': 'cinematic dimensional',
             'density': 'balanced',
         }
-        references = ['approved-sample', 'locked-composition', 'approved-chart']
+        references = ['approved-sample', 'approved-chart']
         result = handle_generate_image({
             'model': 'openai/gpt-5.4-image-2',
             'compositionMode': 'analytics_art_directed',
@@ -113,7 +113,16 @@ class ImageModelAllowlistTests(unittest.TestCase):
         self.assertIn('binding composition contract', prompt)
         self.assertIn('inside the device screen', prompt)
         self.assertIn('metagamescoin.io', prompt)
+        self.assertIn('exactly TWO ordered references', prompt)
+        self.assertNotIn('REFERENCE 3', prompt)
         self.assertEqual(result['brief']['variant'], 'phone-centered')
+
+    def test_analytics_art_director_rejects_captured_composition_reference(self):
+        with self.assertRaisesRegex(ValueError, 'exactly two ordered references'):
+            handle_generate_image({
+                'compositionMode': 'analytics_art_directed',
+                'referenceImages': ['approved-sample', 'captured-composition', 'approved-chart'],
+            })
 
     def test_analytics_art_director_rejects_non_primary_theme_owner(self):
         with self.assertRaisesRegex(ValueError, 'must be one of the selected'):
@@ -123,7 +132,7 @@ class ImageModelAllowlistTests(unittest.TestCase):
                 'templateVariantId': 'phone-centered',
                 'themeOwnerTokenId': 'oasis',
                 'seriesMetadata': [{'tokenId': 'mgc', 'symbol': 'MGC', 'role': 'primary'}],
-                'referenceImages': ['sample', 'composition', 'chart'],
+                'referenceImages': ['sample', 'chart'],
             })
 
     @patch('handlers.image.openrouter_image')

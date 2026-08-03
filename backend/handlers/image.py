@@ -197,10 +197,10 @@ def handle_generate_image(body):
     append_image_direction = True
     apply_logo_safe_zone = True
     if composition_mode == 'analytics_art_directed':
-        if len(ref_images) != 3:
+        if len(ref_images) != 2:
             raise ValueError(
-                'Analytics Art Director requires exactly three ordered references: approved publishing sample, '
-                'approved locked composition, and approved factual chart.'
+                'Analytics Art Director requires exactly two ordered references: approved publishing sample '
+                'and approved factual chart.'
             )
         if not template_category_id or not template_variant_id:
             raise ValueError('Analytics Art Director requires templateCategoryId and templateVariantId.')
