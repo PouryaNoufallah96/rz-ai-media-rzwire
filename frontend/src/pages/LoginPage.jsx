@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from '../router'
 import { useAuthStore } from '../store/authStore'
-import rzwireLogo from '../assets/brands/rzwire-logo.png'
+import rzwireLogo from '../assets/brands/rzwire-logo-theme-5.png'
 import './AuthPage.css'
 
 const FEATURES = [
@@ -191,4 +191,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useLanguageStore, t } from '../store/languageStore'
-import rzwireLogo from '../assets/brands/rzwire-logo.png'
+import rzwireLogo from '../assets/brands/rzwire-logo-theme-5.png'
 import { Link, usePathname } from '../router'
 import './NavBar.css'
 

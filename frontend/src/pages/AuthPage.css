@@ -72,8 +72,8 @@
   align-items: center;
   gap: .65rem;
 }
-.auth-logo-crop { position: relative; display: block; width: 206px; height: 50px; overflow: hidden; border-radius: 11px; background: rgba(248,248,255,.97); box-shadow: 0 0 0 1px rgba(117,104,240,.25), 0 10px 26px rgba(0,0,0,.18); }
-.auth-logo-image { position: absolute; width: 236px; height: auto; left: -14.9px; top: -32.5px; max-width: none; }
+.auth-logo-crop { display: flex; width: 206px; height: 50px; align-items: center; }
+.auth-logo-image { display: block; width: 206px; height: 48px; object-fit: contain; object-position: left center; filter: drop-shadow(0 0 16px rgba(24,199,207,.15)); }
 
 .auth-headline {
   font-size: clamp(2.35rem, 4vw, 3.2rem);

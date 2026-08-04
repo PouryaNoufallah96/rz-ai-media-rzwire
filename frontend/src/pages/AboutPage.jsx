@@ -1,5 +1,5 @@
 import NavBar from '../components/NavBar'
-import rzwireLogo from '../assets/brands/rzwire-logo.png'
+import rzwireLogo from '../assets/brands/rzwire-logo-theme-5.png'
 import mgcLogo from '../assets/brands/mgc-coin-logo.png'
 import rankingLogo from '../assets/brands/ranking-platform-logo.png'
 import oasisLogo from '../assets/brands/oasis-coin-logo.png'
