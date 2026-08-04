@@ -731,6 +731,7 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
           sentiment: card.sentiment, suitability: card.suitability, impact: card.impact, virality: card.virality,
           source: card.source, link: card.link||'', initials: card.initials, srcColor: card.srcColor,
           variants: card.variants||[],
+          imageB64: generatedImg || card._generatedImageB64 || '',
         })
       })
       if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error || `Save failed (${res.status})`) }
@@ -1054,7 +1055,7 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
             <>
               <div style={{display:'flex',gap:8}}>
                 <button className="btn-mint" style={{flex:1,padding:9,fontSize:11,letterSpacing:'.06em',textTransform:'uppercase',fontWeight:700}} onClick={handleConfirmSaved}>{confirmLabel}</button>
-                <button className={showImage?'btn-mint':'btn-ghost'} style={{flex:1,padding:9,fontSize:11,letterSpacing:'.06em',textTransform:'uppercase',fontWeight:showImage?700:400}} onClick={()=>{setShowImage(s=>!s);setShowSchedule(false)}}>{showImage?'▲ Hide':'Generate Image'}</button>
+                <button className={showImage?'btn-mint':'btn-ghost'} style={{flex:1,padding:9,fontSize:11,letterSpacing:'.06em',textTransform:'uppercase',fontWeight:showImage?700:400}} onClick={()=>{setShowImage(s=>!s);setShowSchedule(false)}}>{showImage?'▲ Hide':generatedImg?'View Saved Image':'Generate Image'}</button>
               </div>
               <div style={{display:'flex',gap:8}}>
                 <button className="btn-ghost" style={{flex:1,padding:8,fontSize:11,letterSpacing:'.06em',textTransform:'uppercase'}} onClick={openSchedule}>Schedule</button>
@@ -1079,6 +1080,8 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
           {/* Image section */}
           {showImage && (
             <div ref={imageSectionRef} style={{display:'flex',flexDirection:'column',gap:8,borderTop:'1px solid rgba(255,255,255,.06)',paddingTop:10}}>
+              {mode === 'saved' && generatedImg && <div className="action-status action-status-success"><span className="action-status-icon">✓</span><span>This is the original image saved with the post. No regeneration is required.</span></div>}
+              {!(mode === 'saved' && generatedImg) && <>
               <p style={{fontSize:10,fontWeight:600,color:'#a7abb2',marginBottom:4,letterSpacing:'.06em',textTransform:'uppercase'}}>Image Direction <span style={{fontWeight:400,textTransform:'none',letterSpacing:0}}>(optional)</span></p>
               <textarea value={imagePrompt} onChange={e=>setImagePrompt(e.target.value)} placeholder={tr('Describe what you want in the image… e.g. show the wolf mascot, use a comparison table layout')} rows={2} className="cr-input" style={{width:'100%',padding:'7px 10px',fontSize:11,resize:'vertical',minHeight:36}} />
               <p style={{fontSize:10,fontWeight:600,color:'#a7abb2',marginBottom:4,letterSpacing:'.06em',textTransform:'uppercase',marginTop:4}}>Reference Images <span style={{fontWeight:400,textTransform:'none',letterSpacing:0}}>(optional, max {maxReferenceImages})</span></p>
@@ -1117,6 +1120,7 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
                 style={{width:'100%',padding:9,fontSize:11,fontWeight:700,letterSpacing:'.06em',textTransform:'uppercase',border:'none',borderRadius:9,cursor:imgLoading?'wait':'pointer',background:'linear-gradient(135deg,#f0a040,#e08030)',color:'#171c26',opacity:imgLoading?0.6:1,transition:'opacity .18s'}}>
                 {imgLoading ? 'Generating...' : 'Create Image'}
               </button>
+              </>}
               {imageGenError && (
                 <div className="action-status action-status-error">
                   <span className="action-status-icon">!</span>
@@ -1128,7 +1132,7 @@ export default function PreviewPanel({ mode = 'multimedia', card: cardProp, onCl
                   <img src={`data:image/png;base64,${generatedImg}`} alt="Generated" style={{width:'100%',borderRadius:9,border:'1px solid rgba(255,255,255,.1)',display:'block'}} />
                   <div style={{display:'flex',gap:6}}>
                     <button className="btn-mint" style={{flex:1,padding:8,fontSize:10,letterSpacing:'.06em',textTransform:'uppercase',fontWeight:700,opacity:(isImageActionBusy||telegramConfirmationDelayed)?0.65:1}} onClick={handleApproveImage} disabled={actionBusy||telegramConfirmationDelayed}>{isImageActionBusy && <ButtonSpinner />}{approveImgLabel}</button>
-                    <button className="btn-ghost" style={{flex:1,padding:8,fontSize:10,letterSpacing:'.06em',textTransform:'uppercase',opacity:imgLoading?0.6:1}} onClick={handleGenerateImage} disabled={imgLoading}>{imgLoading ? 'Generating...' : 'Regenerate'}</button>
+                    {mode !== 'saved' && <button className="btn-ghost" style={{flex:1,padding:8,fontSize:10,letterSpacing:'.06em',textTransform:'uppercase',opacity:imgLoading?0.6:1}} onClick={handleGenerateImage} disabled={imgLoading}>{imgLoading ? 'Generating...' : 'Regenerate'}</button>}
                     <button className="btn-ghost" style={{flex:1,padding:8,fontSize:10,letterSpacing:'.06em',textTransform:'uppercase'}} onClick={handleDownloadImage} title={tr('Download PNG')}>{tr('Download')}</button>
                   </div>
                   {actionMsg && (

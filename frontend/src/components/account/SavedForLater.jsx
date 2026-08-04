@@ -14,6 +14,28 @@ function formatSavedDate(iso) {
   return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} · ${hh}:${mm}`
 }
 
+function savedImageSource(value) {
+  if (!value) return ''
+  return value.startsWith('data:') ? value : `data:image/png;base64,${value}`
+}
+
+async function downloadSavedImage(event, card) {
+  event.stopPropagation()
+  const source = savedImageSource(card.image_b64)
+  if (!source) return
+  const response = await fetch(source)
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  const safeBrand = (card.brand || 'saved-post').replace(/[^a-z0-9]+/gi, '-').toLowerCase()
+  anchor.href = url
+  anchor.download = `${safeBrand}-${card.card_id || card.id}.png`
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(url)
+}
+
 export default function SavedForLater() {
   const { savedCards, activeSavedCard, setActiveSavedCard } = useAccountStore()
 
@@ -36,6 +58,7 @@ export default function SavedForLater() {
               <span style={{ width: 20, height: 20, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: pc + '1a', color: pc }}>{PLAT_ICONS[card.platform]}</span>
               <span className="sbadge sb-saved" style={{ marginLeft: 'auto' }}>Saved</span>
             </div>
+            {card.image_b64 && <div className="acct-saved-image"><img src={savedImageSource(card.image_b64)} alt={`Saved visual for ${card.headline}`} /><button type="button" onClick={event => downloadSavedImage(event, card)}>Download PNG</button></div>}
             <div className="acct-saved-headline">{card.headline}</div>
             <div className="acct-saved-summary">{card.copy}</div>
             <div className="acct-saved-meta">

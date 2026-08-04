@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { AlertTriangle, ArrowRight, Bookmark, CalendarClock, CalendarDays, Check, CircleCheck, Database, ImageIcon, LineChart, MessageCircle, Pencil, Plus, RefreshCw, Search, Send, Sparkles, X } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Bookmark, CalendarClock, CalendarDays, Check, CircleCheck, Database, Download, ImageIcon, LineChart, MessageCircle, Pencil, Plus, RefreshCw, Search, Send, Sparkles, X } from 'lucide-react'
 import NavBar from '../components/NavBar'
 import ChatWidget from '../components/chat/ChatWidget'
 import { API_BASE, EDITORIAL_MODEL_META, IMAGE_MODEL_OPTIONS } from '../store/mmStore'
@@ -801,6 +801,21 @@ export default function AnalyticsPage() {
     }
   }
 
+  async function downloadGeneratedPost() {
+    if (!generatedPost) return
+    const response = await fetch(generatedPost)
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    const safeSymbols = allSelectedSymbols.join('-').replace(/[^a-z0-9-]+/gi, '').toLowerCase()
+    anchor.href = url
+    anchor.download = `${themeOwnerTokenId}-${safeSymbols || 'market-analytics'}-${period}.png`
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
+  }
+
   function analyticsPostMetadata() {
     const platform = CAPTION_PLATFORMS.find(item => item.id === publishDestination)
     const model = EDITORIAL_MODELS.find(item => item.id === captionModelKey)
@@ -986,7 +1001,7 @@ export default function AnalyticsPage() {
           <div className="analytics-preview-head"><div><p>Final composition preview</p><h2>{selectedTemplate.name}</h2><small>{themeOwner.name} visual system</small></div><span>{outputFormat.label}</span></div>
           <div className="analytics-reference-sample"><div><strong>Exact approved concept {selectedTemplate.conceptLabel}</strong><span>This image supplies style and composition only. Before generation it is sanitized so none of its tickers, prices, percentages, dates, chart data, logos, or domains can be reused. The approved chart and verified metadata are the only factual sources.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact approval concept`} /></div>
           <div className="analytics-live-output-label"><span>{generatedPost ? 'Finished Art Director PNG' : 'Approved composition specification'}</span><small>The approved sample defines the visual family. The detailed Art Director brief defines the complete card, while the approved chart supplies its factual market content.</small></div>
-          {generatedPost ? <img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <CompositionPreview templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} chartStyle={chartStyle} />}
+          {generatedPost ? <div className="analytics-generated-result"><img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /><button type="button" onClick={downloadGeneratedPost}><Download size={16} />Download PNG</button></div> : <CompositionPreview templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} chartStyle={chartStyle} />}
           <div className={`analytics-composition-approval ${selectedCompositionApproved ? 'approved' : ''}`}><div><strong>{selectedCompositionApproved ? 'Composition approved' : 'Approve this composition'}</strong><span>{selectedCompositionApproved ? 'Its exact state is ready for generation.' : 'Check hierarchy, palette, logo, footer, chart, and copy.'}</span></div><button type="button" onClick={() => { setCompositionApprovals(previous => ({...previous, [selectedTemplate.id]:selectedFingerprint})); setActiveWorkflowStep(5) }}>{selectedCompositionApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve {selectedTemplate.name}</>}</button></div>
           {generatedPost && <div className={`analytics-final-approval ${finalImageApproved ? 'approved' : ''}`}><div><strong>{finalImageApproved ? 'Final image approved' : 'Approve the final image'}</strong><span>{finalImageApproved ? 'The caption and publishing workflow is now unlocked.' : 'Inspect the finished image before creating any external post copy.'}</span></div><button type="button" onClick={() => { setFinalApprovals(previous => ({...previous, [selectedTemplate.id]:generatedFingerprint})); resetCaptionFlow() }}>{finalImageApproved ? <><CircleCheck size={17} />Final approved</> : <><Check size={17} />Approve final image</>}</button></div>}
           {generatedPost && finalImageApproved && <div className="analytics-caption-workflow">
