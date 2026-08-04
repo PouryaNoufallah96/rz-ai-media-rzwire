@@ -26,7 +26,8 @@ from config import (
 from server_utils import _json_default
 
 # Handler functions — one import per domain module.
-from handlers.copy import handle_generate_copy
+from handlers.copy import (handle_generate_copy, handle_get_copy_job,
+                           handle_start_copy_job)
 from handlers.image import (handle_generate_image, handle_get_image_job,
                             handle_promo_ideas, handle_start_image_job)
 from handlers.editorial import (handle_editorial_select, handle_filter_pipeline,
@@ -134,6 +135,17 @@ class Handler(BaseHTTPRequestHandler):
             job_id = (params.get('jobId') or [''])[0]
             try:
                 self._json(handle_get_image_job(job_id))
+            except KeyError as exc:
+                self._error(404, str(exc.args[0]))
+        elif self.path.startswith('/api/copy/generation-status'):
+            user = auth.get_current_user(self)
+            if user is None:
+                return self._error(401, 'Not authenticated')
+            import urllib.parse as url_tools
+            params = url_tools.parse_qs(url_tools.urlparse(self.path).query)
+            job_id = (params.get('jobId') or [''])[0]
+            try:
+                self._json(handle_get_copy_job(job_id))
             except KeyError as exc:
                 self._error(404, str(exc.args[0]))
         elif self.path == '/api/auth/me':
@@ -332,6 +344,11 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(handle_schedule_reschedule(user['id'], body))
             elif path == '/api/copy/generate':
                 self._json(handle_generate_copy(body))
+            elif path == '/api/copy/generate-async':
+                user = auth.get_current_user(self)
+                if user is None:
+                    return self._error(401, 'Not authenticated')
+                self._json(handle_start_copy_job(body), status=202)
             elif path == '/api/promo/generate-ideas':
                 self._json(handle_promo_ideas(body))
             elif path == '/api/image/generate':

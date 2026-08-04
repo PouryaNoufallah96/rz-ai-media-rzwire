@@ -17,6 +17,7 @@ import {
   presetChartStyle,
 } from '../components/analytics/chartStyle'
 import { TEMPLATE_CATEGORIES, TEMPLATE_VARIANTS, findTemplateVariant } from '../components/analytics/analyticsTemplates'
+import { generateCaptionsInBackground } from '../utils/captionJobs'
 import '../components/analytics/AnalyticsCompositions.css'
 import './AnalyticsPage.css'
 
@@ -731,9 +732,9 @@ export default function AnalyticsPage() {
     }).join('; ')
     const averageMovement = marketData.series.reduce((sum, item) => sum + Number(item.changePercent || 0), 0) / marketData.series.length
     try {
-      const response = await fetch(`${API_BASE}/api/copy/generate`, {
-        method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
+      const data = await generateCaptionsInBackground({
+        apiBase:API_BASE,
+        payload:{
           article:{
             title:headline,
             source:'RZWire verified Market Analytics',
@@ -747,10 +748,9 @@ export default function AnalyticsPage() {
           language:'en',
           promoMode:false,
           variantCount:3,
-        }),
+        },
       })
-      const data = await response.json().catch(() => ({}))
-      if (!response.ok || data.variants?.length < 3) throw new Error(data.error || 'The editorial model did not return all three caption options.')
+      if (data?.variants?.length < 3) throw new Error(data?.error || 'The editorial model did not return all three caption options.')
       setCaptionVariants(data.variants.slice(0, 3))
     } catch (err) {
       setCaptionError(err.message || 'Caption generation failed.')

@@ -1,6 +1,11 @@
 """Social-copy generation: platform prompts, length enforcement, variants."""
+from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
 import re
 import sys
+import threading
+import time
+import uuid
 
 from config import (PLAT_RULES, EDITORIAL_MODELS, BRAND_PROMO_PITCH,
                     _EMOJI_RE, _EMOJI_CAP, clean_emojis, smart_truncate, _sibling_block,
@@ -31,6 +36,68 @@ _COPY_ARTIFACT_RE = re.compile(
     re.IGNORECASE,
 )
 _EMPTY_JSON_ARRAY_RE = re.compile(r'\[\s*(?:(?:""|\'\')\s*,\s*)+(?:""|\'\')\s*\]')
+
+
+# Three caption variants can require multiple editorial-model calls and exceed
+# the lifetime of a browser request. Keep the existing copy pipeline unchanged,
+# but run it in a short-lived background job so clients can poll safely.
+_COPY_JOB_TTL_SECONDS = 15 * 60
+_COPY_JOBS = {}
+_COPY_JOBS_LOCK = threading.Lock()
+_COPY_JOB_EXECUTOR = ThreadPoolExecutor(max_workers=3, thread_name_prefix='rzwire-copy')
+
+
+def _cleanup_copy_jobs(now=None):
+    cutoff = (now or time.time()) - _COPY_JOB_TTL_SECONDS
+    expired = [job_id for job_id, job in _COPY_JOBS.items() if job.get('updatedAt', 0) < cutoff]
+    for job_id in expired:
+        _COPY_JOBS.pop(job_id, None)
+
+
+def _run_copy_job(job_id, body):
+    with _COPY_JOBS_LOCK:
+        job = _COPY_JOBS.get(job_id)
+        if not job:
+            return
+        job.update(status='running', updatedAt=time.time())
+    try:
+        result = handle_generate_copy(body)
+    except Exception as exc:  # Surface a clean error through the polling route.
+        with _COPY_JOBS_LOCK:
+            job = _COPY_JOBS.get(job_id)
+            if job:
+                job.update(status='failed', error=str(exc), updatedAt=time.time())
+        return
+    with _COPY_JOBS_LOCK:
+        job = _COPY_JOBS.get(job_id)
+        if job:
+            job.update(status='complete', result=result, updatedAt=time.time())
+
+
+def handle_start_copy_job(body):
+    """Start caption generation and immediately return a polling ID."""
+    job_id = uuid.uuid4().hex
+    now = time.time()
+    with _COPY_JOBS_LOCK:
+        _cleanup_copy_jobs(now)
+        _COPY_JOBS[job_id] = {'status': 'queued', 'createdAt': now, 'updatedAt': now}
+    _COPY_JOB_EXECUTOR.submit(_run_copy_job, job_id, deepcopy(body))
+    return {'jobId': job_id, 'status': 'queued'}
+
+
+def handle_get_copy_job(job_id):
+    """Return caption job state and the unchanged copy result when complete."""
+    with _COPY_JOBS_LOCK:
+        _cleanup_copy_jobs()
+        job = _COPY_JOBS.get(str(job_id or '').strip())
+        if not job:
+            raise KeyError('Caption generation job was not found or has expired.')
+        response = {'jobId': job_id, 'status': job['status']}
+        if job['status'] == 'complete':
+            response['result'] = job.get('result') or {}
+        elif job['status'] == 'failed':
+            response['error'] = job.get('error') or 'Caption generation failed.'
+        return response
 
 
 def _plain_social_copy(value):
