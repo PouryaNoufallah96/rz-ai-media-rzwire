@@ -18,6 +18,7 @@ import {
 } from '../components/analytics/chartStyle'
 import { TEMPLATE_CATEGORIES, TEMPLATE_VARIANTS, findTemplateVariant } from '../components/analytics/analyticsTemplates'
 import { generateCaptionsInBackground } from '../utils/captionJobs'
+import { applyOfficialAnalyticsLogo } from '../utils/analyticsBrandLogo'
 import '../components/analytics/AnalyticsCompositions.css'
 import './AnalyticsPage.css'
 
@@ -650,10 +651,11 @@ export default function AnalyticsPage() {
       if (!data.imageB64) throw new Error(data.error || 'The Analytics Art Director did not return a finished post.')
       const finishedPost = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
       await preloadImage(finishedPost)
+      const brandedPost = await applyOfficialAnalyticsLogo(finishedPost, {logoUrl:themeOwner.logo})
       if (latestCompositionFingerprint.current !== requestedFingerprint) {
         throw new Error('The chart or composition changed during generation. Approve the current version and generate it again.')
       }
-      setGeneratedPosts(previous => ({...previous, [selectedTemplate.id]:finishedPost}))
+      setGeneratedPosts(previous => ({...previous, [selectedTemplate.id]:brandedPost}))
     } catch (err) {
       setError(err.message || 'Post generation failed.')
     } finally {
