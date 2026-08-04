@@ -78,13 +78,16 @@ export default function ChartDesigner({
       </article>)}</div>
     </div>
 
-    <div className="analytics-designer-options">
-      <ChoiceGroup label="Legend location" value={style.legend.position} options={LEGEND_POSITIONS} onChange={value => onOption('legend.position', value)} />
-      <ChoiceGroup label="Legend format" value={style.legend.format} options={[{id:'symbol', label:'Symbol only'}, {id:'symbol-change', label:'Symbol + change'}]} onChange={value => onOption('legend.format', value)} />
-      <ChoiceGroup label="Line thickness" value={style.lineWidth} options={[{id:2, label:'2 px'}, {id:4, label:'4 px'}, {id:6, label:'6 px'}]} onChange={value => onOption('lineWidth', value)} />
-      <ChoiceGroup label="Markers" value={style.markers} options={[{id:'none', label:'None'}, {id:'endpoints', label:'Endpoints'}, {id:'all', label:'Every point'}]} onChange={value => onOption('markers', value)} />
-      <ChoiceGroup label="Grid strength" value={style.gridStrength} options={[{id:'none', label:'None'}, {id:'subtle', label:'Subtle'}, {id:'standard', label:'Standard'}]} onChange={value => onOption('gridStrength', value)} />
-    </div>
+    <details className="analytics-designer-advanced">
+      <summary>Advanced styling <span>Legend, line, markers, and grid</span></summary>
+      <div className="analytics-designer-options">
+        <ChoiceGroup label="Legend location" value={style.legend.position} options={LEGEND_POSITIONS} onChange={value => onOption('legend.position', value)} />
+        <ChoiceGroup label="Legend format" value={style.legend.format} options={[{id:'symbol', label:'Symbol only'}, {id:'symbol-change', label:'Symbol + change'}]} onChange={value => onOption('legend.format', value)} />
+        <ChoiceGroup label="Line thickness" value={style.lineWidth} options={[{id:2, label:'2 px'}, {id:4, label:'4 px'}, {id:6, label:'6 px'}]} onChange={value => onOption('lineWidth', value)} />
+        <ChoiceGroup label="Markers" value={style.markers} options={[{id:'none', label:'None'}, {id:'endpoints', label:'Endpoints'}, {id:'all', label:'Every point'}]} onChange={value => onOption('markers', value)} />
+        <ChoiceGroup label="Grid strength" value={style.gridStrength} options={[{id:'none', label:'None'}, {id:'subtle', label:'Subtle'}, {id:'standard', label:'Standard'}]} onChange={value => onOption('gridStrength', value)} />
+      </div>
+    </details>
 
     {!!issues.length && <div className="analytics-designer-issues">{issues.map(issue => <p key={issue}>{issue}</p>)}</div>}
     {message && <p className={`analytics-designer-message ${message.type || ''}`}>{message.text}</p>}

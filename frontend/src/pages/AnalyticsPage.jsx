@@ -34,6 +34,13 @@ const CAPTION_PLATFORMS = [
 ]
 const EDITORIAL_MODELS = Object.entries(EDITORIAL_MODEL_META).map(([id, meta]) => ({id, ...meta}))
 const ANALYTICS_IMAGE_MODEL_OPTIONS = IMAGE_MODEL_OPTIONS.filter(model => (model.maxReferences || 0) >= 2)
+const WORKFLOW_STEPS = [
+  {id:1, label:'Market', target:'analytics-step-market'},
+  {id:2, label:'Chart', target:'analytics-step-chart'},
+  {id:3, label:'Story', target:'analytics-step-story'},
+  {id:4, label:'Design', target:'analytics-step-design'},
+  {id:5, label:'Create & publish', target:'analytics-step-create'},
+]
 
 function formatPrice(value) {
   const amount = Number(value)
@@ -281,11 +288,13 @@ export default function AnalyticsPage() {
   const [chartDefaultMessage, setChartDefaultMessage] = useState(null)
   const [headline, setHeadline] = useState('30-day market comparison')
   const [chartText, setChartText] = useState('Verified movement, presented with exact market data.')
+  const [activeWorkflowStep, setActiveWorkflowStep] = useState(1)
 
   const selectedPrimary = tokens.filter(token => primaryIds.includes(token.id))
   const allSelectedSymbols = [...selectedPrimary.map(token => token.symbol), ...comparisonAssets.map(asset => asset.symbol)]
   const seriesCount = allSelectedSymbols.length
   const selectedTemplate = findTemplateVariant(templateVariantId) || TEMPLATE_VARIANTS[3]
+  const selectedTemplateCategory = TEMPLATE_CATEGORIES.find(category => category.id === selectedTemplate.categoryId) || TEMPLATE_CATEGORIES[0]
   const themeOwnerValid = selectedPrimary.some(token => token.id === themeOwnerTokenId)
   const themeOwner = tokens.find(token => token.id === themeOwnerTokenId)
   const brandTheme = themeOwnerValid ? analyticsTheme(themeOwnerTokenId, tokens) : null
@@ -300,6 +309,20 @@ export default function AnalyticsPage() {
   const finalImageApproved = Boolean(generatedFingerprint && finalApprovals[selectedTemplate.id] === generatedFingerprint)
   const summary = `${allSelectedSymbols.join(' versus ')}, ${period}, ${scale === 'relative' ? 'relative performance' : 'absolute USD price'}`
   const visibleAssetResults = assetQuery.trim() ? assetResults : POPULAR_COMPARISONS
+  const workflowCompleted = {
+    1:Boolean(marketData),
+    2:chartApproved,
+    3:chartApproved,
+    4:selectedCompositionApproved,
+    5:Boolean(publishResult),
+  }
+
+  function navigateWorkflow(step) {
+    const locked = step.id >= 3 && !chartApproved
+    if (locked) return
+    setActiveWorkflowStep(step.id)
+    document.getElementById(step.target)?.scrollIntoView({behavior:'smooth', block:'start'})
+  }
 
   useEffect(() => {
     let active = true
@@ -383,6 +406,7 @@ export default function AnalyticsPage() {
   }
 
   function invalidateMarketData() {
+    setActiveWorkflowStep(1)
     setMarketData(null)
     setChartApproved(false)
     setVerificationError('')
@@ -401,6 +425,7 @@ export default function AnalyticsPage() {
   }
 
   function invalidateChartStyleApprovals() {
+    setActiveWorkflowStep(2)
     setChartApproved(false)
     setCompositionApprovals({})
     setGeneratedPosts({})
@@ -524,6 +549,7 @@ export default function AnalyticsPage() {
 
   async function verifyMarketData() {
     if (verifying) return
+    setActiveWorkflowStep(2)
     setVerifying(true)
     setVerificationError('')
     setMarketData(null)
@@ -553,6 +579,7 @@ export default function AnalyticsPage() {
       setError('Choose which selected RZWire coin owns the post theme first.')
       return
     }
+    setActiveWorkflowStep(4)
     setTemplateVariantId(id)
     if (id.startsWith('phone-')) setFormat('story')
     resetCaptionFlow()
@@ -560,6 +587,7 @@ export default function AnalyticsPage() {
 
   async function generatePost() {
     if (generating) return
+    setActiveWorkflowStep(5)
     if (!marketData?.verified || !chartApproved) {
       setError('Approve the verified chart and axes before generating the finished post.')
       return
@@ -758,10 +786,11 @@ export default function AnalyticsPage() {
   return <div className="analytics-page">
     <NavBar />
     <main className="analytics-workspace">
-      <section className="analytics-intro"><div><p className="analytics-eyebrow"><LineChart size={16} /> Market Analytics</p><h1>Compare the complete RZWire market.</h1><p>Select up to three RZWire tokens and three outside assets, approve one exact chart, then turn it into a branded visual story.</p></div><div className="analytics-steps" aria-label="Analytics post workflow"><span className="active"><b>1</b>Market</span><i /><span><b>2</b>Chart</span><i /><span><b>3</b>Story</span><i /><span><b>4</b>Style</span><i /><span><b>5</b>Image</span><i /><span><b>6</b>Caption</span><i /><span><b>7</b>Publish</span></div></section>
+      <section className="analytics-intro"><div><p className="analytics-eyebrow"><LineChart size={16} /> Market Analytics</p><h1>Compare the complete RZWire market.</h1><p>Select up to three RZWire tokens and three outside assets, approve one exact chart, then turn it into a branded visual story.</p></div></section>
+      <nav className="analytics-steps" aria-label="Analytics post workflow">{WORKFLOW_STEPS.map((step, index) => <span key={step.id} className={`${activeWorkflowStep === step.id ? 'active' : ''} ${workflowCompleted[step.id] ? 'completed' : ''}`}><button type="button" disabled={step.id >= 3 && !chartApproved} aria-current={activeWorkflowStep === step.id ? 'step' : undefined} onClick={() => navigateWorkflow(step)}><b>{workflowCompleted[step.id] ? <Check size={13} /> : step.id}</b>{step.label}</button>{index < WORKFLOW_STEPS.length - 1 && <i />}</span>)}</nav>
       <div className="analytics-layout analytics-layout--storyboard">
         <aside className="analytics-controls">
-          <section className="analytics-control-section analytics-setup-section">
+          <section id="analytics-step-market" className="analytics-control-section analytics-setup-section">
             <div className="analytics-section-heading"><span>01A</span><div><h2>Select RZWire tokens</h2><p>Choose up to three enabled brands from the central RZWire coin registry.</p></div></div>
             {brandsLoading && <div className="analytics-proof-empty"><span className="analytics-spinner" /><strong>Loading approved brands…</strong></div>}
             {brandsError && <p className="analytics-error">{brandsError}</p>}
@@ -780,7 +809,7 @@ export default function AnalyticsPage() {
             <div className="analytics-two-fields"><label>Chart scale<select value={scale} onChange={event => { setScale(event.target.value); invalidateMarketData() }}><option value="relative">Relative performance (%)</option><option value="absolute">Absolute price (USD)</option></select></label><label>Output format<select value={format} onChange={event => { setFormat(event.target.value); invalidateCompositions() }}>{OUTPUT_FORMATS.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label></div>
             <div className="analytics-data-note"><span>Live check</span>RZWire and custom contracts use verified GeckoTerminal pools. Search comparisons use Binance public spot history.</div>
           </section>
-          <section className="analytics-control-section analytics-verification-controls">
+          <section id="analytics-step-chart" className="analytics-control-section analytics-verification-controls">
             <div className="analytics-section-heading"><span>02</span><div><h2>Customize and approve the verified chart</h2><p>Style the presentation while every selected price, date, axis, movement, and line remains locked.</p></div></div>
             <button type="button" className="analytics-verify" disabled={verifying || !primaryIds.length} onClick={verifyMarketData}>{verifying ? <><span className="analytics-spinner" />Extracting {seriesCount} price histories…</> : <><RefreshCw size={16} />Fetch and verify {seriesCount} chart {seriesCount === 1 ? 'line' : 'lines'}</>}</button>
             {verificationError && <p className="analytics-error">{verificationError}</p>}
@@ -805,31 +834,32 @@ export default function AnalyticsPage() {
               />
               <VerifiedChart data={marketData} chartRef={chartSvgRef} tokens={tokens} chartStyle={chartStyle} />
               {!!marketData.failures?.length && <div className="analytics-failure-summary"><AlertTriangle size={16} /><span><strong>{marketData.failures.length} selected {marketData.failures.length === 1 ? 'asset was' : 'assets were'} unavailable.</strong>{marketData.failures.map(item => <small key={item.id}>{item.symbol} — {item.error}</small>)}<small>The verified lines above can still be approved.</small></span></div>}
-              <div className="analytics-chart-approval"><div><strong>{chartApproved ? 'Chart approved' : chartIssues.length ? 'Resolve the chart color warnings' : 'Check every line and label before continuing'}</strong><span>{chartApproved ? 'Story and publishing choices are unlocked.' : chartIssues.length ? 'Approval is blocked until every series is distinct and readable.' : 'Confirm the prices, axes, dates, warnings, source attribution, and styling.'}</span></div><button type="button" disabled={!!chartIssues.length} className={chartApproved ? 'approved' : ''} onClick={() => { if (!chartIssues.length) setChartApproved(true) }}>{chartApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve complete chart</>}</button></div>
+              <div className="analytics-chart-approval"><div><strong>{chartApproved ? 'Chart approved' : chartIssues.length ? 'Resolve the chart color warnings' : 'Check every line and label before continuing'}</strong><span>{chartApproved ? 'Story and publishing choices are unlocked.' : chartIssues.length ? 'Approval is blocked until every series is distinct and readable.' : 'Confirm the prices, axes, dates, warnings, source attribution, and styling.'}</span></div><button type="button" disabled={!!chartIssues.length} className={chartApproved ? 'approved' : ''} onClick={() => { if (!chartIssues.length) { setChartApproved(true); setActiveWorkflowStep(3) } }}>{chartApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve complete chart</>}</button></div>
             </>}
           </section>
-          {chartApproved && <section className="analytics-control-section analytics-copy-section"><div className="analytics-section-heading"><span>03</span><div><h2>Write the story</h2><p>Set the beautiful header and supporting statement that guide every static publishing frame.</p></div></div><label>Header<input value={headline} onChange={event => { setHeadline(event.target.value); invalidateCompositions() }} /></label><label>Chart text<textarea rows="4" value={chartText} onChange={event => { setChartText(event.target.value); invalidateCompositions() }} /></label></section>}
-          {chartApproved && <section className={`analytics-control-section analytics-template-section ${!themeOwnerValid ? 'is-locked' : ''}`}>
+          {chartApproved && <section id="analytics-step-story" className="analytics-control-section analytics-copy-section"><div className="analytics-section-heading"><span>03</span><div><h2>Write the story</h2><p>Set the header and supporting statement that guide every publishing design.</p></div></div><div className="analytics-copy-fields"><label>Header<input value={headline} onFocus={() => setActiveWorkflowStep(3)} onChange={event => { setHeadline(event.target.value); invalidateCompositions() }} /></label><label>Chart text<textarea rows="2" value={chartText} onFocus={() => setActiveWorkflowStep(3)} onChange={event => { setChartText(event.target.value); invalidateCompositions() }} /></label></div></section>}
+          {chartApproved && <section id="analytics-step-design" className={`analytics-control-section analytics-template-section ${!themeOwnerValid ? 'is-locked' : ''}`}>
             <div className="analytics-section-heading"><span>04</span><div><h2>Choose how to publish it</h2><p>Choose exactly one permanent concept. Its image becomes the primary visual reference for your finished post.</p></div></div>
             {!themeOwnerValid && <p className="analytics-generation-lock">Choose which selected RZWire coin owns the visual theme first.</p>}
-            {TEMPLATE_CATEGORIES.map(category => <div className="analytics-template-category" key={category.id}>
-              <div><strong>{category.name}</strong><span>{category.description}</span></div>
-              <div className="analytics-template-grid analytics-template-grid--exact">{category.variants.map(variant => {
+            <div className="analytics-family-tabs" role="tablist" aria-label="Publishing families">{TEMPLATE_CATEGORIES.map(category => <button key={category.id} type="button" role="tab" aria-selected={selectedTemplateCategory.id === category.id} disabled={!themeOwnerValid} className={selectedTemplateCategory.id === category.id ? 'selected' : ''} onClick={() => chooseTemplate(category.variants[0].id)}><strong>{category.name}</strong><span>{category.description}</span></button>)}</div>
+            <div className="analytics-template-category analytics-template-category--active" role="tabpanel">
+              <div><strong>{selectedTemplateCategory.name}</strong><span>Compare its three permanent concepts across the full page width.</span></div>
+              <div className="analytics-template-grid analytics-template-grid--exact">{selectedTemplateCategory.variants.map(variant => {
                 const selected = templateVariantId === variant.id
-                const approved = compositionApprovals[variant.id] === compositionFingerprint({templateCategoryId:category.id, templateVariantId:variant.id, themeOwnerTokenId, marketData, period, scale, format, headline, chartText, direction, chartStyle})
+                const approved = compositionApprovals[variant.id] === compositionFingerprint({templateCategoryId:selectedTemplateCategory.id, templateVariantId:variant.id, themeOwnerTokenId, marketData, period, scale, format, headline, chartText, direction, chartStyle})
                 return <button key={variant.id} type="button" disabled={!themeOwnerValid} className={selected ? 'selected' : ''} onClick={() => chooseTemplate(variant.id)}><img src={variant.image} alt={`${variant.name} publishing concept ${variant.conceptLabel}`} /><span><b>Concept {variant.conceptLabel}</b><strong>{variant.name}</strong><small>{variant.description}</small>{selected && <em className={approved ? 'approved' : ''}>{approved ? 'Approved' : 'Needs approval'}</em>}</span>{selected && <Check size={18} />}</button>
               })}</div>
-            </div>)}
+            </div>
             <div className="analytics-template-selection-note"><strong>1 sample selected</strong><span>{selectedCompositionApproved ? 'This composition is approved and ready for generation.' : 'Review and approve this exact composition before generation.'}</span></div>
           </section>}
-          {chartApproved && <section className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Generate the finished post</h2><p>The Analytics Art Director combines the approved publishing sample, selected coin identity, fully detailed production brief, and verified chart into one finished post.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{ANALYTICS_IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => { setDirection(event.target.value); invalidateCompositions() }} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !themeOwnerValid || !selectedCompositionApproved} onClick={generatePost}>{generating ? <><span className="analytics-spinner" />Creating {findTemplateVariant(generatingTemplateId)?.name || 'selected version'}…</> : <><Sparkles size={17} />Generate one finished post<ArrowRight size={17} /></>}</button>{!selectedCompositionApproved && <p className="analytics-generation-lock">Approve the selected composition in the preview panel to unlock generation.</p>}{error && <p className="analytics-error">{error}</p>}</section>}
+          {chartApproved && <section id="analytics-step-create" className="analytics-control-section analytics-generation-controls"><div className="analytics-section-heading"><span>05</span><div><h2>Create and publish</h2><p>Generate the visual, approve it, prepare a caption, and publish only when everything is ready.</p></div></div><label>Image model<select value={imageModel} onChange={event => setImageModel(event.target.value)}>{ANALYTICS_IMAGE_MODEL_OPTIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label>Creative direction<textarea rows="3" value={direction} onChange={event => { setDirection(event.target.value); invalidateCompositions() }} /></label><button type="button" className="analytics-generate" disabled={generating || !marketData || !themeOwnerValid || !selectedCompositionApproved} onClick={generatePost}>{generating ? <><span className="analytics-spinner" />Creating {findTemplateVariant(generatingTemplateId)?.name || 'selected version'}…</> : <><Sparkles size={17} />Generate one finished post<ArrowRight size={17} /></>}</button>{!selectedCompositionApproved && <p className="analytics-generation-lock">Approve the selected composition in the preview panel to unlock generation.</p>}{error && <p className="analytics-error">{error}</p>}</section>}
         </aside>
         {chartApproved && themeOwnerValid && <section className="analytics-preview-column">
           <div className="analytics-preview-head"><div><p>Final composition preview</p><h2>{selectedTemplate.name}</h2><small>{themeOwner.name} visual system</small></div><span>{outputFormat.label}</span></div>
           <div className="analytics-reference-sample"><div><strong>Exact approved concept {selectedTemplate.conceptLabel}</strong><span>This image is the primary style target. The selected coin owner supplies its palette, logo, and footer while the verified chart replaces the sample market data.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact approval concept`} /></div>
           <div className="analytics-live-output-label"><span>{generatedPost ? 'Finished Art Director PNG' : 'Approved composition specification'}</span><small>The approved sample defines the visual family. The detailed Art Director brief defines the complete card, while the approved chart supplies its factual market content.</small></div>
           {generatedPost ? <img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <CompositionPreview templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} chartStyle={chartStyle} />}
-          <div className={`analytics-composition-approval ${selectedCompositionApproved ? 'approved' : ''}`}><div><strong>{selectedCompositionApproved ? 'Composition approved' : 'Approve this composition'}</strong><span>{selectedCompositionApproved ? 'Its exact state is ready for generation.' : 'Check hierarchy, palette, logo, footer, chart, and copy.'}</span></div><button type="button" onClick={() => setCompositionApprovals(previous => ({...previous, [selectedTemplate.id]:selectedFingerprint}))}>{selectedCompositionApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve {selectedTemplate.name}</>}</button></div>
+          <div className={`analytics-composition-approval ${selectedCompositionApproved ? 'approved' : ''}`}><div><strong>{selectedCompositionApproved ? 'Composition approved' : 'Approve this composition'}</strong><span>{selectedCompositionApproved ? 'Its exact state is ready for generation.' : 'Check hierarchy, palette, logo, footer, chart, and copy.'}</span></div><button type="button" onClick={() => { setCompositionApprovals(previous => ({...previous, [selectedTemplate.id]:selectedFingerprint})); setActiveWorkflowStep(5) }}>{selectedCompositionApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve {selectedTemplate.name}</>}</button></div>
           {generatedPost && <div className={`analytics-final-approval ${finalImageApproved ? 'approved' : ''}`}><div><strong>{finalImageApproved ? 'Final image approved' : 'Approve the final image'}</strong><span>{finalImageApproved ? 'The caption and publishing workflow is now unlocked.' : 'Inspect the finished image before creating any external post copy.'}</span></div><button type="button" onClick={() => { setFinalApprovals(previous => ({...previous, [selectedTemplate.id]:generatedFingerprint})); resetCaptionFlow() }}>{finalImageApproved ? <><CircleCheck size={17} />Final approved</> : <><Check size={17} />Approve final image</>}</button></div>}
           {generatedPost && finalImageApproved && <div className="analytics-caption-workflow">
             <div className="analytics-caption-heading"><span>06</span><div><strong>Create the post caption</strong><small>Use the same platform rules and editorial models as Multimedia. Nothing is published until the final step.</small></div></div>
