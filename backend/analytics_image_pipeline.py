@@ -244,11 +244,35 @@ _CHART_SCALE_RULES = {
     "combined": "The single approved chart panel must occupy about 38-48% of the total visual area and never exceed half of the canvas. The dramatic owner scene, headline, exact result summary, and footer must remain visibly substantial.",
 }
 
+_LOGO_FOOTER_RULES = {
+    "phone": "Reserve the lowest 10% of the canvas as a protected footer rail below the phone and all market facts.",
+    "laptop": "Reserve the lowest 11% of the canvas as a protected footer rail; the laptop and every result strip must end above it.",
+    "growth": "Reserve the lowest 12% of the canvas as a protected footer rail below the result strips.",
+    "contrast": "Reserve the lowest 11% of the canvas as a protected footer rail below every chart and outcome module.",
+    "separated": "Reserve the lowest 11% of the canvas as a protected footer rail below every asset card and chart module.",
+    "combined": "Reserve the lowest 11% of the canvas as a protected footer rail below the combined chart and callouts.",
+}
+
 
 def _chart_scale_rule(template: dict) -> str:
     return _CHART_SCALE_RULES.get(
         template.get("categoryId"),
         "Keep the approved chart compact but fully readable, using no more than half of the total visual area.",
+    )
+
+
+def _logo_footer_rule(template: dict, theme_owner: dict) -> str:
+    family_rule = _LOGO_FOOTER_RULES.get(
+        template.get("categoryId"),
+        "Reserve the lowest 11% of the canvas as a protected footer rail below all factual modules.",
+    )
+    return (
+        f'{family_rule} The leftmost 16% of that rail is an empty official-logo slot: keep it a seamless continuation '
+        'of the surrounding artwork with no card, result strip, text, line, ornament, object, or change of surface. '
+        f'Do not draw any logo there or anywhere else; the application adds the exact approved {theme_owner["name"]} '
+        'logo after generation at a maximum of 5.5% of the canvas short edge while preserving its aspect ratio. '
+        f'Render the exact domain "{theme_owner["footer"]}" only once, centered or right-aligned within the remaining '
+        'footer rail, never inside the left logo slot. The logo and domain must read as one quiet footer lockup.'
     )
 
 
@@ -350,7 +374,7 @@ def fallback_analytics_brief(template: dict, theme_owner: dict, series_metadata)
         "data_hierarchy": "show the supplied headline first, then verified comparison context, then the complete chart, exact legends and result summary",
         "brand_translation": contract.get("brandTranslation") or "preserve template geometry while translating palette, logo, domain and motifs to the theme owner",
         "materials_and_finish": contract.get("finish") or "premium publication-ready finish with crisp text and chart detail",
-        "logo_footer_system": f'use only the official {theme_owner["name"]} logo and exact footer {theme_owner["footer"]} in the sample-defined positions',
+        "logo_footer_system": _logo_footer_rule(template, theme_owner),
         "quality_control": "all content must remain large, sharp and readable at social-feed size; use the sample's canvas coverage and avoid accidental dead space",
         "forbidden_changes": contract.get("forbidden") or "no invented data, extra panels, layout drift, detached charts or generic crypto decoration",
         "chart_strategy": contract.get("chart") or "place the complete approved chart inside the sample's reserved chart aperture",
@@ -405,6 +429,9 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         'This revised chart scale is a deliberate family constraint and overrides any looser interpretation that would let the '
         'chart dominate the poster. The chart remains fully readable and factual, but the owner scene and editorial story must '
         'have meaningful visual presence.\n'
+        f'IMMUTABLE LOGO AND FOOTER RULE: {_logo_footer_rule(template, theme_owner)}\n'
+        'This protected footer rail overrides any sample interpretation that would place a chart, result card, device, '
+        'or factual label in the official-logo slot. The image model never draws the logo itself.\n'
         f'FROZEN PROFILE STYLE: {json.dumps(profile_style, ensure_ascii=False)}\n\n'
         f'TEMPLATE FAMILY: {template["categoryName"]}\n'
         f'EXACT VARIANT: {template["variantId"]}\n'
@@ -421,7 +448,8 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         'alignment, supporting-copy relationship, factual-label scale, and footer hierarchy. chart_integration and chart_strategy must '
         'state exactly where the complete chart sits and how it is clipped without being redrawn. data_hierarchy must list which supplied '
         'facts appear and their order. brand_translation, materials_and_finish, lighting, depth, negative_space, logo_footer_system, and '
-        'quality_control must together make the brief executable without another layout image. forbidden_changes must be exhaustive.\n\n'
+        'quality_control must together make the brief executable without another layout image. logo_footer_system must repeat '
+        'the immutable logo and footer rule exactly. forbidden_changes must be exhaustive.\n\n'
         'Return ONLY one JSON object with exactly these keys: family, variant, concept, sample_fidelity, '
         'reference_analysis, composition_map, device_strategy, chart_integration, chart_strategy, typography_system, '
         'data_hierarchy, layout_hierarchy, background_scene, chart_scale, lighting, depth, density, brand_translation, '
@@ -481,6 +509,7 @@ def validate_analytics_brief(raw_brief, template, theme_owner, series_metadata) 
             brief["background_scene"] = approved_scene
             break
     brief["chart_scale"] = _chart_scale_rule(template)
+    brief["logo_footer_system"] = _logo_footer_rule(template, theme_owner)
     brief["sample_fidelity"] = "binding"
     brief["lighting"] = raw_brief.get("lighting") if raw_brief.get("lighting") in _ALLOWED_LIGHTING else fallback["lighting"]
     brief["depth"] = raw_brief.get("depth") if raw_brief.get("depth") in _ALLOWED_DEPTH else fallback["depth"]
@@ -552,8 +581,8 @@ def assemble_analytics_prompt(brief, template, theme_owner, profile, article, co
         'when integrating the chart into the publishing design. '
         'EXECUTION ORDER: first reproduce Reference 1 composition and major module proportions; second apply the brand-owner '
         'theme; third replace the sample headline/supporting text with the supplied exact copy; fourth place Reference 2 into '
-        'the defined chart area; fifth rebuild exact legends and verified result labels from the supplied metadata; sixth add '
-        'the official logo/footer in the sample-defined position; finally apply premium lighting and finish. Major modules '
+        'the defined chart area; fifth rebuild exact legends and verified result labels from the supplied metadata; sixth '
+        'reserve the protected footer rail and render its exact domain while leaving its official-logo slot empty; finally apply premium lighting and finish. Major modules '
         'must cover the canvas with the same confidence as Reference 1. Do not create a large unintended empty region. The '
         'approved chart already contains its chart title and selected legend: show each exactly once and never add a duplicate '
         'title, detached legend, tooltip, or second legend. '
@@ -561,8 +590,9 @@ def assemble_analytics_prompt(brief, template, theme_owner, profile, article, co
         'For combined-chart variants, use one combined chart only. Comparison assets may keep their own line/marker colors '
         'but may never control the background theme. '
         'Do not render any logo, wordmark, emblem, coin mark, or brand icon yourself. The application composites the exact '
-        'approved owner logo after generation. Leave the immediate lower-left corner as a seamless, uncluttered safe zone '
-        'for that deterministic logo overlay. Do not invent or substitute any price, percentage, ticker, date, logo, domain, legend, axis, or claim. Do not add '
+        'approved owner logo after generation inside the protected footer slot defined above. Keep every chart, device, result '
+        'card, price, label, line, ornament, and object above the footer rail, and keep the left logo slot empty and visually '
+        'continuous with the surrounding artwork. Do not invent or substitute any price, percentage, ticker, date, logo, domain, legend, axis, or claim. Do not add '
         'CoinMarketCap branding, a generic website dashboard, extra cards, a second chart, placeholder copy, watermarks, '
         'editing handles, or mockup annotations. The only visible text may be the supplied headline, supporting text, footer, '
         'and factual labels already present in the approved chart/metadata. Return one publication-ready image only.'

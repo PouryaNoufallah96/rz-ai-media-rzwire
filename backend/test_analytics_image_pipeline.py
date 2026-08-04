@@ -101,6 +101,9 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertIn('SELECTED DRAMATIC OWNER BACKGROUND', prompt)
         self.assertIn(THEME_OWNER['backgroundScenes'][0], prompt)
         self.assertIn('show each exactly once', prompt)
+        self.assertIn('protected footer rail', prompt)
+        self.assertIn('left logo slot empty', prompt)
+        self.assertIn('preserving its aspect ratio', prompt)
 
     @patch('analytics_image_pipeline.openrouter_chat')
     def test_art_director_receives_selected_sample_as_visual_reference(self, chat):
@@ -159,6 +162,26 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         brief = validate_analytics_brief(raw, template, THEME_OWNER, SERIES)
         self.assertEqual(brief['background_scene'], THEME_OWNER['backgroundScenes'][0])
         self.assertIn('30-38%', brief['chart_scale'])
+
+    def test_every_family_reserves_a_collision_free_logo_footer(self):
+        for category_id, category in ANALYTICS_TEMPLATE_FAMILIES.items():
+            variant_id = next(iter(category['variants']))
+            template = resolve_analytics_template(category_id, variant_id)
+            brief = fallback_analytics_brief(template, THEME_OWNER, SERIES)
+            rule = brief['logo_footer_system']
+            self.assertIn('protected footer rail', rule)
+            self.assertIn('leftmost 16%', rule)
+            self.assertIn('no card, result strip, text', rule)
+            self.assertIn('preserving its aspect ratio', rule)
+            self.assertIn(THEME_OWNER['footer'], rule)
+
+    def test_art_director_cannot_override_protected_logo_slot(self):
+        template = resolve_analytics_template('laptop', 'laptop-cinematic')
+        raw = fallback_analytics_brief(template, THEME_OWNER, SERIES)
+        raw['logo_footer_system'] = 'Put a giant logo over the result cards.'
+        brief = validate_analytics_brief(raw, template, THEME_OWNER, SERIES)
+        self.assertNotIn('giant logo', brief['logo_footer_system'])
+        self.assertIn('result strip must end above it', brief['logo_footer_system'])
 
 
 if __name__ == '__main__':

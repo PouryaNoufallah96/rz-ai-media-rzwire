@@ -7,12 +7,38 @@ function loadImage(source) {
   })
 }
 
+const FAMILY_LOGO_PLACEMENTS = {
+  phone: {xRatio:.055, bottomRatio:.03, maxWidthRatio:.075, maxHeightRatio:.05},
+  laptop: {xRatio:.055, bottomRatio:.03, maxWidthRatio:.075, maxHeightRatio:.055},
+  growth: {xRatio:.055, bottomRatio:.028, maxWidthRatio:.08, maxHeightRatio:.052},
+  contrast: {xRatio:.055, bottomRatio:.03, maxWidthRatio:.075, maxHeightRatio:.052},
+  separated: {xRatio:.055, bottomRatio:.03, maxWidthRatio:.075, maxHeightRatio:.052},
+  combined: {xRatio:.055, bottomRatio:.03, maxWidthRatio:.075, maxHeightRatio:.052},
+}
+
+export function resolveAnalyticsLogoLayout({canvasWidth, canvasHeight, logoWidth, logoHeight, categoryId}) {
+  const placement = FAMILY_LOGO_PLACEMENTS[categoryId] || FAMILY_LOGO_PLACEMENTS.combined
+  const safeLogoWidth = Math.max(1, Number(logoWidth) || 1)
+  const safeLogoHeight = Math.max(1, Number(logoHeight) || 1)
+  const maxWidth = canvasWidth * placement.maxWidthRatio
+  const maxHeight = Math.min(canvasWidth, canvasHeight) * placement.maxHeightRatio
+  const scale = Math.min(maxWidth / safeLogoWidth, maxHeight / safeLogoHeight)
+  const width = Math.max(1, Math.round(safeLogoWidth * scale))
+  const height = Math.max(1, Math.round(safeLogoHeight * scale))
+  return {
+    x:Math.round(canvasWidth * placement.xRatio),
+    y:Math.round(canvasHeight - (canvasHeight * placement.bottomRatio) - height),
+    width,
+    height,
+  }
+}
+
 /**
- * Add the supplied official mark in the reserved lower-left safe zone.
- * The image model is explicitly told to leave this area clear, so the final
- * exported PNG contains the exact registry asset rather than a generated logo.
+ * Add the supplied official mark to the family's protected footer rail. The
+ * generated composition reserves this rail, while this deterministic pass keeps
+ * the exact registry artwork and its original aspect ratio.
  */
-export async function applyOfficialAnalyticsLogo(imageDataUrl, {logoUrl, sizeRatio = .09} = {}) {
+export async function applyOfficialAnalyticsLogo(imageDataUrl, {logoUrl, categoryId} = {}) {
   if (!imageDataUrl || !logoUrl || typeof document === 'undefined') return imageDataUrl
   try {
     const [image, logo] = await Promise.all([loadImage(imageDataUrl), loadImage(logoUrl)])
@@ -23,10 +49,14 @@ export async function applyOfficialAnalyticsLogo(imageDataUrl, {logoUrl, sizeRat
     if (!context || !canvas.width || !canvas.height) return imageDataUrl
 
     context.drawImage(image, 0, 0, canvas.width, canvas.height)
-    const size = Math.max(48, Math.round(Math.min(canvas.width, canvas.height) * sizeRatio))
-    const x = Math.round(canvas.width * .07)
-    const y = canvas.height - size - Math.round(canvas.height * .065)
-    context.drawImage(logo, x, y, size, size)
+    const layout = resolveAnalyticsLogoLayout({
+      canvasWidth:canvas.width,
+      canvasHeight:canvas.height,
+      logoWidth:logo.naturalWidth || logo.width,
+      logoHeight:logo.naturalHeight || logo.height,
+      categoryId,
+    })
+    context.drawImage(logo, layout.x, layout.y, layout.width, layout.height)
     return canvas.toDataURL('image/png')
   } catch {
     // Logo compositing should never discard an otherwise valid generated post.

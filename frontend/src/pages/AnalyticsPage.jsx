@@ -651,7 +651,10 @@ export default function AnalyticsPage() {
       if (!data.imageB64) throw new Error(data.error || 'The Analytics Art Director did not return a finished post.')
       const finishedPost = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
       await preloadImage(finishedPost)
-      const brandedPost = await applyOfficialAnalyticsLogo(finishedPost, {logoUrl:themeOwner.logo})
+      const brandedPost = await applyOfficialAnalyticsLogo(finishedPost, {
+        logoUrl:themeOwner.logo,
+        categoryId:selectedTemplate.categoryId,
+      })
       if (latestCompositionFingerprint.current !== requestedFingerprint) {
         throw new Error('The chart or composition changed during generation. Approve the current version and generate it again.')
       }
