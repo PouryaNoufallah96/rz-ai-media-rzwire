@@ -19,7 +19,7 @@ class AnalyticsBrandRegistryTests(unittest.TestCase):
     def test_public_registry_contains_theme_and_market_identity(self):
         brands = public_analytics_brands()
         self.assertEqual([item["id"] for item in brands], ["mgc", "oasis", "jewelry"])
-        self.assertTrue(all(item["logoUrl"] and item["theme"] and item["market"] for item in brands))
+        self.assertTrue(all(item["logoUrl"] and item["footerLogoUrl"] and item["theme"] and item["market"] for item in brands))
         self.assertTrue(all("artDirectorProfile" not in item for item in brands))
 
     def test_duplicate_id_or_symbol_fails_closed(self):

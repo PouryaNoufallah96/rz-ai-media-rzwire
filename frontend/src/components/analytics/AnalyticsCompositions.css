@@ -62,11 +62,11 @@
 .rz-composition-header p { max-width: 88%; margin: .35cqw 0 0; color: rgba(245,244,239,.74); font-size: clamp(9px, 1.22cqw, 13px); line-height: 1.38; text-wrap: pretty; }
 .rz-composition--jewelry .rz-composition-header p { color: rgba(33,20,70,.7); }
 .rz-composition-stage { position: relative; min-height: 0; display: grid; place-items: center; }
-.rz-composition-footer { position: relative; z-index: 4; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1cqw; min-height: 3.6cqw; color: rgba(246,245,240,.75); font-size: clamp(7px, .92cqw, 10px); letter-spacing: .03em; }
-.rz-composition-footer > span:first-child { display: flex; align-items: center; }
-.rz-composition-footer img { width: auto; height: clamp(21px, 3.4cqw, 37px); max-width: 10cqw; object-fit: contain; background: #fff; border-radius: .55cqw; padding: .3cqw; }
-.rz-composition-footer > span:nth-child(2) { opacity: .62; }
-.rz-composition-footer strong { justify-self: end; color: inherit; }
+.rz-composition-footer { position:relative; z-index:4; display:flex; align-items:center; justify-content:center; min-height:3.6cqw; color:rgba(246,245,240,.75); font-size:clamp(7px,.92cqw,10px); letter-spacing:.03em; }
+.rz-composition-footer > :not(.rz-footer-lockup) { display:none; }
+.rz-composition-footer .rz-footer-lockup { display:flex; align-items:center; justify-content:center; }
+.rz-composition-footer .rz-footer-lockup img { width:auto; height:clamp(13px,2.15cqw,24px); max-width:22cqw; object-fit:contain; }
+.rz-composition-footer strong { color:inherit; }
 .rz-composition--jewelry .rz-composition-footer { color: #28164d; }
 
 .rz-token-badge { display: inline-flex; align-items: center; gap: .45cqw; color: inherit; font-size: clamp(7px, .9cqw, 10px); font-style: normal; white-space: nowrap; }
@@ -206,7 +206,8 @@
 .rz-phone-screen .rz-composition-chart text { font-size:11px; }
 .rz-phone-screen .rz-legend { align-self:end; min-height:2.6cqw; gap:.65cqw 1.15cqw; }
 .rz-composition--phone .rz-composition-footer { display:flex; justify-content:center; min-height:3cqw; font-size:clamp(10px,1.4cqw,16px); }
-.rz-composition--phone .rz-composition-footer > span { display:none; }
+.rz-composition--phone .rz-composition-footer > span { display:flex; }
+.rz-composition--phone .rz-composition-footer > :not(.rz-footer-lockup) { display:none; }
 .rz-composition--phone .rz-composition-footer strong { justify-self:auto; color:var(--accent); font-size:1.1em; }
 .rz-composition--phone.rz-composition--story .rz-composition-content { gap:2.7cqw; padding:7.2cqw 5cqw 4.6cqw; }
 .rz-composition--phone.rz-composition--story .rz-phone-shell { width:94%; }
@@ -233,8 +234,8 @@
 .rz-composition--laptop .rz-result-cards article > span { font-size:clamp(6px,.64cqw,8px); }
 .rz-composition--laptop .rz-laptop-deck { height:2.8cqw; }
 .rz-composition--laptop .rz-composition-footer { min-height:2.5cqw; }
-.rz-composition--laptop .rz-composition-footer > span:first-child { display:none; }
-.rz-composition--laptop .rz-composition-footer > span:nth-child(2) { grid-column:1; }
+.rz-composition--laptop .rz-composition-footer > span { display:flex; }
+.rz-composition--laptop .rz-composition-footer > :not(.rz-footer-lockup) { display:none; }
 
 /* Data-led samples use the full stage and keep typography/chart lines large. */
 .rz-composition--growth .rz-composition-stage,

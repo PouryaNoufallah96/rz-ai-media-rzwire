@@ -8,12 +8,12 @@ function loadImage(source) {
 }
 
 const FAMILY_LOGO_PLACEMENTS = {
-  phone: {xRatio:.055, bottomRatio:.03, maxWidthRatio:.075, maxHeightRatio:.05},
-  laptop: {xRatio:.055, bottomRatio:.03, maxWidthRatio:.075, maxHeightRatio:.055},
-  growth: {xRatio:.055, bottomRatio:.028, maxWidthRatio:.08, maxHeightRatio:.052},
-  contrast: {xRatio:.055, bottomRatio:.03, maxWidthRatio:.075, maxHeightRatio:.052},
-  separated: {xRatio:.055, bottomRatio:.03, maxWidthRatio:.075, maxHeightRatio:.052},
-  combined: {xRatio:.055, bottomRatio:.03, maxWidthRatio:.075, maxHeightRatio:.052},
+  phone: {bottomRatio:.025, maxWidthRatio:.22, maxHeightRatio:.05},
+  laptop: {bottomRatio:.025, maxWidthRatio:.22, maxHeightRatio:.05},
+  growth: {bottomRatio:.025, maxWidthRatio:.22, maxHeightRatio:.05},
+  contrast: {bottomRatio:.025, maxWidthRatio:.22, maxHeightRatio:.05},
+  separated: {bottomRatio:.025, maxWidthRatio:.22, maxHeightRatio:.05},
+  combined: {bottomRatio:.025, maxWidthRatio:.22, maxHeightRatio:.05},
 }
 
 export function resolveAnalyticsLogoLayout({canvasWidth, canvasHeight, logoWidth, logoHeight, categoryId}) {
@@ -26,7 +26,7 @@ export function resolveAnalyticsLogoLayout({canvasWidth, canvasHeight, logoWidth
   const width = Math.max(1, Math.round(safeLogoWidth * scale))
   const height = Math.max(1, Math.round(safeLogoHeight * scale))
   return {
-    x:Math.round(canvasWidth * placement.xRatio),
+    x:Math.round((canvasWidth - width) / 2),
     y:Math.round(canvasHeight - (canvasHeight * placement.bottomRatio) - height),
     width,
     height,
@@ -34,7 +34,7 @@ export function resolveAnalyticsLogoLayout({canvasWidth, canvasHeight, logoWidth
 }
 
 /**
- * Add the supplied official mark to the family's protected footer rail. The
+ * Add the supplied official footer lockup to the family's protected footer rail. The
  * generated composition reserves this rail, while this deterministic pass keeps
  * the exact registry artwork and its original aspect ratio.
  */

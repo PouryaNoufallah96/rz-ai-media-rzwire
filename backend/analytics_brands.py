@@ -19,6 +19,7 @@ ANALYTICS_BRANDS = {
         "symbol": "MGC",
         "enabled": True,
         "logoUrl": "/brands/mgc-coin-logo.png",
+        "footerLogoUrl": "/brands/mgc-footer-logo.svg",
         "footer": "metagamescoin.io",
         "domain": "metagamescoin.io",
         "chartColor": "#d9b91d",
@@ -49,6 +50,7 @@ ANALYTICS_BRANDS = {
         "symbol": "OASIS",
         "enabled": True,
         "logoUrl": "/brands/oasis-coin-logo.png",
+        "footerLogoUrl": "/brands/oasis-footer-logo.svg",
         "footer": "rzoasis.tech",
         "domain": "rzoasis.tech",
         "chartColor": "#739e90",
@@ -79,6 +81,7 @@ ANALYTICS_BRANDS = {
         "symbol": "JEWELRY",
         "enabled": True,
         "logoUrl": "/brands/jewelry-coin-logo.png",
+        "footerLogoUrl": "/brands/jewelry-footer-logo.svg",
         "footer": "Jewelry.Game",
         "domain": "Jewelry.Game",
         "chartColor": "#8f82e8",
@@ -129,7 +132,7 @@ def validate_analytics_brand_registry(registry=None) -> dict:
         item["id"] = token_id
         item["symbol"] = symbol
         if item.get("enabled"):
-            for key in ("name", "logoUrl", "footer", "domain", "chartColor", "artDirectorProfile", "imagePrompt"):
+            for key in ("name", "logoUrl", "footerLogoUrl", "footer", "domain", "chartColor", "artDirectorProfile", "imagePrompt"):
                 if not str(item.get(key) or "").strip():
                     raise ValueError(f"Enabled analytics brand {token_id} is missing {key}.")
             theme = item.get("theme") or {}
@@ -167,7 +170,7 @@ def enabled_analytics_brands() -> list[dict]:
 
 
 def public_analytics_brands() -> list[dict]:
-    fields = ("id", "name", "symbol", "enabled", "logoUrl", "footer", "domain", "chartColor", "theme", "motifs")
+    fields = ("id", "name", "symbol", "enabled", "logoUrl", "footerLogoUrl", "footer", "domain", "chartColor", "theme", "motifs")
     result = []
     for item in enabled_analytics_brands():
         public = {key: deepcopy(item[key]) for key in fields}

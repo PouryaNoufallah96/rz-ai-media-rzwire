@@ -1,4 +1,7 @@
 import unittest
+import base64
+import struct
+import zlib
 from unittest.mock import patch
 
 from analytics_image_pipeline import (
@@ -7,6 +10,7 @@ from analytics_image_pipeline import (
     call_analytics_art_director,
     fallback_analytics_brief,
     resolve_analytics_template,
+    validate_style_only_sample_reference,
     validate_analytics_brief,
 )
 
@@ -40,7 +44,22 @@ CHART_STYLE = {
 }
 
 
+def png_data_url(width, height):
+    signature = b'\x89PNG\r\n\x1a\n'
+    ihdr_data = struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0)
+    ihdr = struct.pack('>I', len(ihdr_data)) + b'IHDR' + ihdr_data
+    ihdr += struct.pack('>I', zlib.crc32(b'IHDR' + ihdr_data) & 0xffffffff)
+    return 'data:image/png;base64,' + base64.b64encode(signature + ihdr).decode('ascii')
+
+
 class AnalyticsImagePipelineTests(unittest.TestCase):
+    def test_style_reference_guard_accepts_only_sanitized_dimensions(self):
+        self.assertEqual(validate_style_only_sample_reference(png_data_url(77, 96)), (77, 96))
+        with self.assertRaisesRegex(ValueError, '128 pixels or less'):
+            validate_style_only_sample_reference(png_data_url(1080, 1350))
+        with self.assertRaisesRegex(ValueError, 'sanitized PNG style map'):
+            validate_style_only_sample_reference('data:image/png;base64,not-a-png')
+
     def test_all_eighteen_registered_variants_resolve(self):
         required_contract_fields = {
             'summary', 'skeleton', 'chart', 'typography',
@@ -80,7 +99,8 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertIn('REFERENCE 2', prompt)
         self.assertNotIn('REFERENCE 3', prompt)
         self.assertIn('inside the device screen', prompt)
-        self.assertIn('metagamescoin.io', prompt)
+        self.assertIn('official-footer-lockup', prompt)
+        self.assertNotIn('EXACT FOOTER/DOMAIN', prompt)
         self.assertIn('phone-centered', prompt)
         self.assertIn('61560', prompt)
         self.assertIn('FULL IMMUTABLE FAMILY CONTRACT', prompt)
@@ -102,8 +122,12 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertIn(THEME_OWNER['backgroundScenes'][0], prompt)
         self.assertIn('show each exactly once', prompt)
         self.assertIn('protected footer rail', prompt)
-        self.assertIn('left logo slot empty', prompt)
+        self.assertIn('centered footer-lockup slot empty', prompt)
         self.assertIn('preserving its aspect ratio', prompt)
+        self.assertIn('STYLE-ONLY PUBLISHING SAMPLE', prompt)
+        self.assertIn('FACT SOURCE FIREWALL', prompt)
+        self.assertIn('Never copy a market value from REFERENCE 1', prompt)
+        self.assertIn('omit that module', prompt)
 
     @patch('analytics_image_pipeline.openrouter_chat')
     def test_art_director_receives_selected_sample_as_visual_reference(self, chat):
@@ -127,6 +151,8 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertIn('chart/device aperture', messages[0]['content'])
         self.assertIn('NO captured composition reference', messages[0]['content'])
         self.assertIn('complete construction specification', messages[0]['content'])
+        self.assertIn('raster-sanitized', messages[0]['content'])
+        self.assertIn('Every sample market fact is forbidden', messages[0]['content'])
         self.assertIn('APPROVED OWNER BACKGROUND SCENES', messages[0]['content'])
         self.assertIn('IMMUTABLE CHART SCALE RULE', messages[0]['content'])
         self.assertIn('do not recreate either outside it', messages[0]['content'])
@@ -170,10 +196,11 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
             brief = fallback_analytics_brief(template, THEME_OWNER, SERIES)
             rule = brief['logo_footer_system']
             self.assertIn('protected footer rail', rule)
-            self.assertIn('leftmost 16%', rule)
-            self.assertIn('no card, result strip, text', rule)
+            self.assertIn('centered 34%', rule)
+            self.assertIn('no card, result strip, price', rule)
             self.assertIn('preserving its aspect ratio', rule)
-            self.assertIn(THEME_OWNER['footer'], rule)
+            self.assertIn('Never place a logo in the lower-left corner', rule)
+            self.assertIn('Do not draw any logo, wordmark, domain', rule)
 
     def test_art_director_cannot_override_protected_logo_slot(self):
         template = resolve_analytics_template('laptop', 'laptop-cinematic')

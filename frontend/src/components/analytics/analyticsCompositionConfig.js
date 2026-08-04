@@ -26,6 +26,7 @@ export function analyticsTheme(themeOwnerTokenId, tokens) {
     footer:token.footer,
     domain:token.domain,
     logo:token.logo,
+    footerLogo:token.footerLogo,
     accent:palette.accent || token.color,
     accent2:palette.accentAlt || token.color,
     background:palette.background || '#080a0c',

@@ -8,7 +8,10 @@ into a small validated creative brief and then a strict image-generation prompt.
 
 from __future__ import annotations
 
+import base64
+import binascii
 import json
+import struct
 from copy import deepcopy
 
 from config import EDITORIAL_MODELS
@@ -235,6 +238,23 @@ _ALLOWED_LIGHTING = {"quiet studio", "directional editorial", "cinematic atmosph
 _ALLOWED_DENSITY = {"minimal", "balanced", "information-rich"}
 
 
+def validate_style_only_sample_reference(reference: str) -> tuple[int, int]:
+    """Require Reference 1 to be a small PNG style map, never a readable sample."""
+    prefix = "data:image/png;base64,"
+    if not isinstance(reference, str) or not reference.startswith(prefix):
+        raise ValueError("Analytics Reference 1 must be a sanitized PNG style map.")
+    try:
+        header = base64.b64decode(reference[len(prefix):], validate=True)[:24]
+    except (binascii.Error, ValueError) as exc:
+        raise ValueError("Analytics Reference 1 is not a valid sanitized PNG style map.") from exc
+    if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError("Analytics Reference 1 is not a valid sanitized PNG style map.")
+    width, height = struct.unpack(">II", header[16:24])
+    if width < 1 or height < 1 or max(width, height) > 128:
+        raise ValueError("Analytics Reference 1 must be raster-sanitized to 128 pixels or less.")
+    return width, height
+
+
 _CHART_SCALE_RULES = {
     "phone": "Keep the approved chart inside the device screen; the phone itself may remain prominent, but preserve meaningful owner-scene atmosphere around the device.",
     "laptop": "Keep the approved chart inside the laptop screen; the laptop may remain prominent, but preserve a visible owner-scene environment around the hardware.",
@@ -267,12 +287,12 @@ def _logo_footer_rule(template: dict, theme_owner: dict) -> str:
         "Reserve the lowest 11% of the canvas as a protected footer rail below all factual modules.",
     )
     return (
-        f'{family_rule} The leftmost 16% of that rail is an empty official-logo slot: keep it a seamless continuation '
-        'of the surrounding artwork with no card, result strip, text, line, ornament, object, or change of surface. '
-        f'Do not draw any logo there or anywhere else; the application adds the exact approved {theme_owner["name"]} '
-        'logo after generation at a maximum of 5.5% of the canvas short edge while preserving its aspect ratio. '
-        f'Render the exact domain "{theme_owner["footer"]}" only once, centered or right-aligned within the remaining '
-        'footer rail, never inside the left logo slot. The logo and domain must read as one quiet footer lockup.'
+        f'{family_rule} The centered 34% of that rail is an empty official-footer-lockup slot: keep it a seamless continuation '
+        'of the surrounding artwork with no card, result strip, price, percentage, line, ornament, object, or change of surface. '
+        f'Do not draw any logo, wordmark, domain, or brand-footer text there or anywhere else; the application adds the exact '
+        f'approved {theme_owner["name"]} footer-lockup asset after generation at the horizontal center, at a maximum of 22% '
+        'of canvas width and 5% of the canvas short edge, while preserving its aspect ratio. Never place a logo in the '
+        'lower-left corner. The centered official footer-lockup asset is the only footer identity.'
     )
 
 
@@ -403,11 +423,13 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         f'You are the specialist Market Analytics Art Director for {theme_owner["name"]}. '
         'You do not invent market data and you do not write a short generic image prompt. You create a complete production '
         'brief for a deterministic prompt assembler, exactly as a senior campaign Art Director briefs an image-production team. '
-        'You are given the chosen permanent sample as a visual reference. Inspect it carefully. The sample is a BINDING '
-        'template family, not a loose moodboard. Describe its real information architecture, module sizes, alignment, chart '
+        'You are given a deliberately low-resolution, raster-sanitized version of the chosen permanent sample. It is a BINDING '
+        'style and template-family map, not a source of content and not a loose moodboard. Describe its real information architecture, module sizes, alignment, chart '
         'treatment, headline treatment, legend placement, device/card geometry, footer, materials, and finish. '
-        'The final image must remain recognizably the same publishing design while its palette, logo, footer, copy, and '
-        'chart content adapt to the selected coin and verified dataset. The approved factual chart must be complete, sharp, '
+        'Never transcribe, reconstruct, infer, or reuse any ticker, asset name, price, percentage, date, chart line, legend, '
+        'logo, domain, headline, or claim from the sanitized sample. Every sample market fact is forbidden placeholder content. '
+        'The final image must remain recognizably the same publishing design while all visible content comes only from the supplied '
+        'headline, supporting copy, verified metadata, approved chart, owner registry, and deterministic footer-lockup specification. The approved factual chart must be complete, sharp, '
         'readable, and placed inside the sample\'s chart/device aperture. Never move a phone or laptop chart outside its screen. '
         'There is NO captured composition reference. Your written production brief is therefore the complete construction '
         'specification for the final card. Do not rely on unstated visual assumptions. Describe the card from the canvas inward: '
@@ -431,13 +453,14 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         'have meaningful visual presence.\n'
         f'IMMUTABLE LOGO AND FOOTER RULE: {_logo_footer_rule(template, theme_owner)}\n'
         'This protected footer rail overrides any sample interpretation that would place a chart, result card, device, '
-        'or factual label in the official-logo slot. The image model never draws the logo itself.\n'
+        'or factual label in the official-footer-lockup slot. The image model never draws the footer identity itself.\n'
         f'FROZEN PROFILE STYLE: {json.dumps(profile_style, ensure_ascii=False)}\n\n'
         f'TEMPLATE FAMILY: {template["categoryName"]}\n'
         f'EXACT VARIANT: {template["variantId"]}\n'
         f'VARIANT CONTRACT: {json.dumps(template.get("contract") or {}, ensure_ascii=False)}\n\n'
-        'REFERENCE INTERPRETATION RULES: Reference geometry and hierarchy stay fixed. The selected brand owner changes only '
-        'the palette, official logo/domain, approved motifs, materials and atmosphere. Market data changes only headline, '
+        'REFERENCE INTERPRETATION RULES: Sanitized sample geometry and hierarchy stay fixed, but every sample word, number, '
+        'ticker, chart shape, logo, and domain is non-authoritative and forbidden in the output. The selected brand owner changes only '
+        'the palette, reserved footer-lockup geometry, approved motifs, materials and atmosphere. Market data changes only headline, '
         'supporting text, chart, legends, endpoint values and verified statistics. If the sample contains separate performance '
         'cards, keep series separate. If it contains one combined chart, keep them combined. If it contains a phone or laptop, '
         'the complete chart and legends belong inside the screen. Do not turn a family into another family. The approved chart '
@@ -447,7 +470,8 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         'pose, crop, bezel or card boundaries, and screen/aperture behavior. typography_system must specify headline scale, line count, '
         'alignment, supporting-copy relationship, factual-label scale, and footer hierarchy. chart_integration and chart_strategy must '
         'state exactly where the complete chart sits and how it is clipped without being redrawn. data_hierarchy must list which supplied '
-        'facts appear and their order. brand_translation, materials_and_finish, lighting, depth, negative_space, logo_footer_system, and '
+        'facts appear and their order. Any factual module outside the approved chart must reproduce exact supplied metadata; if an '
+        'exact value cannot be rendered, omit that optional module instead of using sample content. brand_translation, materials_and_finish, lighting, depth, negative_space, logo_footer_system, and '
         'quality_control must together make the brief executable without another layout image. logo_footer_system must repeat '
         'the immutable logo and footer rule exactly. forbidden_changes must be exhaustive.\n\n'
         'Return ONLY one JSON object with exactly these keys: family, variant, concept, sample_fidelity, '
@@ -532,15 +556,15 @@ def assemble_analytics_prompt(brief, template, theme_owner, profile, article, co
     height = int(output_dimensions.get("height") or 1350)
     facts = json.dumps(series, ensure_ascii=False, separators=(",", ":"))
     theme = json.dumps(theme_owner["theme"], ensure_ascii=False, separators=(",", ":"))
-    footer = theme_owner["footer"]
     headline = str(article.get("title") or "").strip()
     contract = json.dumps(template.get("contract") or {}, ensure_ascii=False)
     return (
         f'Create one finished {width}x{height} premium financial social post from exactly TWO ordered references. '
-        'REFERENCE 1 is the permanent APPROVED PUBLISHING SAMPLE and is the binding composition contract. Match its '
+        'REFERENCE 1 is a deliberately low-resolution, raster-sanitized STYLE-ONLY PUBLISHING SAMPLE and is binding only for composition. Match its '
         'camera, crop, device/card silhouette, chart aperture, information hierarchy, spacing, visual rhythm, lighting '
-        'quality, and premium finish. Do not reinterpret it as a different layout. Replace only the example coin identity, '
-        'palette, copy, footer, and market content. '
+        'quality, and premium finish. Do not reinterpret it as a different layout. It is NON-AUTHORITATIVE for content: never '
+        'transcribe, reconstruct, infer, or reuse any sample ticker, asset name, price, percentage, date, chart line, legend, '
+        'logo, domain, headline, or claim. Treat every sample market fact as forbidden placeholder content. '
         'REFERENCE 2 is the AUTHORITATIVE APPROVED FACTUAL CHART. Insert this complete chart into the reserved aperture '
         'defined by Reference 1 and the written production brief. For phone and laptop families the entire chart MUST be physically inside the device '
         'screen, clipped by the inner screen boundary with realistic screen perspective and reflections. Never float it in '
@@ -575,14 +599,19 @@ def assemble_analytics_prompt(brief, template, theme_owner, profile, article, co
         f'BRAND MOTIFS: {", ".join(theme_owner.get("motifs") or [])}. '
         f'BRAND ART DIRECTION: {theme_owner["imagePrompt"]}. '
         f'EXACT HEADLINE: "{headline}". EXACT SUPPORTING TEXT: "{copy_text}". '
-        f'EXACT FOOTER/DOMAIN: "{footer}". VERIFIED SERIES METADATA: {facts}. '
+        f'VERIFIED SERIES METADATA: {facts}. '
+        'FACT SOURCE FIREWALL: REFERENCE 2 and VERIFIED SERIES METADATA are the only market-fact sources. Every visible '
+        'ticker, asset name, start price, end price, percentage, date, legend, line, and callout must match them exactly. '
+        'Never copy a market value from REFERENCE 1. If an optional result module cannot be rendered with exact verified '
+        'values, omit that module rather than substituting, approximating, or reusing sample content. '
         f'APPROVED CHART PRESENTATION: {json.dumps(chart_style, ensure_ascii=False, separators=(",", ":"))}. '
         'Preserve the approved background, series colors, line weight, markers, grid strength, legend position, and legend format '
         'when integrating the chart into the publishing design. '
         'EXECUTION ORDER: first reproduce Reference 1 composition and major module proportions; second apply the brand-owner '
         'theme; third replace the sample headline/supporting text with the supplied exact copy; fourth place Reference 2 into '
-        'the defined chart area; fifth rebuild exact legends and verified result labels from the supplied metadata; sixth '
-        'reserve the protected footer rail and render its exact domain while leaving its official-logo slot empty; finally apply premium lighting and finish. Major modules '
+        'the defined chart area; fifth rebuild only exact legends and verified result labels from the supplied metadata, never '
+        'from the style sample; sixth '
+        'reserve the protected footer rail while leaving its centered official-footer-lockup slot empty; finally apply premium lighting and finish. Major modules '
         'must cover the canvas with the same confidence as Reference 1. Do not create a large unintended empty region. The '
         'approved chart already contains its chart title and selected legend: show each exactly once and never add a duplicate '
         'title, detached legend, tooltip, or second legend. '
@@ -590,10 +619,10 @@ def assemble_analytics_prompt(brief, template, theme_owner, profile, article, co
         'For combined-chart variants, use one combined chart only. Comparison assets may keep their own line/marker colors '
         'but may never control the background theme. '
         'Do not render any logo, wordmark, emblem, coin mark, or brand icon yourself. The application composites the exact '
-        'approved owner logo after generation inside the protected footer slot defined above. Keep every chart, device, result '
-        'card, price, label, line, ornament, and object above the footer rail, and keep the left logo slot empty and visually '
-        'continuous with the surrounding artwork. Do not invent or substitute any price, percentage, ticker, date, logo, domain, legend, axis, or claim. Do not add '
+        'approved owner footer-lockup asset after generation inside the centered protected footer slot defined above. Keep every chart, device, result '
+        'card, price, label, line, ornament, and object above the footer rail, and keep the centered footer-lockup slot empty and visually '
+        'continuous with the surrounding artwork. Never place any logo in the lower-left corner. Do not invent or substitute any price, percentage, ticker, date, logo, domain, legend, axis, or claim. Do not add '
         'CoinMarketCap branding, a generic website dashboard, extra cards, a second chart, placeholder copy, watermarks, '
-        'editing handles, or mockup annotations. The only visible text may be the supplied headline, supporting text, footer, '
-        'and factual labels already present in the approved chart/metadata. Return one publication-ready image only.'
+        'editing handles, or mockup annotations. The only visible text may be the supplied headline, supporting text, and '
+        'factual labels already present in the approved chart/metadata. Return one publication-ready image only.'
     )

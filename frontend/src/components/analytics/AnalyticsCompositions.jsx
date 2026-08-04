@@ -96,7 +96,7 @@ function BrandLockup({theme}) {
 
 function BrandFooter({theme, series}) {
   return <footer className="rz-composition-footer">
-    <span>{theme.logo ? <img src={theme.logo} alt="" /> : <b>RZWire</b>}</span>
+    <span className="rz-footer-lockup">{theme.footerLogo ? <img src={theme.footerLogo} alt={`${theme.label} footer`} /> : <strong>{theme.footer}</strong>}</span>
     <span>{series.map(item => item.symbol).join(' · ')}</span>
     <strong>{theme.footer}</strong>
   </footer>

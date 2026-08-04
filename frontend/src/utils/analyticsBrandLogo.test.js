@@ -5,14 +5,15 @@ import { applyOfficialAnalyticsLogo, resolveAnalyticsLogoLayout } from './analyt
 
 test('leaves the source unchanged outside a browser canvas', async () => {
   const source = 'data:image/png;base64,source'
-  assert.equal(await applyOfficialAnalyticsLogo(source, {logoUrl:'/brands/mgc-coin-logo.png'}), source)
+  assert.equal(await applyOfficialAnalyticsLogo(source, {logoUrl:'/brands/mgc-footer-logo.svg'}), source)
 })
 
-test('keeps every family logo inside the protected lower footer rail', () => {
+test('centers every family footer lockup inside the protected lower rail', () => {
   for (const categoryId of ['phone', 'laptop', 'growth', 'contrast', 'separated', 'combined']) {
-    const layout = resolveAnalyticsLogoLayout({canvasWidth:1080, canvasHeight:1350, logoWidth:640, logoHeight:640, categoryId})
-    assert.ok(layout.y >= 1180, `${categoryId} logo must remain in the bottom footer rail`)
-    assert.ok(layout.x + layout.width < 216, `${categoryId} logo must remain in the left logo slot`)
+    const layout = resolveAnalyticsLogoLayout({canvasWidth:1080, canvasHeight:1350, logoWidth:1120, logoHeight:180, categoryId})
+    assert.ok(layout.y >= 1180, `${categoryId} lockup must remain in the bottom footer rail`)
+    assert.ok(layout.width <= 238, `${categoryId} lockup must respect the footer width`)
+    assert.ok(Math.abs((layout.x + (layout.width / 2)) - 540) <= 1, `${categoryId} lockup must be centered`)
     assert.ok(layout.y + layout.height <= 1350)
   }
 })

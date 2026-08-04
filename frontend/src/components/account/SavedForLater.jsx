@@ -64,6 +64,7 @@ export function SavedCardDetail() {
     _modelDisplay: activeSavedCard._modelDisplay || activeSavedCard.model_display,
     _modelColor: activeSavedCard._modelColor || activeSavedCard.model_color,
     _modelKey: activeSavedCard._modelKey || 'gpt',
+    _generatedImageB64: activeSavedCard._generatedImageB64 || activeSavedCard.image_b64 || '',
     timeAgo: `Saved ${formatSavedDate(activeSavedCard.created_at)}`,
   }
 

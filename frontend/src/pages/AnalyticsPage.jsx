@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { AlertTriangle, ArrowRight, CalendarDays, Check, CircleCheck, Database, ImageIcon, LineChart, MessageCircle, Pencil, Plus, RefreshCw, Search, Send, Sparkles, X } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Bookmark, CalendarClock, CalendarDays, Check, CircleCheck, Database, ImageIcon, LineChart, MessageCircle, Pencil, Plus, RefreshCw, Search, Send, Sparkles, X } from 'lucide-react'
 import NavBar from '../components/NavBar'
 import ChatWidget from '../components/chat/ChatWidget'
 import { API_BASE, EDITORIAL_MODEL_META, IMAGE_MODEL_OPTIONS } from '../store/mmStore'
+import { useAccountStore } from '../store/accountStore'
 import ChartDesigner from '../components/analytics/ChartDesigner'
 import CompositionPreview from '../components/analytics/AnalyticsCompositions'
 import { OUTPUT_FORMATS, EXTERNAL_COLORS, analyticsTheme, compositionFingerprint } from '../components/analytics/analyticsCompositionConfig'
@@ -19,6 +20,7 @@ import {
 import { TEMPLATE_CATEGORIES, TEMPLATE_VARIANTS, findTemplateVariant } from '../components/analytics/analyticsTemplates'
 import { generateCaptionsInBackground } from '../utils/captionJobs'
 import { applyOfficialAnalyticsLogo } from '../utils/analyticsBrandLogo'
+import { createAnalyticsStyleReference } from '../utils/analyticsStyleReference'
 import '../components/analytics/AnalyticsCompositions.css'
 import './AnalyticsPage.css'
 
@@ -277,6 +279,11 @@ export default function AnalyticsPage() {
   const [captionError, setCaptionError] = useState('')
   const [publishing, setPublishing] = useState(false)
   const [publishResult, setPublishResult] = useState('')
+  const [postActionBusy, setPostActionBusy] = useState('')
+  const [postActionMessage, setPostActionMessage] = useState(null)
+  const [showSchedule, setShowSchedule] = useState(false)
+  const [scheduleDate, setScheduleDate] = useState('')
+  const [scheduleTime, setScheduleTime] = useState('09:00')
   const [generating, setGenerating] = useState(false)
   const [generatingTemplateId, setGeneratingTemplateId] = useState('')
   const [error, setError] = useState('')
@@ -309,6 +316,7 @@ export default function AnalyticsPage() {
   const selectedCompositionApproved = Boolean(selectedFingerprint && compositionApprovals[selectedTemplate.id] === selectedFingerprint)
   const generatedFingerprint = finalImageFingerprint(generatedPost, selectedFingerprint)
   const finalImageApproved = Boolean(generatedFingerprint && finalApprovals[selectedTemplate.id] === generatedFingerprint)
+  const selectedCaption = captionVariants[selectedCaptionIndex] || null
   const summary = `${allSelectedSymbols.join(' versus ')}, ${period}, ${scale === 'relative' ? 'relative performance' : 'absolute USD price'}`
   const visibleAssetResults = assetQuery.trim() ? assetResults : POPULAR_COMPARISONS
   const workflowCompleted = {
@@ -316,7 +324,7 @@ export default function AnalyticsPage() {
     2:chartApproved,
     3:chartApproved,
     4:selectedCompositionApproved,
-    5:Boolean(publishResult),
+    5:Boolean(publishResult || postActionMessage?.type === 'success'),
   }
 
   function navigateWorkflow(step) {
@@ -334,7 +342,7 @@ export default function AnalyticsPage() {
         const response = await fetch(`${API_BASE}/api/market/brands`, {credentials:'include'})
         const data = await response.json().catch(() => ({}))
         if (!response.ok) throw new Error(data.error || 'RZWire brands could not be loaded.')
-        const next = (data.brands || []).map(brand => ({...brand, brand:brand.name, logo:brand.logoUrl, color:brand.chartColor}))
+        const next = (data.brands || []).map(brand => ({...brand, brand:brand.name, logo:brand.logoUrl, footerLogo:brand.footerLogoUrl, color:brand.chartColor}))
         if (!next.length) throw new Error('No approved analytics brands are enabled.')
         if (!active) return
         setTokens(next)
@@ -405,6 +413,11 @@ export default function AnalyticsPage() {
     setCaptionEditDraft({copy:'', hashtags:''})
     setCaptionError('')
     setPublishResult('')
+    setPostActionBusy('')
+    setPostActionMessage(null)
+    setShowSchedule(false)
+    setScheduleDate('')
+    setScheduleTime('09:00')
   }
 
   function invalidateMarketData() {
@@ -614,7 +627,8 @@ export default function AnalyticsPage() {
     setError('')
     try {
       const approvedChart = await chartToPngDataUrl(chartSvgRef.current)
-      const approvalSample = await imageUrlToDataUrl(selectedTemplate.image)
+      const approvalSampleSource = await imageUrlToDataUrl(selectedTemplate.image)
+      const approvalSample = await createAnalyticsStyleReference(approvalSampleSource)
       const approvedStyle = materializeCurrentSeriesColors(chartStyle, marketData, tokens)
       const approvedSeries = colorisedChartSeries(marketData, tokens, approvedStyle)
       const movement = marketData.series.reduce((total, item) => total + item.changePercent, 0) / marketData.series.length
@@ -629,7 +643,7 @@ export default function AnalyticsPage() {
             seriesMetadata:approvedSeries.map(item => ({id:item.id, tokenId:item.tokenId, symbol:item.symbol, name:item.name, role:item.role, color:item.color, startPrice:item.startPrice, endPrice:item.endPrice, changePercent:item.changePercent, coverageStart:item.coverageStart, coverageEnd:item.coverageEnd})),
             chartStyle:approvedStyle,
             referenceImages:[approvalSample, approvedChart],
-            imageDirection:`Treat the approved ${selectedTemplate.name} sample as a binding publishing family. Recreate that same premium composition for ${brandTheme.label}; adapt its palette, identity, exact supplied copy, and verified market content. Keep the complete approved chart sharp and physically inside the sample's reserved chart aperture or device screen. The Art Director brief must fully specify the card's geometry, module proportions, hierarchy, typography, spacing, materials, lighting, logo and footer placement, and forbidden changes. ${direction}`,
+            imageDirection:`Treat the sanitized ${selectedTemplate.name} sample only as a style and composition map. Never use, infer, reconstruct, or copy any sample ticker, price, percentage, date, chart line, legend, logo, domain, or claim. Recreate that premium composition for ${brandTheme.label} using only the exact supplied copy, verified series metadata, and authoritative approved chart for factual content. Keep the complete approved chart sharp and physically inside the reserved chart aperture or device screen. The Art Director brief must fully specify the card's geometry, module proportions, hierarchy, typography, spacing, materials, lighting, centered logo/footer placement, and forbidden changes. ${direction}`,
           })})
       const started = await response.json().catch(() => ({}))
       if (!response.ok || !started.jobId) throw new Error(started.error || 'The Analytics Art Director could not start the image job.')
@@ -652,7 +666,7 @@ export default function AnalyticsPage() {
       const finishedPost = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
       await preloadImage(finishedPost)
       const brandedPost = await applyOfficialAnalyticsLogo(finishedPost, {
-        logoUrl:themeOwner.logo,
+        logoUrl:themeOwner.footerLogo,
         categoryId:selectedTemplate.categoryId,
       })
       if (latestCompositionFingerprint.current !== requestedFingerprint) {
@@ -765,7 +779,6 @@ export default function AnalyticsPage() {
   }
 
   async function publishFinalImage() {
-    const selectedCaption = captionVariants[selectedCaptionIndex]
     if (publishing || !finalImageApproved || !generatedPost || !publishDestination || !selectedCaption) return
     setPublishing(true)
     setPublishResult('')
@@ -785,6 +798,116 @@ export default function AnalyticsPage() {
       setError(err.message || 'Publishing failed.')
     } finally {
       setPublishing(false)
+    }
+  }
+
+  function analyticsPostMetadata() {
+    const platform = CAPTION_PLATFORMS.find(item => item.id === publishDestination)
+    const model = EDITORIAL_MODELS.find(item => item.id === captionModelKey)
+    const averageMovement = marketData?.series?.length
+      ? marketData.series.reduce((sum, item) => sum + Number(item.changePercent || 0), 0) / marketData.series.length
+      : 0
+    return {
+      cardId:`analytics-${themeOwnerTokenId}-${period}-${marketData?.series?.map(item => item.symbol).join('-') || 'market'}-${marketData?.series?.[0]?.coverageEnd || Date.now()}`,
+      platform:platform?.apiName || '',
+      model,
+      sentiment:averageMovement > 0.25 ? 'Bullish' : averageMovement < -0.25 ? 'Bearish' : 'Neutral',
+    }
+  }
+
+  async function saveAnalyticsForLater() {
+    if (postActionBusy || !selectedCaption || editingCaptionIndex >= 0) return
+    setPostActionBusy('save')
+    setPostActionMessage({type:'info', text:'Saving the approved image and caption to Account…'})
+    try {
+      const meta = analyticsPostMetadata()
+      const response = await fetch(`${API_BASE}/api/account/save`, {
+        method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          id:meta.cardId,
+          media:themeOwner.brand,
+          platform:meta.platform,
+          modelDisplay:meta.model?.display || '',
+          modelColor:meta.model?.color || '',
+          headline,
+          copy:selectedCaption.copy,
+          hashtags:selectedCaption.hashtags || [],
+          sentiment:meta.sentiment,
+          suitability:10,
+          impact:8,
+          virality:7,
+          source:'RZWire verified Market Analytics',
+          link:'',
+          initials:themeOwner.symbol,
+          srcColor:themeOwner.color,
+          variants:captionVariants,
+          imageB64:generatedPost.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, ''),
+        }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || `Save failed (${response.status}).`)
+      setPostActionMessage({type:'success', text:'Saved for later in Account with the approved image and caption.'})
+      useAccountStore.getState().fetchSaved()
+      useAccountStore.getState().fetchSummary()
+    } catch (err) {
+      setPostActionMessage({type:'error', text:err.message || 'Save for later failed.'})
+    } finally {
+      setPostActionBusy('')
+    }
+  }
+
+  async function scheduleAnalyticsPost() {
+    if (postActionBusy || !selectedCaption || editingCaptionIndex >= 0) return
+    if (!scheduleDate || !scheduleTime) {
+      setPostActionMessage({type:'error', text:'Choose both a date and time.'})
+      return
+    }
+    const scheduledDate = new Date(`${scheduleDate}T${scheduleTime}`)
+    if (Number.isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
+      setPostActionMessage({type:'error', text:'Choose a valid time in the future.'})
+      return
+    }
+    setPostActionBusy('schedule')
+    setPostActionMessage({type:'info', text:'Scheduling the approved image and caption…'})
+    try {
+      const meta = analyticsPostMetadata()
+      const response = await fetch(`${API_BASE}/api/schedule/create`, {
+        method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          cardId:meta.cardId,
+          savedCardId:null,
+          brand:themeOwner.brand,
+          platform:meta.platform,
+          modelDisplay:meta.model?.display || '',
+          headline,
+          copy:selectedCaption.copy,
+          hashtags:selectedCaption.hashtags || [],
+          sentiment:meta.sentiment,
+          suitability:10,
+          impact:8,
+          virality:7,
+          source:'RZWire verified Market Analytics',
+          sourceUrl:'',
+          imageB64:generatedPost,
+          imageUrl:'',
+          scheduledAt:scheduledDate.toISOString(),
+        }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || `Schedule failed (${response.status}).`)
+      const readableTime = scheduledDate.toLocaleString([], {dateStyle:'medium', timeStyle:'short'})
+      setPostActionMessage({type:'success', text:`Scheduled for ${readableTime}. It will post automatically to ${meta.platform}.`})
+      setShowSchedule(false)
+      useAccountStore.getState().fetchScheduled()
+      useAccountStore.getState().fetchSummary()
+      fetch(`${API_BASE}/api/account/log-action`, {
+        method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({brand:themeOwner.brand, platform:meta.platform, modelDisplay:meta.model?.display || '', headline, action:'scheduled'}),
+      }).catch(() => {})
+    } catch (err) {
+      setPostActionMessage({type:'error', text:err.message || 'Scheduling failed.'})
+    } finally {
+      setPostActionBusy('')
     }
   }
 
@@ -861,7 +984,7 @@ export default function AnalyticsPage() {
         </aside>
         {chartApproved && themeOwnerValid && <section className="analytics-preview-column">
           <div className="analytics-preview-head"><div><p>Final composition preview</p><h2>{selectedTemplate.name}</h2><small>{themeOwner.name} visual system</small></div><span>{outputFormat.label}</span></div>
-          <div className="analytics-reference-sample"><div><strong>Exact approved concept {selectedTemplate.conceptLabel}</strong><span>This image is the primary style target. The selected coin owner supplies its palette, logo, and footer while the verified chart replaces the sample market data.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact approval concept`} /></div>
+          <div className="analytics-reference-sample"><div><strong>Exact approved concept {selectedTemplate.conceptLabel}</strong><span>This image supplies style and composition only. Before generation it is sanitized so none of its tickers, prices, percentages, dates, chart data, logos, or domains can be reused. The approved chart and verified metadata are the only factual sources.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact approval concept`} /></div>
           <div className="analytics-live-output-label"><span>{generatedPost ? 'Finished Art Director PNG' : 'Approved composition specification'}</span><small>The approved sample defines the visual family. The detailed Art Director brief defines the complete card, while the approved chart supplies its factual market content.</small></div>
           {generatedPost ? <img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /> : <CompositionPreview templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} chartStyle={chartStyle} />}
           <div className={`analytics-composition-approval ${selectedCompositionApproved ? 'approved' : ''}`}><div><strong>{selectedCompositionApproved ? 'Composition approved' : 'Approve this composition'}</strong><span>{selectedCompositionApproved ? 'Its exact state is ready for generation.' : 'Check hierarchy, palette, logo, footer, chart, and copy.'}</span></div><button type="button" onClick={() => { setCompositionApprovals(previous => ({...previous, [selectedTemplate.id]:selectedFingerprint})); setActiveWorkflowStep(5) }}>{selectedCompositionApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve {selectedTemplate.name}</>}</button></div>
@@ -904,7 +1027,21 @@ export default function AnalyticsPage() {
                 </article>
               })}</div>
             </div>}
-            {!!captionVariants.length && <div className="analytics-caption-stage analytics-caption-publish"><div><b>4</b><span><strong>Publish the approved image and selected caption</strong><small>{editingCaptionIndex >= 0 ? 'Save or cancel the open caption edit before publishing.' : `RZWire sends both together to the configured ${publishDestination === 'telegram' ? 'Telegram channel' : 'X account'}.`}</small></span></div><button type="button" className="analytics-publish-final" disabled={selectedCaptionIndex < 0 || editingCaptionIndex >= 0 || publishing} onClick={publishFinalImage}>{publishing ? <><span className="analytics-spinner" />Publishing…</> : <>Publish to {publishDestination === 'telegram' ? 'Telegram' : 'X'}<ArrowRight size={17} /></>}</button>{publishResult && <p className="analytics-publish-success"><CircleCheck size={16} />{publishResult}</p>}</div>}
+            {!!captionVariants.length && <div className="analytics-caption-stage analytics-caption-publish">
+              <div><b>4</b><span><strong>Choose what happens next</strong><small>{editingCaptionIndex >= 0 ? 'Save or cancel the open caption edit before continuing.' : `Publish now, save the complete post in Account, or schedule automatic posting to ${publishDestination === 'telegram' ? 'Telegram' : 'X'}.`}</small></span></div>
+              <div className="analytics-post-actions">
+                <button type="button" className="analytics-publish-final" disabled={selectedCaptionIndex < 0 || editingCaptionIndex >= 0 || publishing || Boolean(postActionBusy)} onClick={publishFinalImage}>{publishing ? <><span className="analytics-spinner" />Publishing…</> : <>Publish to {publishDestination === 'telegram' ? 'Telegram' : 'X'}<ArrowRight size={17} /></>}</button>
+                <button type="button" className="analytics-post-secondary" disabled={selectedCaptionIndex < 0 || editingCaptionIndex >= 0 || publishing || Boolean(postActionBusy)} onClick={saveAnalyticsForLater}>{postActionBusy === 'save' ? <><span className="analytics-spinner" />Saving…</> : <><Bookmark size={16} />Save for later</>}</button>
+                <button type="button" className={`analytics-post-secondary ${showSchedule ? 'selected' : ''}`} disabled={selectedCaptionIndex < 0 || editingCaptionIndex >= 0 || publishing || Boolean(postActionBusy)} onClick={() => { setShowSchedule(value => !value); setPostActionMessage(null) }}><CalendarClock size={16} />Schedule</button>
+              </div>
+              {showSchedule && <div className="analytics-schedule-panel">
+                <div><span><CalendarClock size={16} /><strong>Schedule automatic post</strong></span><small>The approved image and selected caption will post automatically to {publishDestination === 'telegram' ? 'Telegram' : 'X'}.</small></div>
+                <div className="analytics-schedule-fields"><label>Date<input type="date" value={scheduleDate} onChange={event => { setScheduleDate(event.target.value); setPostActionMessage(null) }} /></label><label>Time<input type="time" value={scheduleTime} onChange={event => { setScheduleTime(event.target.value); setPostActionMessage(null) }} /></label></div>
+                <button type="button" className="analytics-confirm-schedule" disabled={postActionBusy === 'schedule'} onClick={scheduleAnalyticsPost}>{postActionBusy === 'schedule' ? <><span className="analytics-spinner" />Scheduling…</> : <>Confirm schedule<ArrowRight size={16} /></>}</button>
+              </div>}
+              {publishResult && <p className="analytics-publish-success"><CircleCheck size={16} />{publishResult}</p>}
+              {postActionMessage && <p className={`analytics-post-action-message ${postActionMessage.type}`}>{postActionMessage.type === 'success' ? <CircleCheck size={16} /> : postActionMessage.type === 'error' ? <AlertTriangle size={16} /> : <span className="analytics-spinner" />}{postActionMessage.text}</p>}
+            </div>}
           </div>}
           <div className="analytics-layer-note"><ImageIcon size={17} /><span><strong>Two-reference Art Director pipeline</strong>The image model receives only the approved publishing sample and approved factual chart. A fully detailed production brief specifies the card structure, copy, branding, chart placement, and finish.</span></div>
         </section>}

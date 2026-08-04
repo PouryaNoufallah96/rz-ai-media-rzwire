@@ -83,6 +83,7 @@ def init_db():
                 source_link TEXT,
                 initials TEXT,
                 src_color TEXT,
+                image_b64 TEXT,
                 status TEXT NOT NULL DEFAULT 'saved',
                 variants TEXT,
                 created_at TEXT NOT NULL
@@ -91,6 +92,10 @@ def init_db():
         conn.execute('CREATE INDEX IF NOT EXISTS idx_saved_cards_user_status ON saved_cards (user_id, status, created_at)')
         try:
             conn.execute('ALTER TABLE saved_cards ADD COLUMN variants TEXT')
+        except sqlite3.OperationalError:
+            pass
+        try:
+            conn.execute('ALTER TABLE saved_cards ADD COLUMN image_b64 TEXT')
         except sqlite3.OperationalError:
             pass
         conn.execute('''
@@ -422,8 +427,8 @@ def create_saved_card(user_id, card):
         cur = conn.execute(
             'INSERT INTO saved_cards (user_id, card_id, brand, platform, model_display, model_color, '
             'headline, copy, hashtags, sentiment, suitability, impact, virality, source, source_link, '
-            'initials, src_color, status, variants, created_at) '
-            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'initials, src_color, image_b64, status, variants, created_at) '
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             (
                 user_id, card.get('id', ''), card.get('media', ''), card.get('platform', ''),
                 card.get('modelDisplay', ''), card.get('modelColor', ''),
@@ -433,7 +438,7 @@ def create_saved_card(user_id, card):
                 card.get('suitability'), card.get('impact'), card.get('virality'),
                 card.get('source', ''), card.get('link', ''),
                 card.get('initials', ''), card.get('srcColor', ''),
-                'saved', json.dumps(card.get('variants', [])), _now_iso()
+                card.get('imageB64', ''), 'saved', json.dumps(card.get('variants', [])), _now_iso()
             )
         )
         conn.commit()
