@@ -37,6 +37,15 @@ PERIOD_CONFIG = {
     "Custom": {"gecko": ("day", 1, 31), "binance": ("1d", 31)},
 }
 
+PERIOD_SECONDS = {
+    "24h": 24 * 60 * 60,
+    "7d": 7 * 24 * 60 * 60,
+    "30d": 30 * 24 * 60 * 60,
+    "90d": 90 * 24 * 60 * 60,
+    "1y": 365 * 24 * 60 * 60,
+    "Custom": 30 * 24 * 60 * 60,
+}
+
 MAX_PRIMARY_TOKENS = 3
 MAX_COMPARISON_ASSETS = 3
 MAX_TOTAL_SERIES = 6
@@ -224,6 +233,27 @@ def _series_summary(name: str, symbol: str, points: list[dict]) -> dict:
         "endPrice": end_price,
         "changePercent": change,
         "points": points,
+    }
+
+
+def _clip_series_to_period(series: dict, period: str, window_end: int) -> dict:
+    """Return one series containing only candles inside the requested timeline."""
+    window_start = int(window_end) - PERIOD_SECONDS[period]
+    points = [
+        point for point in (series.get("points") or [])
+        if window_start <= int(point.get("timestamp") or 0) <= int(window_end)
+    ]
+    if len(points) < 2:
+        raise ValueError(
+            f"Not enough {period} prices were available for {series.get('symbol') or 'this asset'}; "
+            "older candles were not substituted."
+        )
+    summary = _series_summary(series.get("name") or "", series.get("symbol") or "", points)
+    return {
+        **series,
+        **summary,
+        "coverageStart": points[0]["timestamp"],
+        "coverageEnd": points[-1]["timestamp"],
     }
 
 
@@ -455,6 +485,29 @@ def handle_market_history_batch(body: dict) -> dict:
     order = {item["id"]: index for index, item in enumerate(descriptors)}
     series.sort(key=lambda item: order[item["id"]])
     failures.sort(key=lambda item: order[item["id"]])
+
+    window_end = max(
+        (int(item["points"][-1]["timestamp"]) for item in series if item.get("points")),
+        default=int(datetime.now(timezone.utc).timestamp()),
+    )
+    window_start = window_end - PERIOD_SECONDS[period]
+    clipped_series: list[dict] = []
+    for item in series:
+        try:
+            clipped_series.append(_clip_series_to_period(item, period, window_end))
+        except ValueError as exc:
+            failures.append({
+                "id": item["id"],
+                "type": item["type"],
+                "role": item["role"],
+                "tokenId": item.get("tokenId"),
+                "name": item["name"],
+                "symbol": item["symbol"],
+                "status": "unavailable",
+                "error": str(exc),
+            })
+    series = clipped_series
+    failures.sort(key=lambda item: order[item["id"]])
     successful_primary = any(item["role"] == "primary" for item in series)
     warnings = [f"{item['symbol']} could not be loaded: {item['error']}" for item in failures]
     if series:
@@ -479,11 +532,14 @@ def handle_market_history_batch(body: dict) -> dict:
         "sample": False,
         "period": period,
         "scale": scale,
+        "windowStart": window_start,
+        "windowEnd": window_end,
         "fetchedAt": datetime.now(timezone.utc).isoformat(),
         "series": series,
         "failures": failures,
         "warnings": list(dict.fromkeys(warnings)),
         "sources": [item["source"] for item in series],
+        "error": None if successful_primary else (warnings[0] if warnings else "No selected RZWire token had enough prices inside the requested timeline."),
     }
 
 
@@ -514,11 +570,20 @@ def handle_market_history(params: dict[str, list[str]]) -> dict:
     if compare:
         comparison, comparison_source = _binance_history(compare, period)
 
+    available = [item for item in (primary, comparison) if item and item.get("points")]
+    window_end = max(int(item["points"][-1]["timestamp"]) for item in available)
+    window_start = window_end - PERIOD_SECONDS[period]
+    primary = _clip_series_to_period(primary, period, window_end)
+    if comparison:
+        comparison = _clip_series_to_period(comparison, period, window_end)
+
     result = {
         "ok": True,
         "verified": True,
         "sample": False,
         "period": period,
+        "windowStart": window_start,
+        "windowEnd": window_end,
         "fetchedAt": datetime.now(timezone.utc).isoformat(),
         "primary": primary,
         "comparison": comparison,

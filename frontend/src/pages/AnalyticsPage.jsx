@@ -58,6 +58,19 @@ function formatDate(timestamp) {
   return new Date(Number(timestamp) * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
 }
 
+function formatAxisTimestamp(timestamp, period) {
+  const date = new Date(Number(timestamp) * 1000)
+  if (period === '24h') return date.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'})
+  return date.toLocaleDateString('en-US', {month:'short', day:'numeric'})
+}
+
+function formatCoverageTimestamp(timestamp, period) {
+  if (!Number.isFinite(Number(timestamp))) return 'Unavailable'
+  const date = new Date(Number(timestamp) * 1000)
+  if (period === '24h') return date.toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})
+  return date.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+}
+
 function percentValues(points) {
   if (!points?.length) return []
   const start = Number(points[0].close) || 1
@@ -209,8 +222,10 @@ function VerifiedChart({ data, chartRef, tokens, chartStyle }) {
   const max = rawMax + padding
   const chart = legendGeometry(chartStyle.legend.position, series.length)
   const timestamps = series.flatMap(item => item.points.map(point => Number(point.timestamp))).filter(Number.isFinite)
-  const firstTimestamp = Math.min(...timestamps)
-  const lastTimestamp = Math.max(...timestamps)
+  const returnedFirstTimestamp = Math.min(...timestamps)
+  const returnedLastTimestamp = Math.max(...timestamps)
+  const firstTimestamp = Number.isFinite(Number(data.windowStart)) ? Number(data.windowStart) : returnedFirstTimestamp
+  const lastTimestamp = Number.isFinite(Number(data.windowEnd)) ? Number(data.windowEnd) : returnedLastTimestamp
   const xFor = timestamp => chart.left + ((Number(timestamp) - firstTimestamp) / Math.max(1, lastTimestamp - firstTimestamp)) * (chart.right - chart.left)
   const yFor = value => chart.bottom - ((value - min) / Math.max(.000001, max - min)) * (chart.bottom - chart.top)
   const lineFor = (item, values) => item.points.map((point, index) => `${xFor(point.timestamp).toFixed(1)},${yFor(values[index]).toFixed(1)}`).join(' ')
@@ -230,7 +245,7 @@ function VerifiedChart({ data, chartRef, tokens, chartStyle }) {
         const label = scale === 'absolute' ? formatPrice(tick) : `${tick >= 0 ? '+' : ''}${tick.toFixed(1)}%`
         return <g key={`y-${index}`}><line className="analytics-chart-grid-line" x1={chart.left} y1={y} x2={chart.right} y2={y} stroke={foreground} strokeOpacity={gridOpacity} strokeWidth="1" /><text className="analytics-axis-text analytics-axis-text--left" x={chart.left - 12} y={y + 4} fill={foreground} fillOpacity=".7" fontSize="12" textAnchor="end">{label}</text></g>
       })}
-      {dateTicks.map((timestamp, index) => <text key={`x-${index}`} className="analytics-axis-text analytics-axis-text--date" x={xFor(timestamp)} y={dateLabelY} fill={foreground} fillOpacity=".7" fontSize="12" textAnchor="middle">{new Date(timestamp * 1000).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</text>)}
+      {dateTicks.map((timestamp, index) => <text key={`x-${index}`} className="analytics-axis-text analytics-axis-text--date" x={xFor(timestamp)} y={dateLabelY} fill={foreground} fillOpacity=".7" fontSize="12" textAnchor="middle">{formatAxisTimestamp(timestamp, data.period)}</text>)}
       {scale === 'relative' && min <= 0 && max >= 0 && <line className="analytics-chart-zero" x1={chart.left} y1={yFor(0)} x2={chart.right} y2={yFor(0)} stroke={foreground} strokeOpacity=".42" strokeWidth="1" strokeDasharray="5 4" />}
       {series.map((item, index) => <g key={item.id}>
         <polyline className="analytics-series analytics-series--verified" fill="none" stroke={item.color} strokeWidth={chartStyle.lineWidth} strokeLinecap="round" strokeLinejoin="round" points={lineFor(item, valueSets[index])} />
@@ -238,7 +253,7 @@ function VerifiedChart({ data, chartRef, tokens, chartStyle }) {
       </g>)}
       <SvgLegend series={series} chartStyle={chartStyle} geometry={chart} foreground={foreground} />
     </svg>
-    <div className="analytics-series-status-grid">{series.map(item => <article key={item.id}><div><i style={{background:item.color}} /><strong>{item.symbol}</strong><span>{item.role === 'primary' ? 'RZWire' : item.type === 'dex' ? 'DEX' : 'Binance'}</span></div><dl><dt>Start</dt><dd>{formatPrice(item.startPrice)}</dd><dt>End</dt><dd>{formatPrice(item.endPrice)}</dd><dt>Coverage</dt><dd>{formatDate(item.coverageStart)} - {formatDate(item.coverageEnd)}</dd></dl></article>)}</div>
+    <div className="analytics-series-status-grid">{series.map(item => <article key={item.id}><div><i style={{background:item.color}} /><strong>{item.symbol}</strong><span>{item.role === 'primary' ? 'RZWire' : item.type === 'dex' ? 'DEX' : 'Binance'}</span></div><dl><dt>Start</dt><dd>{formatPrice(item.startPrice)}</dd><dt>End</dt><dd>{formatPrice(item.endPrice)}</dd><dt>Coverage</dt><dd>{formatCoverageTimestamp(item.coverageStart, data.period)} - {formatCoverageTimestamp(item.coverageEnd, data.period)}</dd></dl></article>)}</div>
     {!!data.warnings?.length && <div className="analytics-warning-list">{data.warnings.map(warning => <p key={warning}><AlertTriangle size={14} />{warning}</p>)}</div>}
     <div className="analytics-source-list"><strong>Verified sources</strong>{series.map(item => <a key={item.id} href={item.source?.attributionUrl} target="_blank" rel="noreferrer">{item.symbol} - {item.source?.provider}</a>)}</div>
   </div>

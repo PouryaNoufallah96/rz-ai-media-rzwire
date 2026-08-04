@@ -129,6 +129,74 @@ class MarketHistoryTests(unittest.TestCase):
         self.assertEqual(result['failures'][0]['symbol'], 'BTC')
         self.assertIn('BTC could not be loaded', result['warnings'][0])
 
+    @patch('handlers.market._binance_history')
+    @patch('handlers.market._gecko_history')
+    def test_batch_strictly_clips_every_series_to_selected_24_hours(self, gecko_history, binance_history):
+        gecko_history.return_value = (
+            market._series_summary('Jewelry Coin', 'JEWELRY', [
+                {'timestamp': 1_000, 'close': 30},
+                {'timestamp': 2_000, 'close': 31},
+                {'timestamp': 350_000, 'close': 28},
+                {'timestamp': 400_000, 'close': 29},
+            ]),
+            {'provider': 'GeckoTerminal', 'url': 'https://example.test/gecko'},
+        )
+        binance_history.return_value = (
+            market._series_summary('XRP', 'XRP', [
+                {'timestamp': 313_600, 'close': 1.0},
+                {'timestamp': 350_000, 'close': 1.1},
+                {'timestamp': 400_000, 'close': 1.2},
+            ]),
+            {'provider': 'Binance', 'url': 'https://example.test/binance'},
+        )
+
+        result = market.handle_market_history_batch({
+            'primaryTokens': ['jewelry'],
+            'comparisonAssets': [{'type': 'binance', 'symbol': 'XRP'}],
+            'period': '24h',
+            'scale': 'relative',
+        })
+
+        self.assertEqual(result['windowStart'], 313_600)
+        self.assertEqual(result['windowEnd'], 400_000)
+        self.assertEqual([point['timestamp'] for point in result['series'][0]['points']], [350_000, 400_000])
+        self.assertEqual(result['series'][0]['startPrice'], 28)
+        self.assertEqual(result['series'][0]['endPrice'], 29)
+        self.assertTrue(all(
+            result['windowStart'] <= point['timestamp'] <= result['windowEnd']
+            for series in result['series'] for point in series['points']
+        ))
+
+    @patch('handlers.market._binance_history')
+    @patch('handlers.market._gecko_history')
+    def test_batch_does_not_backfill_old_prices_when_24h_data_is_insufficient(self, gecko_history, binance_history):
+        gecko_history.return_value = (
+            market._series_summary('Jewelry Coin', 'JEWELRY', [
+                {'timestamp': 1_000, 'close': 30},
+                {'timestamp': 2_000, 'close': 31},
+            ]),
+            {'provider': 'GeckoTerminal', 'url': 'https://example.test/gecko'},
+        )
+        binance_history.return_value = (
+            market._series_summary('XRP', 'XRP', [
+                {'timestamp': 350_000, 'close': 1.1},
+                {'timestamp': 400_000, 'close': 1.2},
+            ]),
+            {'provider': 'Binance', 'url': 'https://example.test/binance'},
+        )
+
+        result = market.handle_market_history_batch({
+            'primaryTokens': ['jewelry'],
+            'comparisonAssets': [{'type': 'binance', 'symbol': 'XRP'}],
+            'period': '24h',
+            'scale': 'relative',
+        })
+
+        self.assertFalse(result['verified'])
+        self.assertEqual([item['symbol'] for item in result['series']], ['XRP'])
+        self.assertEqual(result['failures'][0]['symbol'], 'JEWELRY')
+        self.assertIn('older candles were not substituted', result['failures'][0]['error'])
+
     def test_batch_rejects_duplicates_and_selection_limits(self):
         with self.assertRaisesRegex(ValueError, 'only be selected once'):
             market.handle_market_history_batch({
