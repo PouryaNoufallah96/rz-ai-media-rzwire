@@ -67,6 +67,35 @@ class MarketHistoryTests(unittest.TestCase):
         self.assertEqual(one_year_params['aggregate'], 1)
         self.assertEqual(one_year_params['limit'], 366)
 
+    @patch('handlers.market.requests.get')
+    def test_industrial_uses_coinmarketcap_continuous_history(self, get):
+        get.return_value = _Response({
+            'status': {'error_code': 0},
+            'data': {'points': {
+                '2000': {'v': [21.5, 0, 0]},
+                '1000': {'v': [20.0, 0, 0]},
+            }},
+        })
+
+        summary, source = market._rz_history(market.TOKEN_CONFIG['industrial'], '24h')
+
+        self.assertEqual([point['timestamp'] for point in summary['points']], [1000, 2000])
+        self.assertEqual(summary['startPrice'], 20.0)
+        self.assertEqual(summary['endPrice'], 21.5)
+        self.assertEqual(source['provider'], 'CoinMarketCap Public Market Data')
+        self.assertEqual(get.call_args.kwargs['params'], {'id': '35883', 'range': '1D'})
+
+    @patch('handlers.market._gecko_history')
+    @patch('handlers.market._coinmarketcap_history')
+    def test_industrial_falls_back_to_gecko_when_cmc_is_unavailable(self, cmc_history, gecko_history):
+        cmc_history.side_effect = RuntimeError('provider unavailable')
+        gecko_history.return_value = ({'points': [{'timestamp': 1}, {'timestamp': 2}]}, {'provider': 'GeckoTerminal'})
+
+        result = market._rz_history(market.TOKEN_CONFIG['industrial'], '24h')
+
+        self.assertEqual(result[1]['provider'], 'GeckoTerminal')
+        gecko_history.assert_called_once()
+
     @patch('handlers.market._binance_history')
     @patch('handlers.market._gecko_history')
     def test_batch_returns_six_ordered_series(self, gecko_history, binance_history):

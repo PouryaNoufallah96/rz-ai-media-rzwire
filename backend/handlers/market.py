@@ -15,6 +15,7 @@ from analytics_brands import get_analytics_brand, market_token_config, public_an
 
 GECKO_BASE = "https://api.geckoterminal.com/api/v2"
 BINANCE_BASE = "https://api.binance.com/api/v3"
+COINMARKETCAP_DATA_BASE = "https://api.coinmarketcap.com/data-api/v3"
 GECKO_HEADERS = {
     "Accept": "application/json;version=20230203",
     "User-Agent": "RZWire/1.0 market-analytics",
@@ -44,6 +45,15 @@ PERIOD_SECONDS = {
     "90d": 90 * 24 * 60 * 60,
     "1y": 365 * 24 * 60 * 60,
     "Custom": 30 * 24 * 60 * 60,
+}
+
+COINMARKETCAP_RANGES = {
+    "24h": "1D",
+    "7d": "7D",
+    "30d": "1M",
+    "90d": "3M",
+    "1y": "1Y",
+    "Custom": "1M",
 }
 
 MAX_PRIMARY_TOKENS = 3
@@ -301,6 +311,63 @@ def _gecko_history(token: dict, period: str) -> tuple[dict, dict]:
     return _series_summary(token["name"], token["symbol"], points), source
 
 
+def _coinmarketcap_history(token: dict, period: str) -> tuple[dict, dict]:
+    """Load the public CMC chart used on the token's approved listing page.
+
+    Industrial's primary DEX pool can have long gaps between trades. The CMC
+    chart provides a continuous verified timeline while GeckoTerminal remains
+    available as a fallback if the public chart endpoint is unavailable.
+    """
+    cmc_id = str(token.get("coinMarketCapId") or "").strip()
+    if not cmc_id.isdigit():
+        raise ValueError(f"No CoinMarketCap history mapping is configured for {token['symbol']}.")
+    payload = _request_json(
+        f"{COINMARKETCAP_DATA_BASE}/cryptocurrency/detail/chart",
+        params={"id": cmc_id, "range": COINMARKETCAP_RANGES[period]},
+        headers={"Accept": "application/json", "User-Agent": "RZWire/1.0 market-analytics"},
+    )
+    status = payload.get("status") or {}
+    if status.get("error_code") not in (None, 0, "0"):
+        raise ValueError(status.get("error_message") or f"CoinMarketCap could not load {token['symbol']}.")
+    raw_points = ((payload.get("data") or {}).get("points") or {})
+    points = []
+    for timestamp, raw in raw_points.items():
+        values = raw.get("v") if isinstance(raw, dict) else None
+        try:
+            price = float(values[0])
+            unix_timestamp = int(timestamp)
+        except (TypeError, ValueError, IndexError):
+            continue
+        if price <= 0:
+            continue
+        points.append({
+            "timestamp": unix_timestamp,
+            "open": price,
+            "high": price,
+            "low": price,
+            "close": price,
+            "volume": 0.0,
+        })
+    points.sort(key=lambda item: item["timestamp"])
+    source_url = str(token.get("coinMarketCapUrl") or "").strip() or f"https://coinmarketcap.com/currencies/{cmc_id}/"
+    source = {
+        "provider": "CoinMarketCap Public Market Data",
+        "coinMarketCapId": cmc_id,
+        "attributionUrl": source_url,
+        "fallbackProvider": "GeckoTerminal Public API",
+    }
+    return _series_summary(token["name"], token["symbol"], points), source
+
+
+def _rz_history(token: dict, period: str) -> tuple[dict, dict]:
+    if token.get("coinMarketCapId"):
+        try:
+            return _coinmarketcap_history(token, period)
+        except (requests.RequestException, RuntimeError, ValueError, KeyError, TypeError):
+            pass
+    return _gecko_history(token, period)
+
+
 def _binance_history(symbol: str, period: str) -> tuple[dict, dict]:
     interval, limit = PERIOD_CONFIG[period]["binance"]
     pair = f"{symbol}USDT"
@@ -424,7 +491,7 @@ def _fetch_descriptor(descriptor: dict, period: str) -> dict:
         token = {"name": brand["name"], "symbol": brand["symbol"], **brand["market"]}
         summary, source, cached = _cached_series(
             ("rz", token_id, period),
-            lambda: _gecko_history(token, period),
+            lambda: _rz_history(token, period),
         )
     elif asset_type == "binance":
         symbol = descriptor["symbol"]
@@ -565,7 +632,7 @@ def handle_market_history(params: dict[str, list[str]]) -> dict:
             return {**cached[1], "cached": True}
 
     token = {"name": brand["name"], "symbol": brand["symbol"], **brand["market"]}
-    primary, primary_source = _gecko_history(token, period)
+    primary, primary_source = _rz_history(token, period)
     comparison = comparison_source = None
     if compare:
         comparison, comparison_source = _binance_history(compare, period)

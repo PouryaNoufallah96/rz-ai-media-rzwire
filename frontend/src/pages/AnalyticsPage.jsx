@@ -20,6 +20,7 @@ import {
 import { TEMPLATE_CATEGORIES, TEMPLATE_VARIANTS, findTemplateVariant } from '../components/analytics/analyticsTemplates'
 import { generateCaptionsInBackground } from '../utils/captionJobs'
 import { applyOfficialAnalyticsLogo } from '../utils/analyticsBrandLogo'
+import { ANALYTICS_BRAND_FALLBACKS } from '../components/analytics/marketBrandFallbacks'
 import '../components/analytics/AnalyticsCompositions.css'
 import './AnalyticsPage.css'
 
@@ -44,6 +45,14 @@ const WORKFLOW_STEPS = [
   {id:4, label:'Design', target:'analytics-step-design'},
   {id:5, label:'Create & publish', target:'analytics-step-create'},
 ]
+
+const FALLBACK_MARKET_BRANDS = ANALYTICS_BRAND_FALLBACKS.map(item => ({
+  ...item,
+  brand: item.name,
+  logo: item.logoUrl,
+  footerLogo: item.footerLogoUrl,
+  color: item.chartColor,
+}))
 
 function formatPrice(value) {
   const amount = Number(value)
@@ -357,6 +366,10 @@ export default function AnalyticsPage() {
         const data = await response.json().catch(() => ({}))
         if (!response.ok) throw new Error(data.error || 'RZWire brands could not be loaded.')
         const next = (data.brands || []).map(brand => ({...brand, brand:brand.name, logo:brand.logoUrl, footerLogo:brand.footerLogoUrl, color:brand.chartColor}))
+        const nextIds = new Set(next.map(item => item.id))
+        FALLBACK_MARKET_BRANDS.forEach(fallback => {
+          if (!nextIds.has(fallback.id)) next.push(fallback)
+        })
         if (!next.length) throw new Error('No approved analytics brands are enabled.')
         if (!active) return
         setTokens(next)
@@ -364,7 +377,11 @@ export default function AnalyticsPage() {
         setThemeOwnerTokenId(previous => next.some(item => item.id === previous) ? previous : next[0].id)
         setBrandsError('')
       } catch (err) {
-        if (active) setBrandsError(err.message || 'RZWire brands could not be loaded.')
+        if (!active) return
+        setTokens(FALLBACK_MARKET_BRANDS)
+        setPrimaryIds(previous => previous.length ? previous.filter(id => FALLBACK_MARKET_BRANDS.some(item => item.id === id)) : [FALLBACK_MARKET_BRANDS[0].id])
+        setThemeOwnerTokenId(previous => FALLBACK_MARKET_BRANDS.some(item => item.id === previous) ? previous : FALLBACK_MARKET_BRANDS[0].id)
+        setBrandsError(err.message ? `${err.message} Showing local fallback brand list.` : 'Showing local fallback brand list.')
       } finally {
         if (active) setBrandsLoading(false)
       }
