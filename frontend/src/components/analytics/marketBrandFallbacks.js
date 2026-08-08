@@ -154,6 +154,37 @@ export const ANALYTICS_BRAND_FALLBACKS = [
       tokenSide: 'base',
     },
   },
+  {
+    id: 'trip',
+    name: 'Trip Token',
+    symbol: 'TRIP',
+    logoUrl: '/brands/trip-coin-logo.png',
+    footerLogoUrl: '/brands/trip-footer-logo.png',
+    footer: 'trip.game',
+    domain: 'trip.game',
+    chartColor: '#24c4d8',
+    theme: {
+      background: '#042b46',
+      backgroundAlt: '#075b7a',
+      surface: '#073a58',
+      surfaceAlt: '#0b6d86',
+      text: '#f5fcfd',
+      muted: '#b9d7df',
+      positive: '#45d09c',
+      negative: '#ef716f',
+      accent: '#24c4d8',
+      accentAlt: '#75dae8',
+      border: '#25859d',
+    },
+    motifs: ['connected journey path', 'terminal architecture', 'destination horizon', 'transparent travel records'],
+    market: {
+      provider: 'geckoterminal',
+      network: 'bsc',
+      contract: '0xc9bfb93d75645c4681bb63794abf1acad44725e7',
+      poolName: 'TRIP / WBNB',
+      tokenSide: 'base',
+    },
+  },
 ]
 
 export const ANALYTICS_MEDIA_ROWS = ANALYTICS_BRAND_FALLBACKS.map(item => ({

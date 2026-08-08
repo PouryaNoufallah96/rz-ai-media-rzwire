@@ -8,7 +8,7 @@ _TRANSLATION_MODEL_ID = 'google/gemini-2.5-flash-lite'
 _PROTECTED_NAMES = (
     'RZWire', 'MGC Coin', 'Meta Games Coin', 'Ranking Platform', 'Ranking.Game',
     'Oasis Coin', 'OASIS', 'RZOASIS', 'Jewelry Coin', 'Jewelry Token', 'Industrial Token', 'INDUSTRIAL',
-    'Real Estate Token', 'RealEstate', 'REALESTATE', 'CoinMarketCap',
+    'Real Estate Token', 'RealEstate', 'REALESTATE', 'Trip Token', 'TRIP', 'CoinMarketCap',
     'Bitcoin', 'Ethereum', 'Tether', 'Solana', 'Cardano', 'Dogecoin', 'Polkadot',
     'Avalanche', 'Chainlink', 'Polygon', 'Litecoin', 'Arbitrum', 'Optimism',
     'Uniswap', 'MakerDAO', 'MetaMask', 'Telegram', 'Binance', 'Coinbase', 'Kraken',

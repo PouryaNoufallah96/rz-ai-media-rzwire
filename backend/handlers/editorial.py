@@ -125,6 +125,7 @@ def handle_editorial_select(body):
         'Jewelry Coin':     'Digital Jewelry · NFTs · Marketplace · Physical Craft',
         'Industrial Token': 'Industry 4.0 · Smart Factories · Supply Chains · Industrial Education',
         'Real Estate Token': 'Property Tokenization · Ownership · Digital Real Estate · Community',
+        'Trip Token': 'Travel / Tourism / Connected Journeys / Transparent Records',
     }
     brand_descs_text = '\n'.join(
         f'  - {m}: {brand_descs.get(m, "Crypto media brand")}' for m in sel_media

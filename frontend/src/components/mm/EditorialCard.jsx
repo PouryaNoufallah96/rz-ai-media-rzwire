@@ -10,7 +10,7 @@ const STATUS_BADGE = {
   scheduled: <span className="sbadge sb-scheduled" style={{fontSize:8.5}}>● Scheduled</span>,
   published: <span className="sbadge sb-published" style={{fontSize:8.5}}>● Published</span>,
 }
-const MK_LABEL = {'MGC Coin':'MGC','Ranking Platform':'RK','Oasis Coin':'OAS','Jewelry Coin':'JWL','Industrial Token':'IND','Real Estate Token':'REA'}
+const MK_LABEL = {'MGC Coin':'MGC','Ranking Platform':'RK','Oasis Coin':'OAS','Jewelry Coin':'JWL','Industrial Token':'IND','Real Estate Token':'REA','Trip Token':'TRIP'}
 
 export default function EditorialCard({ card, onDragStart }) {
   const setActiveCard = useMmStore(s => s.setActiveCard)

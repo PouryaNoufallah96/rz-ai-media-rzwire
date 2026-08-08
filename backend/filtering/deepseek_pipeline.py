@@ -95,7 +95,8 @@ Return ONLY this JSON (replace … with real data):
     "Oasis Coin":       [...],
     "Jewelry Coin":     [...],
     "Industrial Token": [...],
-    "Real Estate Token": [...]
+    "Real Estate Token": [...],
+    "Trip Token":        [...]
   }}
 }}
 Omit any brand not in the PUBLICATIONS list above. If a brand has no suitable articles, set its value to [].

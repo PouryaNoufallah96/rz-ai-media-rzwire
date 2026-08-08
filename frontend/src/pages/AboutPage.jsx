@@ -4,6 +4,9 @@ import mgcLogo from '../assets/brands/mgc-coin-logo.png'
 import rankingLogo from '../assets/brands/ranking-platform-logo.png'
 import oasisLogo from '../assets/brands/oasis-coin-logo.png'
 import jewelryLogo from '../assets/brands/jewelry-coin-logo.png'
+const industrialLogo = '/brands/industrial-coin-logo.png'
+const realEstateLogo = '/brands/real-estate-coin-logo.png'
+const tripLogo = '/brands/trip-coin-logo.png'
 import { Link } from '../router'
 import './AboutPage.css'
 
@@ -36,13 +39,34 @@ const BRANDS = [
     logo: jewelryLogo,
     color: '#b795ff',
   },
+  {
+    name: 'Industrial Token',
+    label: 'Connected industry',
+    description: 'Smart factories, industrial education, supply-chain transparency, and real-economy systems.',
+    logo: industrialLogo,
+    color: '#f4c224',
+  },
+  {
+    name: 'Real Estate Token',
+    label: 'Property participation',
+    description: 'Property experiences, transparent records, digital twins, and community-led participation.',
+    logo: realEstateLogo,
+    color: '#0b8f91',
+  },
+  {
+    name: 'Trip Token',
+    label: 'Connected journeys',
+    description: 'Travel technology, tourism participation, transparent records, and traveler-focused services.',
+    logo: tripLogo,
+    color: '#24c4d8',
+  },
 ]
 
 const WORKFLOW = [
   ['01', 'Listen', 'Bring trusted RSS publishers and Telegram channels into a single live signal stream.'],
   ['02', 'Understand', 'Analyze relevance, quality, risk, and opportunity before a story reaches a brand lane.'],
   ['03', 'Route', 'Match every useful signal to the brand whose audience, goals, and voice it serves best.'],
-  ['04', 'Create', 'Build platform-ready copy and art direction without flattening four identities into one.'],
+  ['04', 'Create', 'Build platform-ready copy and art direction without flattening seven identities into one.'],
   ['05', 'Control', 'Review, edit, save, schedule, and publish from one accountable human-controlled workspace.'],
 ]
 
@@ -66,7 +90,7 @@ export default function AboutPage() {
             <div className="about-kicker"><span /> RZWire editorial operating system</div>
             <h1>Signals in.<br /><em>Stories out.</em></h1>
             <p className="about-hero__lead">
-              RZWire is the private intelligence and publishing workspace behind six distinct digital brands.
+              RZWire is the private intelligence and publishing workspace behind seven distinct digital brands.
               It turns a constant flow of news into deliberate, brand-ready communication.
             </p>
             <div className="about-hero__actions">

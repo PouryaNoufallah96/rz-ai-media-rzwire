@@ -8,6 +8,7 @@ import oasisLogo from '../../assets/brands/oasis-coin-logo.png'
 import jewelryLogo from '../../assets/brands/jewelry-coin-logo.png'
 const industrialLogo = '/brands/industrial-coin-logo.png'
 const realEstateLogo = '/brands/real-estate-coin-logo.png'
+const tripLogo = '/brands/trip-coin-logo.png'
 
 const CHECK_SVG = <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#171c26" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
 const CHECK_SVG_W = <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -42,6 +43,7 @@ const BRAND_ABBREVIATIONS = {
   'Jewelry Coin':'JWL',
   'Industrial Token':'IND',
   'Real Estate Token':'REA',
+  'Trip Token':'TRIP',
 }
 
 function TelegramSourceChip({ label, channel, selected, onClick }) {
@@ -198,6 +200,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
               {m:'Jewelry Coin',     color:'#A89CFF',abbr:'JWL',logo:jewelryLogo, sub:tr('Digital Jewelry · NFTs · Marketplace')},
               {m:'Industrial Token', color:'#F4C224',abbr:'IND',logo:industrialLogo, sub:tr('Industry 4.0 · Supply Chains · Education')},
               {m:'Real Estate Token', color:'#0B8F91',abbr:'REA',logo:realEstateLogo, sub:tr('Property · Ownership · Digital Real Estate')},
+              {m:'Trip Token', color:'#24C4D8',abbr:'TRIP',logo:tripLogo, sub:tr('Travel · Tourism · Connected Journeys')},
             ].map(({m,color,abbr,logo,sub}) => (
               <div key={m}>
                 <ToggleRow on={selectedMedia.includes(m)} color={color} label={m} sub={sub} abbr={abbr} logo={logo} onClick={()=>toggleMedia(m)} />

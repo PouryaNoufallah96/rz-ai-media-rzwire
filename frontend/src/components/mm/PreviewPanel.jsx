@@ -10,6 +10,7 @@ import oasisLogoUrl from '../../assets/brands/oasis-coin-logo.png'
 import jewelryLogoUrl from '../../assets/brands/jewelry-coin-logo.png'
 import industrialLogoUrl from '/brands/industrial-coin-logo.png'
 import realEstateLogoUrl from '/brands/real-estate-footer-logo.png'
+import tripLogoUrl from '/brands/trip-footer-logo.png'
 import SchedulePicker from './SchedulePicker'
 
 const STATUS_CLASSES = {ready:'sb-ready',image:'sb-image',approved:'sb-approved',scheduled:'sb-scheduled',published:'sb-published',saved:'sb-saved'}
@@ -27,6 +28,7 @@ const MEDIA_LOGOS = {
   jewelrycoin: jewelryLogoUrl,
   industrialtoken: industrialLogoUrl,
   realestatetoken: realEstateLogoUrl,
+  triptoken: tripLogoUrl,
 }
 const brandLogoPromises = new Map()
 

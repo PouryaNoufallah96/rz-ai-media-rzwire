@@ -65,12 +65,12 @@ export const TELEGRAM_SOURCE_PROFILES = {
   DecryptNews: { category:'news', focus:'Web3, culture, and accessible crypto reporting.', tags:['Web3', 'Culture', 'News'], brands:['Ranking Platform', 'Oasis Coin', 'Jewelry Coin'] },
   lookonchainchannel: { category:'onchain', focus:'Wallet movements, whale activity, and on-chain signals.', tags:['On-chain', 'Whales', 'Alerts'], brands:['MGC Coin', 'Oasis Coin'] },
   whale_alert_io: { category:'onchain', focus:'Large transfers and supply movement alerts.', tags:['Whales', 'Alerts', 'Flows'], brands:['MGC Coin', 'Oasis Coin'] },
-  CoinMarketCapAnnouncements: { category:'exchange', focus:'Listings, token events, and platform campaigns.', tags:['Listings', 'Campaigns', 'Tokens'], brands:['MGC Coin', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token'] },
-  CoinMarketCap: { category:'data', focus:'Broad market data and ecosystem updates.', tags:['Data', 'Markets', 'Tokens'], brands:['Oasis Coin', 'MGC Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token'] },
+  CoinMarketCapAnnouncements: { category:'exchange', focus:'Listings, token events, and platform campaigns.', tags:['Listings', 'Campaigns', 'Tokens'], brands:['MGC Coin', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token', 'Trip Token'] },
+  CoinMarketCap: { category:'data', focus:'Broad market data and ecosystem updates.', tags:['Data', 'Markets', 'Tokens'], brands:['Oasis Coin', 'MGC Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token', 'Trip Token'] },
   WatcherGuru: { category:'news', focus:'Fast crypto, macro, and market headlines.', tags:['News', 'Macro', 'Markets'], brands:['Oasis Coin'] },
   wublockchainenglish: { category:'research', focus:'Asia, mining, exchange, and policy developments.', tags:['Asia', 'Mining', 'Policy'], brands:['Oasis Coin', 'MGC Coin'] },
-  binance_announcements: { category:'exchange', focus:'Exchange products, listings, campaigns, and launches.', tags:['Exchange', 'Listings', 'Campaigns'], brands:['MGC Coin', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token'] },
-  OKXAnnouncements: { category:'exchange', focus:'OKX product, listing, and ecosystem announcements.', tags:['Exchange', 'Listings', 'Web3'], brands:['MGC Coin', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token'] },
+  binance_announcements: { category:'exchange', focus:'Exchange products, listings, campaigns, and launches.', tags:['Exchange', 'Listings', 'Campaigns'], brands:['MGC Coin', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token', 'Trip Token'] },
+  OKXAnnouncements: { category:'exchange', focus:'OKX product, listing, and ecosystem announcements.', tags:['Exchange', 'Listings', 'Web3'], brands:['MGC Coin', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token', 'Trip Token'] },
   cryptoquant_official: { category:'data', focus:'On-chain metrics and market structure research.', tags:['On-chain', 'Data', 'Research'], brands:['Oasis Coin', 'MGC Coin'] },
   glassnode: { category:'data', focus:'Institutional-grade on-chain and market research.', tags:['On-chain', 'Research', 'Markets'], brands:['Oasis Coin', 'MGC Coin'] },
   crypto_news: { category:'news', focus:'Broad daily crypto news coverage.', tags:['News', 'Markets', 'Web3'], brands:['Oasis Coin', 'MGC Coin'] },
@@ -79,9 +79,9 @@ export const TELEGRAM_SOURCE_PROFILES = {
   dwflabs: { category:'funding', focus:'Market-maker, investment, and ecosystem activity.', tags:['Funding', 'Liquidity', 'Web3'], brands:['MGC Coin', 'Oasis Coin'] },
   gameechannel: { category:'gaming', focus:'Gaming, Telegram community, and engagement signals.', tags:['Gaming', 'Community', 'TON'], brands:['Ranking Platform', 'MGC Coin', 'Oasis Coin'] },
   polymarketnow: { category:'markets', focus:'Prediction-market odds and live event signals.', tags:['Prediction', 'Markets', 'Signals'], brands:['Ranking Platform', 'MGC Coin'] },
-  innmind: { category:'funding', focus:'Web3 startups, fundraising, founders, and venture activity.', tags:['Startups', 'Funding', 'Founders'], brands:['Ranking Platform', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token'] },
-  chainalysisinc: { category:'security', focus:'Compliance, regulation, investigations, and risk.', tags:['Regulation', 'Compliance', 'Risk'], brands:['MGC Coin', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token'] },
-  hackenai: { category:'security', focus:'Smart-contract security, audits, and project risk.', tags:['Security', 'Audits', 'Risk'], brands:['MGC Coin', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token'] },
+  innmind: { category:'funding', focus:'Web3 startups, fundraising, founders, and venture activity.', tags:['Startups', 'Funding', 'Founders'], brands:['Ranking Platform', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token', 'Trip Token'] },
+  chainalysisinc: { category:'security', focus:'Compliance, regulation, investigations, and risk.', tags:['Regulation', 'Compliance', 'Risk'], brands:['MGC Coin', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token', 'Trip Token'] },
+  hackenai: { category:'security', focus:'Smart-contract security, audits, and project risk.', tags:['Security', 'Audits', 'Risk'], brands:['MGC Coin', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token', 'Trip Token'] },
   lotdhl: { category:'logistics', focus:'Global logistics, supply chains, and trade signals.', tags:['Logistics', 'Supply chain', 'Trade'], brands:['Jewelry Coin', 'Industrial Token'] },
   MultiBankio_Announcements: { category:'institutional', focus:'Traditional finance, brokerage, and market activity.', tags:['Finance', 'Trading', 'Markets'], brands:['Oasis Coin', 'MGC Coin'] },
   coinsph_announcements: { category:'exchange', focus:'Regional exchange campaigns, launches, and adoption.', tags:['Exchange', 'Campaigns', 'Adoption'], brands:['MGC Coin', 'Oasis Coin', 'Jewelry Coin'] },
@@ -107,9 +107,9 @@ export const SRC_COLORS = {
   'Gram':'#22d3ee','Unfolded':'#ef4455',
 }
 
-export const MEDIA_LIST      = ['MGC Coin','Ranking Platform','Oasis Coin','Jewelry Coin','Industrial Token','Real Estate Token']
+export const MEDIA_LIST      = ['MGC Coin','Ranking Platform','Oasis Coin','Jewelry Coin','Industrial Token','Real Estate Token','Trip Token']
 export const PLAT_LIST       = ['X','Telegram','Instagram']
-export const MEDIA_COLORS    = {'MGC Coin':'#FFD21A','Ranking Platform':'#7568F0','Oasis Coin':'#18C7CF','Jewelry Coin':'#A89CFF','Industrial Token':'#F4C224','Real Estate Token':'#0B8F91'}
+export const MEDIA_COLORS    = {'MGC Coin':'#FFD21A','Ranking Platform':'#7568F0','Oasis Coin':'#18C7CF','Jewelry Coin':'#A89CFF','Industrial Token':'#F4C224','Real Estate Token':'#0B8F91','Trip Token':'#24C4D8'}
 export const PLAT_COLORS     = {X:'#00d4ff',Telegram:'#00d4a0',Instagram:'#e1306c'}
 
 export const IMAGE_MODEL_OPTIONS = [

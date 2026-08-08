@@ -101,10 +101,23 @@ BRAND_CONFIGS = {
             'sustainable real estate', 'Real Estate Token', 'RealEstate token', 'REALESTATE',
         ],
     },
+    'trip_token': {
+        'name':       'Trip Token',
+        'threshold':  DEFAULT_THRESHOLD,
+        'value_gate': False,
+        'source_bias': {'CoinDesk', 'Cointelegraph', 'Decrypt', 'The Block', 'BeInCrypto'},
+        'anchor_phrases': [
+            'travel blockchain', 'tourism blockchain', 'travel technology', 'tourism technology',
+            'digital travel identity', 'travel loyalty', 'tourism rewards', 'connected journey',
+            'travel records', 'ticket transparency', 'hotel technology', 'smart tourism',
+            'responsible tourism', 'travel insurance technology', 'Trip Token', 'TRIP token',
+            'BEP-20', 'BNB Smart Chain',
+        ],
+    },
 }
 
 # Ordered list used for consistent iteration
-BRAND_KEYS = ['mgc_coin', 'ranking_platform', 'oasis_coin', 'jewelry_coin', 'industrial_token', 'real_estate_token']
+BRAND_KEYS = ['mgc_coin', 'ranking_platform', 'oasis_coin', 'jewelry_coin', 'industrial_token', 'real_estate_token', 'trip_token']
 
 # Brand display-name ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ key lookup (for incoming selectedMedia strings)
 BRAND_NAME_TO_KEY = {cfg['name']: key for key, cfg in BRAND_CONFIGS.items()}
@@ -196,7 +209,18 @@ BRAND_EDITORIAL_DESCS = {
         'REJECTS: Unrelated property listings, unsupported ownership or legal claims, guaranteed returns, price '
         'speculation without project relevance, and claims that proposed platform features are already live.'
     ),
+    'Trip Token': (
+        'IDENTITY: Trip Token (TRIP) is a BEP-20 travel and tourism ecosystem described around connected '
+        'journeys, transparent records, participation, loyalty concepts, and services for travelers and tourism '
+        'businesses. Whitepaper and roadmap features must be framed as proposed unless a current source confirms '
+        'they are live.\n'
+        'AUDIENCE: Travelers, tourism businesses, hospitality communities, travel-technology builders, and '
+        'users interested in responsible blockchain-enabled travel services.\n'
+        'COVERS: Travel technology, tourism infrastructure, transparent journey records, loyalty concepts, '
+        'connected mobility, hospitality, responsible tourism, smart contracts, and BNB Smart Chain utility.\n'
+        'REJECTS: Unsupported claims of live booking, insurance, instant refunds, rewards, partnerships, route '
+        'coverage, or guaranteed savings; general token speculation without travel relevance; and unrelated news.'
+    ),
 }
-
 
 

@@ -20,7 +20,7 @@ _FAQ_MATCH_STOPWORDS = {
     'Ø§Ø²', 'Ø§Ø³Øª', 'Ø§ÛŒÙ†', 'Ø¨Ø§', 'Ø¨Ø±Ø§ÛŒ', 'Ø¨Ù‡', 'Ú†Ù‡', 'Ú†Ú¯ÙˆÙ†Ù‡', 'Ú†ÛŒØ³Øª', 'Ø¯Ø±',
     'Ø±Ø§', 'Ø±ÙˆÛŒ', 'Ù…Ù†', 'Ù…ÛŒ', 'Ùˆ', 'ÛŒØ§', 'Ú©Ø¬Ø§', 'Ú©Ù‡',
 }
-_FAQ_CONTEXT_ONLY_PHRASES = {'mgc coin', 'ranking platform', 'oasis coin', 'jewelry coin', 'industrial token', 'real estate token'}
+_FAQ_CONTEXT_ONLY_PHRASES = {'mgc coin', 'ranking platform', 'oasis coin', 'jewelry coin', 'industrial token', 'real estate token', 'trip token'}
 
 
 def _now_iso():
