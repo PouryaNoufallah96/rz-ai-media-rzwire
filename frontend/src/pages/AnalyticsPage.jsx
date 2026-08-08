@@ -20,6 +20,7 @@ import {
 import { TEMPLATE_CATEGORIES, TEMPLATE_VARIANTS, findTemplateVariant } from '../components/analytics/analyticsTemplates'
 import { generateCaptionsInBackground } from '../utils/captionJobs'
 import { applyOfficialAnalyticsLogo } from '../utils/analyticsBrandLogo'
+import { applyApprovedAnalyticsChart, approvedChartPlacementInstruction } from '../utils/analyticsChartComposite'
 import { createAnalyticsStyleReference } from '../utils/analyticsStyleReference'
 import '../components/analytics/AnalyticsCompositions.css'
 import './AnalyticsPage.css'
@@ -658,7 +659,7 @@ export default function AnalyticsPage() {
             seriesMetadata:approvedSeries.map(item => ({id:item.id, tokenId:item.tokenId, symbol:item.symbol, name:item.name, role:item.role, color:item.color, startPrice:item.startPrice, endPrice:item.endPrice, changePercent:item.changePercent, coverageStart:item.coverageStart, coverageEnd:item.coverageEnd})),
             chartStyle:approvedStyle,
             referenceImages:[approvalSample, approvedChart],
-            imageDirection:`Treat the sanitized ${selectedTemplate.name} sample only as a style and composition map. Never use, infer, reconstruct, or copy any sample ticker, price, percentage, date, chart line, legend, logo, domain, or claim. Recreate that premium composition for ${brandTheme.label} using only the exact supplied copy, verified series metadata, and authoritative approved chart for factual content. Keep the complete approved chart sharp and physically inside the reserved chart aperture or device screen. The Art Director brief must fully specify the card's geometry, module proportions, hierarchy, typography, spacing, materials, lighting, centered logo/footer placement, and forbidden changes. ${direction}`,
+            imageDirection:`Treat the sanitized ${selectedTemplate.name} sample only as a style and composition map. Never use, infer, reconstruct, or copy any sample ticker, price, percentage, date, chart line, legend, logo, domain, or claim. ${approvedChartPlacementInstruction(selectedTemplate.categoryId)} The exact approved PNG chart will be composited there by the application after generation, so leave this aperture visually clean and never draw a chart anywhere in the generated artwork. The Art Director brief must fully specify the card's geometry, module proportions, hierarchy, typography, spacing, materials, lighting, centered logo/footer placement, and forbidden changes. ${direction}`,
           })})
       const started = await response.json().catch(() => ({}))
       if (!response.ok || !started.jobId) throw new Error(started.error || 'The Analytics Art Director could not start the image job.')
@@ -680,7 +681,11 @@ export default function AnalyticsPage() {
       if (!data.imageB64) throw new Error(data.error || 'The Analytics Art Director did not return a finished post.')
       const finishedPost = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
       await preloadImage(finishedPost)
-      const brandedPost = await applyOfficialAnalyticsLogo(finishedPost, {
+      const chartLockedPost = await applyApprovedAnalyticsChart(finishedPost, {
+        chartDataUrl:approvedChart,
+        categoryId:selectedTemplate.categoryId,
+      })
+      const brandedPost = await applyOfficialAnalyticsLogo(chartLockedPost, {
         logoUrl:themeOwner.footerLogo,
         categoryId:selectedTemplate.categoryId,
       })
