@@ -100,8 +100,8 @@ function BrandSection({ brand }) {
   // generation, while showing only Telegram News + publishing platforms.
   const showModelLanes = telegramMode !== 'telegram_only' && !!editorial
   const col = MEDIA_COLORS[brand] || '#a7abb2'
-  const abbrs = {'MGC Coin':'MGC','Ranking Platform':'RK','Oasis Coin':'OAS','Jewelry Coin':'JWL','Industrial Token':'IND'}
-  const tags  = {'MGC Coin':'Gaming Utility · Rewards · BNB Smart Chain · RZ Ecosystem','Ranking Platform':'Competition · Profiles · Teams · Tournaments · Community','Oasis Coin':'Metaverse · Gaming · Digital Worlds · Future Utility','Jewelry Coin':'Digital Jewelry · NFTs · Marketplace · Physical Craft','Industrial Token':'Industry 4.0 · Smart Factories · Supply Chains · Education'}
+  const abbrs = {'MGC Coin':'MGC','Ranking Platform':'RK','Oasis Coin':'OAS','Jewelry Coin':'JWL','Industrial Token':'IND','Real Estate Token':'REA'}
+  const tags  = {'MGC Coin':'Gaming Utility · Rewards · BNB Smart Chain · RZ Ecosystem','Ranking Platform':'Competition · Profiles · Teams · Tournaments · Community','Oasis Coin':'Metaverse · Gaming · Digital Worlds · Future Utility','Jewelry Coin':'Digital Jewelry · NFTs · Marketplace · Physical Craft','Industrial Token':'Industry 4.0 · Smart Factories · Supply Chains · Education','Real Estate Token':'Property Tokenization · Ownership · Digital Real Estate · Community'}
   const totalCards = (showModelLanes ? selectedModels.reduce((s,k) => s+(modelLanes[k]?.[brand]?.length||0), 0) : 0)
     + (telegramLanes[brand]?.length || 0)
     + selectedPlatforms.reduce((s,p) => s+(platformLanes[brand]?.[p]?.length||0), 0)

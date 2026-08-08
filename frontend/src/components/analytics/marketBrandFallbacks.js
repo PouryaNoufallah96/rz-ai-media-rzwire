@@ -123,6 +123,37 @@ export const ANALYTICS_BRAND_FALLBACKS = [
       tokenSide: 'base',
     },
   },
+  {
+    id: 'real-estate',
+    name: 'Real Estate Token',
+    symbol: 'REALESTATE',
+    logoUrl: '/brands/real-estate-coin-logo.png',
+    footerLogoUrl: '/brands/real-estate-footer-logo.png',
+    footer: 'real-estate.game',
+    domain: 'real-estate.game',
+    chartColor: '#0b8f91',
+    theme: {
+      background: '#052f31',
+      backgroundAlt: '#0a6668',
+      surface: '#0b4446',
+      surfaceAlt: '#116f72',
+      text: '#fffdf7',
+      muted: '#b9d5d3',
+      positive: '#45d09c',
+      negative: '#ef716f',
+      accent: '#dfbd69',
+      accentAlt: '#17aeb2',
+      border: '#318b8c',
+    },
+    motifs: ['verified property title', 'architectural digital twin', 'champagne-gold ownership path', 'sustainable city grid'],
+    market: {
+      provider: 'geckoterminal',
+      network: 'bsc',
+      contract: '0x32477cf0e324f9a9cb49e8803fa4de9f80f8d0d4',
+      poolName: 'RealEstate / USDT',
+      tokenSide: 'base',
+    },
+  },
 ]
 
 export const ANALYTICS_MEDIA_ROWS = ANALYTICS_BRAND_FALLBACKS.map(item => ({

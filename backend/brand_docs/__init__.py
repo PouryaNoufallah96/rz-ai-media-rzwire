@@ -39,6 +39,11 @@ _BRAND_FILES = {
         'Industrial Social Channels.md',
         'Industrial Market Listing.md',
     ),
+    'Real Estate Token': (
+        'Real Estate Token.md',
+        'Real Estate Social Channels.md',
+        'Real Estate Market Listing.md',
+    ),
 }
 
 _cache: dict[str, str] = {}

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 376 576" role="img" aria-labelledby="title desc">
+  <title id="title">Real Estate Token logo</title>
+  <desc id="desc">Two folded architectural ribbons in metallic gold and deep teal.</desc>
+  <defs>
+    <linearGradient id="teal" x1="0.08" y1="0.18" x2="0.95" y2="0.82">
+      <stop offset="0" stop-color="#004f50"/>
+      <stop offset="0.52" stop-color="#006768"/>
+      <stop offset="1" stop-color="#008084"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0.03" y1="0.66" x2="0.96" y2="0.24">
+      <stop offset="0" stop-color="#a96500"/>
+      <stop offset="0.21" stop-color="#d49a26"/>
+      <stop offset="0.52" stop-color="#fff4a8"/>
+      <stop offset="0.75" stop-color="#f2df88"/>
+      <stop offset="1" stop-color="#d4ae59"/>
+    </linearGradient>
+    <radialGradient id="goldGlow" cx="58%" cy="46%" r="61%">
+      <stop offset="0" stop-color="#fffbd2" stop-opacity="0.68"/>
+      <stop offset="0.56" stop-color="#fff2a6" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#9b5b00" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <path fill="url(#teal)" d="M32 188v203c0 20 9 31 27 40l277 129c13 6 22 0 22-15V370c0-20-8-31-25-39l-129-59-155-70c-11-5-17-9-17-14Z"/>
+  <path fill="url(#gold)" d="M32 166c0-11 5-18 16-23L337 9c13-6 21 0 21 15v176c0 18-8 29-24 37l-130 59-155-70c-11-5-17-10-17-22v-38Z"/>
+  <path fill="url(#goldGlow)" d="M32 166c0-11 5-18 16-23L337 9c13-6 21 0 21 15v176c0 18-8 29-24 37l-130 59-155-70c-11-5-17-10-17-22v-38Z"/>
+</svg>

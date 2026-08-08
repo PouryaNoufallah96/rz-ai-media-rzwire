@@ -66,7 +66,7 @@ export default function AboutPage() {
             <div className="about-kicker"><span /> RZWire editorial operating system</div>
             <h1>Signals in.<br /><em>Stories out.</em></h1>
             <p className="about-hero__lead">
-              RZWire is the private intelligence and publishing workspace behind four distinct digital brands.
+              RZWire is the private intelligence and publishing workspace behind six distinct digital brands.
               It turns a constant flow of news into deliberate, brand-ready communication.
             </p>
             <div className="about-hero__actions">

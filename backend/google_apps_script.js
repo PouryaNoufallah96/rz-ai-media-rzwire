@@ -14,7 +14,7 @@
 // ── One-time setup: creates the spreadsheet tabs ──────────────────────────────
 function setup() {
   const ss   = SpreadsheetApp.getActiveSpreadsheet();
-  const tabs = ['MGC Coin', 'Ranking Platform', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token'];
+  const tabs = ['MGC Coin', 'Ranking Platform', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token', 'Real Estate Token'];
   const headers = [
     'ID', 'Timestamp', 'Title', 'Source', 'Source URL',
     'Media Brand', 'Platform', 'Generated Copy', 'Hashtags',

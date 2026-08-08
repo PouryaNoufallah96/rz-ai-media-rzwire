@@ -89,10 +89,22 @@ BRAND_CONFIGS = {
             'Industrial Token', 'INDUSTRIAL token',
         ],
     },
+    'real_estate_token': {
+        'name':       'Real Estate Token',
+        'threshold':  DEFAULT_THRESHOLD,
+        'value_gate': False,
+        'source_bias': {'The Block', 'CoinDesk', 'Cointelegraph', 'Chainalysis Blog', 'DL News'},
+        'anchor_phrases': [
+            'real estate tokenization', 'tokenized property', 'fractional property ownership',
+            'digital real estate', 'property blockchain', 'on-chain title', 'property provenance',
+            'real estate crowdfunding', 'proptech', 'smart property contract',
+            'sustainable real estate', 'Real Estate Token', 'RealEstate token', 'REALESTATE',
+        ],
+    },
 }
 
 # Ordered list used for consistent iteration
-BRAND_KEYS = ['mgc_coin', 'ranking_platform', 'oasis_coin', 'jewelry_coin', 'industrial_token']
+BRAND_KEYS = ['mgc_coin', 'ranking_platform', 'oasis_coin', 'jewelry_coin', 'industrial_token', 'real_estate_token']
 
 # Brand display-name ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ key lookup (for incoming selectedMedia strings)
 BRAND_NAME_TO_KEY = {cfg['name']: key for key, cfg in BRAND_CONFIGS.items()}
@@ -172,8 +184,19 @@ BRAND_EDITORIAL_DESCS = {
         'REJECTS: General token-price speculation without industrial relevance, unsupported live-feature or '
         'partner claims, investment guarantees, and unrelated market news.'
     ),
+    'Real Estate Token': (
+        'IDENTITY: Real Estate Token (REALESTATE) is a BEP-20 ecosystem connecting real-world property, '
+        'digital property experiences, transparent ownership records, fractional participation, and community-led '
+        'real estate activity. Whitepaper and roadmap features must be framed as proposed unless a current source '
+        'confirms they are live.\n'
+        'AUDIENCE: Property participants, developers, proptech builders, real estate communities, and users '
+        'interested in responsible blockchain-enabled property access.\n'
+        'COVERS: Property tokenization, digital twins, transparent title history, fractional participation, '
+        'real estate crowdfunding, smart contracts, sustainable development, and digital property experiences.\n'
+        'REJECTS: Unrelated property listings, unsupported ownership or legal claims, guaranteed returns, price '
+        'speculation without project relevance, and claims that proposed platform features are already live.'
+    ),
 }
-
 
 
 

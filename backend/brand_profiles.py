@@ -2361,10 +2361,146 @@ Hard routing rules:
     return profile
 
 
+def _real_estate_profile():
+    """Real Estate Token: credible teal-and-gold property editorial system."""
+    profile = _rzwire_profile(
+        'Real Estate Token',
+        (
+            'a BEP-20 real estate ecosystem connecting real-world property, digital property experiences, '
+            'fractional participation, transparent ownership records, and community-led property activity'
+        ),
+        (
+            'deep property teal (#052F31), architectural teal (#0B6668), verification cyan (#17AEB2), '
+            'champagne gold (#DFBD69), warm sunrise gold (#F2D58A), pearl white (#FFFDF7), '
+            'and controlled charcoal (#132C2D)'
+        ),
+        (
+            'architectural glass, pale limestone, brushed champagne metal, dark teal stone, precise scale '
+            'models, transparent title layers, natural timber, and restrained luminous network paths'
+        ),
+        (
+            'premium architectural photography or physically plausible photoreal 3D with credible buildings, '
+            'natural materials, deep teal atmosphere, warm gold light, restrained digital infrastructure, '
+            'generous negative space, and institutional editorial clarity'
+        ),
+        (
+            'contemporary residences, sustainable urban districts, property presentation suites, architectural '
+            'model rooms, title-verification scenes, coastal developments, and quiet pearl or teal editorial fields'
+        ),
+        {
+            'property tokenization': 'a credible contemporary property paired with restrained digital ownership layers',
+            'digital real estate': 'one physical building transitioning into an exact luminous architectural twin',
+            'fractional participation': 'diverse adults assembling transparent property modules into one development',
+            'ownership transparency': 'a building model above layered title-history records and verification nodes',
+            'property access': 'an elegant everyday still life pairing a familiar object with a precise modular home',
+            'sustainable development': 'a realistic green coastal district with solar roofs and integrated teal paths',
+            'global property network': 'credible property districts linked by restrained geographic light paths',
+        },
+        {
+            'family': 'concept_photo', 'headline': 'Property, made transparent', 'layout': 'art_only',
+            'data_elements': [], 'stage': 'photo_real', 'composition': 'left_type_block',
+            'energy': 'newsroom_neutral', 'accent': 'workspace_signal',
+            'subject_scene': (
+                'A premium contemporary residence at blue hour transitions into an exact cyan architectural '
+                'digital twin while a broad quiet teal field remains for editorial copy. No coin, dashboard, '
+                'price, key, deed text, or invented brand mark appears.'
+            ),
+        },
+        ['real estate token', 'realestate token', 'real-estate.game', 'realestate'],
+    )
+
+    profile.update({
+        'brand_name': 'Real Estate Token',
+        'brand_tagline': (
+            'Real Estate Token (REALESTATE), the BEP-20 property ecosystem described by the approved '
+            'whitepaper and official website'
+        ),
+        'brand_keywords': ['real estate token', 'realestate token', 'real-estate.game', 'realestate'],
+        'headline_max_words': 7,
+        'headline_uppercase': False,
+        'meme_enabled': False,
+        'mood_accent_default': 'workspace_signal',
+        'approved_directions': {
+            '01 property growth / concept_photo': 'credible property progression with champagne-gold value forms and one restrained teal rising path',
+            '02 digital real estate economy / concept_photo': 'diverse property professionals studying one physical-and-digital city model',
+            '03 verified property ownership / concept_photo': 'real contemporary home with a transparent title-verification layer',
+            '04 physical digital twin / concept_photo': 'one residence transitioning precisely from warm architecture into a cyan digital twin',
+            '05 global fractional ownership / concept_photo': 'realistic property district connected through a refined global network sphere',
+            '06 accessible property participation / hero_object': 'pearl-white everyday still life with a precise modular home and approachable scale',
+            '07 verified property transaction / hero_object': 'premium phone, embossed property deed, verification shield, and restrained ledger path',
+            '08 decentralized property records / concept_photo': 'luminous architectural model above layered transparent title-history records',
+            '09 collective property participation / concept_photo': 'diverse adults assembling property modules into one sustainable development',
+            '10 sustainable tokenized city / concept_photo': 'realistic coastal eco-district at sunrise with subtle network paths integrated into streets',
+        },
+        'approved_reference_assets': {
+            '01 property growth / concept_photo': 'brand_references/real-estate/approved/01-property-growth.png',
+            '02 digital real estate economy / concept_photo': 'brand_references/real-estate/approved/02-digital-real-estate-economy.png',
+            '03 verified property ownership / concept_photo': 'brand_references/real-estate/approved/03-verified-property-ownership.png',
+            '04 physical digital twin / concept_photo': 'brand_references/real-estate/approved/04-physical-digital-twin.png',
+            '05 global fractional ownership / concept_photo': 'brand_references/real-estate/approved/05-global-fractional-ownership.png',
+            '06 accessible property participation / hero_object': 'brand_references/real-estate/approved/06-accessible-property-participation.png',
+            '07 verified property transaction / hero_object': 'brand_references/real-estate/approved/07-verified-property-transaction.png',
+            '08 decentralized property records / concept_photo': 'brand_references/real-estate/approved/08-decentralized-property-records.png',
+            '09 collective property participation / concept_photo': 'brand_references/real-estate/approved/09-collective-property-participation.png',
+            '10 sustainable tokenized city / concept_photo': 'brand_references/real-estate/approved/10-sustainable-tokenized-city.png',
+        },
+        'anti_repetition_rules': (
+            'Do not repeat the same approved direction or property setting within the last 5 posts. Rotate among '
+            'residences, urban districts, title records, professional participation, accessible still life, and '
+            'sustainable development. Avoid repeating a house angle, hologram, shield, city model, hands, or globe. '
+            'Use one credible property idea per image and preserve broad room for clean editorial copy.'
+        ),
+        'routing_table': """
+Story category -> Primary family (fallback):
+- Property ownership, participation, community, access -> concept_photo (fallback: hero_object)
+- Title records, verification, transparency, smart contracts -> concept_photo (fallback: flat_explainer)
+- Digital real estate, metaverse property, digital twins -> concept_photo (fallback: hero_object)
+- Sustainable development and city infrastructure -> concept_photo (fallback: hero_object)
+- Token facts, verified supply, or one confirmed milestone -> big_number (fallback: stat_card)
+- Whitepaper utility explanation or dated roadmap phase -> flat_explainer (fallback: stat_card)
+- Official statement or concise evergreen message -> type_led (fallback: concept_photo)
+- Art-led evergreen identity without copy -> art_drop (fallback: hero_object)
+- Anything ambiguous -> concept_photo
+
+Hard routing rules:
+1. Use the workspace name Real Estate Token and the market symbol REALESTATE. It is a BEP-20 token, not a separate blockchain and not a property deed by itself.
+2. Features described only in the whitepaper or roadmap must be described as proposed, designed, planned, or future-facing unless an approved newer source verifies their live status.
+3. Never claim legal ownership transfer, title registration, property availability, rental yield, investment returns, guaranteed appreciation, regulatory approval, partnerships, or platform availability without a current approved source.
+4. Never use an actual market chart, contract address, wallet, exchange interface, token price, or price movement inside a Multimedia image.
+5. Never draw the Real Estate Token symbol, wordmark, or footer. Keep the bottom-left corner naturally clear for the deterministic official lockup.
+""".strip(),
+        'text_rules': """
+1. Headline: seven words or fewer, clear, concrete, and factual. Prefer property, access, ownership records, community, design, and infrastructure over investment language.
+2. All figures, dates, phases, percentages, prices, yields, property counts, partner names, and milestones must appear in the supplied approved source.
+3. Frame roadmap and whitepaper capabilities as proposed or planned unless current evidence proves they are live.
+4. Do not promise ownership rights, legal title, investment returns, passive income, appreciation, savings, security, compliance, or environmental impact.
+5. Do not put a contract address, QR code, buy button, market chart, exchange logo, wallet, fake deed text, or third-party dashboard in generated artwork.
+6. Never invent the Real Estate Token emblem or wordmark. The official lockup is added after generation; leave its bottom-left safe area seamless.
+""".strip(),
+    })
+    profile['frozen_style'].update({
+        'format': 'premium portrait 4:5 Real Estate Token editorial, composed for safe square cropping with one strong factual property story',
+        'headline_zone': 'reserve a broad uncluttered pearl, sky, teal, or dark-stone region for one concise headline and keep the bottom-left corner open for the official lockup',
+        'never': (
+            'generic crypto neon, floating coin swarms, copied property listings, fake deeds, fake interfaces, '
+            'impossible buildings, distorted architecture, public figures, price predictions, investment promises, '
+            'logo inventions, ornate key clichés, or dense tiny type'
+        ),
+    })
+    profile['extra_banned_subject_terms'] = sorted(set(profile.get('extra_banned_subject_terms', []) + [
+        'real estate logo', 'real estate token logo', 'realestate coin', 'coin pile', 'price chart',
+        'candlestick chart', 'trading dashboard', 'exchange listing', 'wallet screenshot', 'contract address',
+        'guaranteed yield', 'guaranteed appreciation', 'legal title certificate', 'verified partner',
+        'property for sale', 'real-estate.game',
+    ]))
+    return profile
+
+
 BRAND_IMAGE_PROFILES = {
     'MGC Coin': _mgc_profile(),
     'Ranking Platform': _ranking_profile(),
     'Oasis Coin': _oasis_profile(),
     'Jewelry Coin': _jewelry_profile(),
     'Industrial Token': _industrial_profile(),
+    'Real Estate Token': _real_estate_profile(),
 }

@@ -22,13 +22,15 @@ _PHRASE_ALIASES = {
     'jewellery coin': 'jewelry coin',
     'jewellery token': 'jewelry token',
     'industrial game': 'industrial token',
+    'realestate token': 'real estate token',
+    'real estate game': 'real estate token',
     'insta gram': 'instagram',
     'tele gram': 'telegram',
 }
 
 _EXTRA_VOCABULARY = {
     'account', 'analyze', 'article', 'brand', 'cache', 'caption', 'card',
-    'rzwire', 'mgc', 'ranking', 'oasis', 'jewelry', 'industrial', 'chatbot', 'coin',
+    'rzwire', 'mgc', 'ranking', 'oasis', 'jewelry', 'industrial', 'realestate', 'property', 'chatbot', 'coin',
     'content', 'copy', 'edit', 'faq', 'generate', 'hashtag', 'headline',
     'how', 'image', 'instagram', 'media', 'multimedia', 'post', 'preview',
     'publish', 'rss', 'save', 'schedule', 'source', 'telegram', 'translate',

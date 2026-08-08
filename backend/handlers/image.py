@@ -23,7 +23,7 @@ from analytics_image_pipeline import (assemble_analytics_prompt,
 from _branddoc import _brand_doc
 
 
-_LOGO_MEDIA_KEYS = {'mgccoin', 'rankingplatform', 'oasiscoin', 'jewelrycoin', 'industrialtoken'}
+_LOGO_MEDIA_KEYS = {'mgccoin', 'rankingplatform', 'oasiscoin', 'jewelrycoin', 'industrialtoken', 'realestatetoken'}
 _LOGO_SAFE_ZONE = (
     ' Keep the immediate bottom-left corner uncluttered for an official logo added after generation, '
     'but it must remain a seamless, natural continuation of the surrounding artwork. Do NOT create a '

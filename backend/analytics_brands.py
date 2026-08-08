@@ -139,6 +139,39 @@ ANALYTICS_BRANDS = {
             "coinMarketCapUrl": "https://coinmarketcap.com/currencies/industrial/",
         },
     },
+    "real-estate": {
+        "id": "real-estate",
+        "name": "Real Estate Token",
+        "symbol": "REALESTATE",
+        "enabled": True,
+        "logoUrl": "/brands/real-estate-coin-logo.png",
+        "footerLogoUrl": "/brands/real-estate-footer-logo.png",
+        "footer": "real-estate.game",
+        "domain": "real-estate.game",
+        "chartColor": "#0b8f91",
+        "theme": {
+            "background": "#052f31", "backgroundAlt": "#0a6668", "surface": "#0b4446",
+            "surfaceAlt": "#116f72", "text": "#fffdf7", "muted": "#b9d5d3",
+            "positive": "#45d09c", "negative": "#ef716f", "accent": "#dfbd69",
+            "accentAlt": "#17aeb2", "border": "#318b8c",
+        },
+        "motifs": ["verified property title", "architectural digital twin", "champagne-gold ownership path", "sustainable city grid"],
+        "backgroundScenes": [
+            "A premium contemporary residence at blue hour transitioning into an exact cyan architectural digital twin, with warm interior light, deep property teal atmosphere, and generous editorial negative space.",
+            "A realistic sustainable coastal property district at sunrise, with restrained teal verification paths integrated into streets, champagne-gold light, credible architecture, and broad calm sky for editorial hierarchy.",
+            "A refined property-title scene where a luminous architectural model rises above layered transparent ownership records, dark teal stone surfaces, subtle gold verification nodes, and institutional cinematic depth.",
+        ],
+        "artDirectorProfile": "Real Estate Token",
+        "imagePrompt": "Premium Real Estate Token market editorial with credible contemporary architecture, deep property teal, champagne gold, pearl white, restrained digital ownership infrastructure, cinematic realism, and clear factual hierarchy.",
+        "market": {
+            "provider": "geckoterminal", "network": "bsc",
+            "contract": "0x32477cf0e324f9a9cb49e8803fa4de9f80f8d0d4",
+            "pool": "0x742f3a595c83d6a9aa3417c2c7c3f36fb6ee4ac4",
+            "poolName": "RealEstate / USDT", "tokenSide": "base",
+            "coinMarketCapId": "35949",
+            "coinMarketCapUrl": "https://coinmarketcap.com/currencies/realestate/",
+        },
+    },
 }
 
 
