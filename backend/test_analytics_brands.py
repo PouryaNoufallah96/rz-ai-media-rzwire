@@ -61,6 +61,34 @@ class AnalyticsBrandRegistryTests(unittest.TestCase):
         for relative_path in assets.values():
             self.assertTrue((backend_root / relative_path).is_file(), relative_path)
 
+    def test_industrial_and_real_estate_references_use_distinct_editorial_families(self):
+        from brand_profiles import BRAND_IMAGE_PROFILES
+
+        expected = {
+            "Industrial Token": {
+                "factory_campaign", "digital_twin_lab", "traceability_route", "challenge_arena",
+                "sustainable_campus", "predictive_machine", "simulation_classroom",
+                "verified_service_network", "ranking_forum", "real_economy_landscape",
+            },
+            "Real Estate Token": {
+                "property_progression", "digital_economy_room", "title_verification",
+                "architectural_twin", "global_property_network", "access_still_life",
+                "verified_transaction", "property_record_stack", "participation_table",
+                "sustainable_property_city",
+            },
+        }
+        for brand, expected_families in expected.items():
+            profile = BRAND_IMAGE_PROFILES[brand]
+            direction_families = {
+                key.rsplit("/", 1)[1].strip() for key in profile["approved_directions"]
+            }
+            self.assertEqual(direction_families, expected_families)
+            self.assertEqual(set(profile["approved_directions"]), set(profile["approved_reference_assets"]))
+            for family_name in expected_families:
+                family = profile["families"][family_name]
+                for axis, value in family["default_axes"].items():
+                    self.assertIn(value, profile["axes"][axis], f"{brand}: {family_name}/{axis}")
+
     def test_duplicate_id_or_symbol_fails_closed(self):
         duplicate_id = [copy.deepcopy(ANALYTICS_BRANDS["mgc"]), copy.deepcopy(ANALYTICS_BRANDS["oasis"])]
         duplicate_id[1]["id"] = "mgc"

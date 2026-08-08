@@ -2229,6 +2229,258 @@ F. Zero-copy identity artwork
     return profile
 
 
+def _industrial_editorial_families():
+    """Industrial's approved references expressed as genuinely distinct layouts."""
+    return {
+        'factory_campaign': {
+            'name': 'SMART FACTORY CAMPAIGN',
+            'skeleton': (
+                'A credible advanced factory fills roughly 60 percent of the frame while a deep-indigo '
+                'architectural copy field occupies the remaining side. One precise gold robotic cell is '
+                'the focal point; conveyor, safety barriers, and workers remain secondary and physically plausible.'
+            ),
+            'text_policy': 'One concise headline and optionally one short factual support line.',
+            'default_axes': {'stage': 'industrial_photo', 'composition': 'split_editorial', 'energy': 'precise_confidence', 'accent': 'violet_gold'},
+            'data_budget': 1,
+            'headline_treatment': 'large white uppercase type on the indigo architectural field',
+        },
+        'digital_twin_lab': {
+            'name': 'DIGITAL TWIN LAB',
+            'skeleton': (
+                'One real machine, production cell, or factory model is paired with its exact translucent '
+                'digital twin in a premium engineering lab. The two versions align through one disciplined '
+                'vertical or diagonal divide; use only sparse technical geometry and no fake dashboard.'
+            ),
+            'text_policy': 'Headline only; all technical overlays remain abstract and unreadable.',
+            'default_axes': {'stage': 'violet_lab', 'composition': 'twin_divide', 'energy': 'technical_clarity', 'accent': 'cyan_gold'},
+            'data_budget': 0,
+            'headline_treatment': 'compact uppercase title in a quiet upper or side field',
+        },
+        'traceability_route': {
+            'name': 'TRACEABILITY ROUTE',
+            'skeleton': (
+                'A wide industrial journey connects port, warehouse, rail, and factory through one elegant '
+                'continuous gold verification path. The route is visually readable from origin to destination '
+                'without map labels, UI panels, or decorative blockchain nodes.'
+            ),
+            'text_policy': 'One headline plus at most three source-supported stage words.',
+            'default_axes': {'stage': 'logistics_world', 'composition': 'panoramic_path', 'energy': 'forward_motion', 'accent': 'violet_gold'},
+            'data_budget': 3,
+            'headline_treatment': 'strong title in the quiet sky or upper indigo band',
+        },
+        'challenge_arena': {
+            'name': 'INDUSTRIAL CHALLENGE ARENA',
+            'skeleton': (
+                'A premium industrial challenge floor uses several clearly separated workstations around '
+                'one central task. Generic adult engineers collaborate naturally beneath a restrained global '
+                'light canopy; the scene communicates participation and skill, never spectacle or unsafe work.'
+            ),
+            'text_policy': 'One energetic headline only.',
+            'default_axes': {'stage': 'industrial_forum', 'composition': 'arena_depth', 'energy': 'collaborative_momentum', 'accent': 'violet_gold'},
+            'data_budget': 0,
+            'headline_treatment': 'bold white title anchored in clean upper-left darkness',
+        },
+        'sustainable_campus': {
+            'name': 'SUSTAINABLE INDUSTRY CAMPUS',
+            'skeleton': (
+                'A realistic clean manufacturing campus combines one factory, solar roofs, wind generation, '
+                'efficient logistics, and planted land at violet-blue hour. Warm gold operational light guides '
+                'the eye; environmental performance is not quantified unless supplied by the source.'
+            ),
+            'text_policy': 'One calm sustainability headline; one verified value only if supplied.',
+            'default_axes': {'stage': 'blue_hour_campus', 'composition': 'campus_horizon', 'energy': 'measured_optimism', 'accent': 'green_gold'},
+            'data_budget': 1,
+            'headline_treatment': 'large restrained title in the sky with generous breathing room',
+        },
+        'predictive_machine': {
+            'name': 'PREDICTIVE MACHINE PORTRAIT',
+            'skeleton': (
+                'One turbine, robotic arm, motor, or precision production cell is photographed like a premium '
+                'industrial product portrait. A restrained predictive waveform or maintenance geometry follows '
+                'the real contours of the machine; no readings, warnings, or performance claims are invented.'
+            ),
+            'text_policy': 'One headline plus at most one source-verified value.',
+            'default_axes': {'stage': 'graphite_studio', 'composition': 'machine_portrait', 'energy': 'technical_clarity', 'accent': 'amber_violet'},
+            'data_budget': 1,
+            'headline_treatment': 'compact uppercase title beside the machine, never over its key geometry',
+        },
+        'simulation_classroom': {
+            'name': 'INDUSTRIAL SIMULATION CLASSROOM',
+            'skeleton': (
+                'A bright premium training environment centers an adult learner or small group around one '
+                'tabletop factory simulation. Physical modules, process paths, and machine relationships are '
+                'easy to understand; the image feels educational, tactile, and credible rather than futuristic theater.'
+            ),
+            'text_policy': 'One learning headline plus at most three short step words.',
+            'default_axes': {'stage': 'training_studio', 'composition': 'table_focus', 'energy': 'accessible_learning', 'accent': 'violet_gold'},
+            'data_budget': 3,
+            'headline_treatment': 'dark-indigo title in a broad clean wall or upper band',
+        },
+        'verified_service_network': {
+            'name': 'VERIFIED SERVICE NETWORK',
+            'skeleton': (
+                'Three or four credible industrial facilities or service nodes sit in one coherent landscape '
+                'and are joined by discreet verified light paths. A single line-built security form protects '
+                'the network without becoming a giant shield, lock, dashboard, or fake certification mark.'
+            ),
+            'text_policy': 'One headline; at most three short service labels if present in the source.',
+            'default_axes': {'stage': 'infrastructure_field', 'composition': 'network_span', 'energy': 'institutional_trust', 'accent': 'cyan_gold'},
+            'data_budget': 3,
+            'headline_treatment': 'large white title on an uninterrupted deep-indigo edge field',
+        },
+        'ranking_forum': {
+            'name': 'GLOBAL INDUSTRIAL RANKING FORUM',
+            'skeleton': (
+                'A global industrial gathering is organized as ascending collaborative stations rather than '
+                'a sports podium. Diverse generic adults work at believable engineering challenges beneath '
+                'one networked canopy; rank and progress are expressed through spatial height and light only.'
+            ),
+            'text_policy': 'One competition or participation headline; no invented ranks or scores.',
+            'default_axes': {'stage': 'industrial_forum', 'composition': 'ascending_forum', 'energy': 'collaborative_momentum', 'accent': 'violet_gold'},
+            'data_budget': 0,
+            'headline_treatment': 'bold uppercase title in the quiet upper third',
+        },
+        'real_economy_landscape': {
+            'name': 'REAL-ECONOMY LANDSCAPE',
+            'skeleton': (
+                'Construction, logistics, clean energy, and manufacturing appear as one credible connected '
+                'regional landscape. A restrained gold route unifies the sectors while each remains physically '
+                'distinct; the composition reads as real economic infrastructure, not a generic smart-city collage.'
+            ),
+            'text_policy': 'One broad ecosystem headline only.',
+            'default_axes': {'stage': 'blue_hour_campus', 'composition': 'sector_quadrants', 'energy': 'measured_optimism', 'accent': 'violet_gold'},
+            'data_budget': 0,
+            'headline_treatment': 'large white title in a clean sky or indigo foreground panel',
+        },
+    }
+
+
+def _real_estate_editorial_families():
+    """Real Estate's approved references expressed as genuinely distinct layouts."""
+    return {
+        'property_progression': {
+            'name': 'PROPERTY PROGRESSION',
+            'skeleton': (
+                'A sequence of three credible property scales or development stages moves across a pearl '
+                'architectural field, guided by one restrained champagne-gold rising form. The progression '
+                'communicates development or access without implying price appreciation or guaranteed value.'
+            ),
+            'text_policy': 'One headline and at most one source-verified value.',
+            'default_axes': {'stage': 'pearl_architecture', 'composition': 'progression_steps', 'energy': 'measured_progress', 'accent': 'teal_gold'},
+            'data_budget': 1,
+            'headline_treatment': 'large teal title in a broad upper pearl field',
+        },
+        'digital_economy_room': {
+            'name': 'DIGITAL PROPERTY ECONOMY ROOM',
+            'skeleton': (
+                'A diverse group of generic property professionals studies one physical city model paired '
+                'with restrained digital infrastructure in a premium presentation room. The architecture '
+                'remains primary; abstract analytics support the scene without fake dashboards or deal language.'
+            ),
+            'text_policy': 'One editorial headline only.',
+            'default_axes': {'stage': 'presentation_suite', 'composition': 'model_table', 'energy': 'institutional_clarity', 'accent': 'teal_gold'},
+            'data_budget': 0,
+            'headline_treatment': 'clean white or deep-teal title in a quiet architectural panel',
+        },
+        'title_verification': {
+            'name': 'TITLE VERIFICATION',
+            'skeleton': (
+                'One real contemporary residence anchors the frame while a transparent layered record '
+                'structure aligns precisely with the building. A small abstract verification junction may '
+                'appear, but no fake deed text, legal seal, ownership certificate, or guaranteed title claim.'
+            ),
+            'text_policy': 'One transparency headline; no legal-status labels.',
+            'default_axes': {'stage': 'residential_blue_hour', 'composition': 'record_overlay', 'energy': 'institutional_trust', 'accent': 'cyan_gold'},
+            'data_budget': 0,
+            'headline_treatment': 'short white title in an uncluttered sky or dark-stone side field',
+        },
+        'architectural_twin': {
+            'name': 'PHYSICAL / DIGITAL TWIN',
+            'skeleton': (
+                'A single contemporary building transitions with exact perspective from warm physical '
+                'architecture into a luminous cyan architectural twin. The dividing plane is crisp and elegant; '
+                'both halves describe the same structure with no fantasy additions or metaverse clutter.'
+            ),
+            'text_policy': 'One concise future-facing headline only.',
+            'default_axes': {'stage': 'twin_horizon', 'composition': 'precise_bisection', 'energy': 'future_clarity', 'accent': 'cyan_gold'},
+            'data_budget': 0,
+            'headline_treatment': 'large title placed outside the building silhouette',
+        },
+        'global_property_network': {
+            'name': 'GLOBAL PROPERTY NETWORK',
+            'skeleton': (
+                'Several credible property districts occupy distinct geographic arcs around one restrained '
+                'network sphere or map contour. Thin teal and gold paths connect places without inventing '
+                'listings, availability, ownership, prices, partners, or transaction volumes.'
+            ),
+            'text_policy': 'One global-access headline; factual locations only when supplied.',
+            'default_axes': {'stage': 'deep_teal_world', 'composition': 'network_arc', 'energy': 'measured_progress', 'accent': 'teal_gold'},
+            'data_budget': 2,
+            'headline_treatment': 'large pearl-white title in the quiet upper-left field',
+        },
+        'access_still_life': {
+            'name': 'ACCESSIBLE PROPERTY STILL LIFE',
+            'skeleton': (
+                'A refined pearl-white still life pairs one familiar everyday object with a precise modular '
+                'home model at an approachable scale. Champagne details and soft teal shadows create warmth; '
+                'avoid keys, cash, coin piles, miniature people, or slogans promising ownership or returns.'
+            ),
+            'text_policy': 'One human, accessible headline only.',
+            'default_axes': {'stage': 'pearl_studio', 'composition': 'object_dialogue', 'energy': 'human_access', 'accent': 'teal_gold'},
+            'data_budget': 0,
+            'headline_treatment': 'large teal type in the upper pearl field',
+        },
+        'verified_transaction': {
+            'name': 'VERIFIED PROPERTY TRANSACTION',
+            'skeleton': (
+                'A premium phone, abstract property record, and one restrained verification object form a '
+                'clean diagonal product composition. Screens contain only abstract geometry; never show fake '
+                'deed text, wallet balances, buy buttons, signatures, legal seals, or guaranteed completion.'
+            ),
+            'text_policy': 'One concise verification headline; one source-supported step word if needed.',
+            'default_axes': {'stage': 'pearl_studio', 'composition': 'product_diagonal', 'energy': 'institutional_clarity', 'accent': 'cyan_gold'},
+            'data_budget': 1,
+            'headline_treatment': 'bold teal title above the product group',
+        },
+        'property_record_stack': {
+            'name': 'DECENTRALIZED RECORD STACK',
+            'skeleton': (
+                'A luminous architectural model rises above several transparent chronological record layers '
+                'on a dark-teal stone plinth. The layers are visibly ordered and connected, with no readable '
+                'legal copy, fake certificate, blockchain cliché, or unsupported security guarantee.'
+            ),
+            'text_policy': 'One records or transparency headline plus at most three short source-backed stages.',
+            'default_axes': {'stage': 'teal_record_room', 'composition': 'vertical_stack', 'energy': 'institutional_trust', 'accent': 'cyan_gold'},
+            'data_budget': 3,
+            'headline_treatment': 'large pearl-white title beside the vertical stack',
+        },
+        'participation_table': {
+            'name': 'COLLECTIVE PROPERTY TABLE',
+            'skeleton': (
+                'Diverse generic adults collaborate around one large physical development model, each '
+                'placing a distinct architectural module into the shared plan. The view emphasizes collective '
+                'participation and design, never a sale closing, investment pitch, handshake, or guaranteed ownership.'
+            ),
+            'text_policy': 'One community headline only.',
+            'default_axes': {'stage': 'presentation_suite', 'composition': 'overhead_table', 'energy': 'human_access', 'accent': 'teal_gold'},
+            'data_budget': 0,
+            'headline_treatment': 'large clean title in an empty table edge or wall field',
+        },
+        'sustainable_property_city': {
+            'name': 'SUSTAINABLE PROPERTY CITY',
+            'skeleton': (
+                'A believable coastal or urban district at sunrise combines contemporary housing, transit, '
+                'green space, and solar infrastructure. Subtle teal network paths follow real streets; gold '
+                'sunlight supplies drama without inventing environmental metrics or project availability.'
+            ),
+            'text_policy': 'One sustainability or infrastructure headline; one verified value only if supplied.',
+            'default_axes': {'stage': 'sunrise_district', 'composition': 'city_horizon', 'energy': 'future_clarity', 'accent': 'green_gold'},
+            'data_budget': 1,
+            'headline_treatment': 'large deep-teal title in a clean sky band',
+        },
+    }
+
+
 def _industrial_profile():
     """Industrial Token: premium purple-and-gold Industry 4.0 editorial system."""
     profile = _rzwire_profile(
@@ -2264,9 +2516,9 @@ def _industrial_profile():
             'industrial intelligence': 'one turbine, robot, or production cell paired with restrained predictive geometry',
         },
         {
-            'family': 'concept_photo', 'headline': 'Industrial innovation', 'layout': 'art_only',
-            'data_elements': [], 'stage': 'photo_real', 'composition': 'left_type_block',
-            'energy': 'newsroom_neutral', 'accent': 'workspace_signal',
+            'family': 'factory_campaign', 'headline': 'INDUSTRY MOVES FORWARD', 'layout': 'art_only',
+            'data_elements': [], 'stage': 'industrial_photo', 'composition': 'split_editorial',
+            'energy': 'precise_confidence', 'accent': 'violet_gold',
             'subject_scene': (
                 'A realistic gold robotic arm works inside a deep-indigo advanced factory, while a broad '
                 'quiet editorial field remains on the left. No coin, dashboard, or invented brand mark appears.'
@@ -2286,47 +2538,56 @@ def _industrial_profile():
         'headline_uppercase': True,
         'meme_enabled': False,
         'mood_accent_default': 'workspace_signal',
+        'families_requiring_data': ['big_number', 'stat_card'],
         'approved_directions': {
-            '01 smart factory / concept_photo': 'credible connected factory with gold robotics and a quiet indigo headline field',
-            '02 digital twin / concept_photo': 'engineer using a translucent factory-scale digital twin without a fake dashboard',
-            '03 traceable supply chains / concept_photo': 'port, warehouse, rail, and factory connected by one elegant traceability path',
-            '04 industrial challenges / concept_photo': 'adult engineers complete one precise factory challenge with restrained progress arcs',
-            '05 sustainable industry / concept_photo': 'clean manufacturing, solar, wind, and industrial infrastructure at violet-blue hour',
-            '06 predictive intelligence / concept_photo': 'one industrial machine paired with a refined abstract predictive-maintenance treatment',
-            '07 industrial education / concept_photo': 'adult learner explores a tabletop industrial simulation in a premium training space',
-            '08 decentralized services / concept_photo': 'industrial facilities joined by discreet verification paths and a line-built security form',
-            '09 global rankings / concept_photo': 'global industrial challenge gathering, collaboration stations, and networked light canopy',
-            '10 real-economy utility / concept_photo': 'construction, logistics, energy, and manufacturing joined in one credible industrial landscape',
+            '01 smart factory / factory_campaign': 'credible connected factory with gold robotics and a quiet indigo split-copy field',
+            '02 digital twin / digital_twin_lab': 'one real production system aligned precisely with its translucent digital twin',
+            '03 traceable supply chains / traceability_route': 'port, warehouse, rail, and factory connected by one readable verification journey',
+            '04 industrial challenges / challenge_arena': 'adult engineers complete one precise challenge across a premium collaborative arena',
+            '05 sustainable industry / sustainable_campus': 'clean manufacturing, solar, wind, and logistics composed as one blue-hour campus',
+            '06 predictive intelligence / predictive_machine': 'one industrial machine photographed as a hero with restrained predictive geometry',
+            '07 industrial education / simulation_classroom': 'adult learners explore a tactile tabletop factory simulation in a bright training room',
+            '08 decentralized services / verified_service_network': 'credible facilities joined through discreet paths and one restrained verification form',
+            '09 global rankings / ranking_forum': 'ascending industrial collaboration stations beneath a networked global canopy',
+            '10 real-economy utility / real_economy_landscape': 'construction, logistics, energy, and manufacturing integrated into one regional landscape',
         },
         'approved_reference_assets': {
-            '01 smart factory / concept_photo': 'brand_references/industrial/approved/01-smart-factory.png',
-            '02 digital twin / concept_photo': 'brand_references/industrial/approved/02-digital-twin.png',
-            '03 traceable supply chains / concept_photo': 'brand_references/industrial/approved/03-traceable-supply-chains.png',
-            '04 industrial challenges / concept_photo': 'brand_references/industrial/approved/04-industrial-challenges.png',
-            '05 sustainable industry / concept_photo': 'brand_references/industrial/approved/05-sustainable-industry.png',
-            '06 predictive intelligence / concept_photo': 'brand_references/industrial/approved/06-predictive-intelligence.png',
-            '07 industrial education / concept_photo': 'brand_references/industrial/approved/07-industrial-education.png',
-            '08 decentralized services / concept_photo': 'brand_references/industrial/approved/08-decentralized-services.png',
-            '09 global rankings / concept_photo': 'brand_references/industrial/approved/09-global-rankings.png',
-            '10 real-economy utility / concept_photo': 'brand_references/industrial/approved/10-real-economy-utility.png',
+            '01 smart factory / factory_campaign': 'brand_references/industrial/approved/01-smart-factory.png',
+            '02 digital twin / digital_twin_lab': 'brand_references/industrial/approved/02-digital-twin.png',
+            '03 traceable supply chains / traceability_route': 'brand_references/industrial/approved/03-traceable-supply-chains.png',
+            '04 industrial challenges / challenge_arena': 'brand_references/industrial/approved/04-industrial-challenges.png',
+            '05 sustainable industry / sustainable_campus': 'brand_references/industrial/approved/05-sustainable-industry.png',
+            '06 predictive intelligence / predictive_machine': 'brand_references/industrial/approved/06-predictive-intelligence.png',
+            '07 industrial education / simulation_classroom': 'brand_references/industrial/approved/07-industrial-education.png',
+            '08 decentralized services / verified_service_network': 'brand_references/industrial/approved/08-decentralized-services.png',
+            '09 global rankings / ranking_forum': 'brand_references/industrial/approved/09-global-rankings.png',
+            '10 real-economy utility / real_economy_landscape': 'brand_references/industrial/approved/10-real-economy-utility.png',
         },
         'anti_repetition_rules': (
-            'Do not repeat the same approved direction or industrial setting within the last 5 posts. '
-            'Rotate among factories, logistics, energy, education, services, and global-challenge scenes. '
-            'Avoid repeating a robot pose, worker pose, turbine, port angle, hologram, or gold-arm close-up. '
-            'Use one immediate, credible industrial idea per image and preserve broad room for clean editorial copy.'
+            'Do not repeat the same family twice in a row or the same approved direction within 6 posts. '
+            'Across every 6 posts use at least one human-centered family, one infrastructure family, and one '
+            'diagrammatic, still-life, or machine-led family. Alternate intimate and wide spatial scales and '
+            'light and dark stages. Avoid repeating a robot pose, worker pose, turbine, port angle, hologram, '
+            'campus horizon, or gold-arm close-up within 5 posts. big_number and stat_card appear at most once '
+            'each in 6 posts. Preserve one immediate industrial idea and a protected bottom-left logo zone.'
         ),
         'routing_table': """
 Story category -> Primary family (fallback):
-- Industrial marketing, challenge participation, rankings -> concept_photo (fallback: hero_object)
-- Supply chain, services, transparency, infrastructure -> concept_photo (fallback: flat_explainer)
-- Education, simulation, industrial games -> concept_photo (fallback: flat_explainer)
-- Sustainability, energy, efficient operations -> concept_photo (fallback: hero_object)
+- Smart factories, automation, production launches -> factory_campaign (fallback: predictive_machine)
+- Digital twins, AI operations, connected production -> digital_twin_lab (fallback: predictive_machine)
+- Supply chain, traceability, logistics, origin-to-destination -> traceability_route (fallback: flat_explainer)
+- Industrial marketing, challenges, active participation -> challenge_arena (fallback: factory_campaign)
+- Global rankings, competitions, collaboration events -> ranking_forum (fallback: challenge_arena)
+- Sustainability, energy, efficient operations -> sustainable_campus (fallback: real_economy_landscape)
+- Predictive maintenance, machine intelligence, one technical feature -> predictive_machine (fallback: digital_twin_lab)
+- Education, simulation, training, industrial games -> simulation_classroom (fallback: flat_explainer)
+- Decentralized services, verification, infrastructure trust -> verified_service_network (fallback: traceability_route)
+- Multi-sector utility, real economy, ecosystem breadth -> real_economy_landscape (fallback: factory_campaign)
 - Token facts, verified supply, or one confirmed milestone -> big_number (fallback: stat_card)
 - Whitepaper utility explanation or dated roadmap phase -> flat_explainer (fallback: stat_card)
-- Official statement or concise evergreen message -> type_led (fallback: concept_photo)
-- Art-led evergreen identity without copy -> art_drop (fallback: hero_object)
-- Anything ambiguous -> concept_photo
+- Official statement or concise evergreen message -> type_led (fallback: factory_campaign)
+- Art-led evergreen identity without copy -> art_drop (fallback: predictive_machine)
+- Anything ambiguous -> factory_campaign
 
 Hard routing rules:
 1. Use the workspace name Industrial Token and the symbol INDUSTRIAL. It is a BEP-20 token, not a separate blockchain.
@@ -2334,6 +2595,7 @@ Hard routing rules:
 3. Never claim investment returns, price appreciation, guaranteed rewards, guaranteed savings, audits, certifications, partnerships, exchange listings, or product availability without a current source in the article.
 4. Never use an actual market chart, contract address, wallet, exchange interface, token price, or price movement inside a Multimedia image.
 5. Never draw the Industrial symbol, wordmark, or footer. Keep the bottom-left corner naturally clear for the deterministic official lockup.
+6. Prefer a family not used in the last 3 posts and a reference direction not used in the last 6 posts.
 """.strip(),
         'text_rules': """
 1. Headline: seven words or fewer, uppercase, concrete, and factual. Prefer industry, systems, participation, learning, transparency, and sustainability over token-price language.
@@ -2344,6 +2606,65 @@ Hard routing rules:
 6. Never invent the Industrial Token emblem or wordmark. The official lockup is added after generation; leave its bottom-left safe area seamless.
 """.strip(),
     })
+    profile['families'].update(_industrial_editorial_families())
+    profile['axes']['stage'].update({
+        'industrial_photo': 'A credible working industrial environment uses deep-indigo atmosphere, realistic safety architecture, and controlled gold operational light.',
+        'violet_lab': 'A premium engineering lab uses clean violet depth, tempered glass, and exact physical-to-digital alignment.',
+        'logistics_world': 'A believable port, rail, warehouse, and factory environment is composed as one continuous industrial journey.',
+        'industrial_forum': 'A large but orderly industrial convention or challenge hall uses distinct stations, safe circulation, and one restrained network canopy.',
+        'blue_hour_campus': 'A wide industrial or infrastructure campus sits at violet-blue hour with warm operational light and realistic landscape detail.',
+        'graphite_studio': 'One machine is isolated on brushed graphite like a premium engineering product portrait with no decorative UI.',
+        'training_studio': 'A bright, credible adult training room centers a tactile industrial model with broad clean walls for editorial copy.',
+        'infrastructure_field': 'Several real industrial facilities share one coherent deep-indigo geographic or architectural field.',
+    })
+    profile['axes']['composition'].update({
+        'split_editorial': 'Reserve 35-42 percent for a deep-indigo copy field and let one credible industrial scene occupy the remaining frame.',
+        'twin_divide': 'Align one physical system and its exact digital counterpart across a crisp vertical or diagonal division.',
+        'panoramic_path': 'Lead the eye through a wide origin-to-destination route with one continuous path and clear spatial stages.',
+        'arena_depth': 'Use a strong central challenge station with secondary collaboration bays receding symmetrically into depth.',
+        'campus_horizon': 'Place infrastructure across a low architectural horizon and preserve a broad quiet sky for the headline.',
+        'machine_portrait': 'Give one machine 55-70 percent of the frame and reserve one clean side field for concise copy.',
+        'table_focus': 'Build the composition around one tactile tabletop simulation seen at a natural three-quarter angle.',
+        'network_span': 'Distribute three or four facilities across the frame and join them with one restrained continuous network.',
+        'ascending_forum': 'Arrange collaboration stations in a legible ascending rhythm without a literal sports podium.',
+        'sector_quadrants': 'Integrate four real-economy sectors into one landscape using architecture and routes, not separate collage boxes.',
+    })
+    profile['axes']['energy'].update({
+        'precise_confidence': 'The mood is authoritative and exact, with controlled machinery, strong scale, and no theatrical excess.',
+        'technical_clarity': 'The mood is analytical and calm, making one technical relationship immediately understandable.',
+        'forward_motion': 'The scene has purposeful directional momentum without implying financial growth or guaranteed outcomes.',
+        'collaborative_momentum': 'The energy comes from skilled people solving a task together, not from spectacle or corporate posing.',
+        'measured_optimism': 'The mood is expansive and future-facing while remaining physically credible and evidence-conscious.',
+        'accessible_learning': 'The mood is tactile, welcoming, and educational, with an adult professional register.',
+        'institutional_trust': 'The mood is disciplined and transparent, using order and continuity instead of locks, shields, or certificates.',
+    })
+    profile['axes']['accent'].update({
+        'violet_gold': 'Deep indigo and industrial violet form the dominant field while precision gold marks the operational focal point.',
+        'cyan_gold': 'Restrained cyan describes digital or verification structure while gold remains the physical industrial signal.',
+        'green_gold': 'Muted clean-energy green supports the locked violet-and-gold identity only in sustainability stories.',
+        'amber_violet': 'Warm amber light defines one machine against a controlled violet or graphite environment.',
+    })
+    profile['brief_examples'] = """
+Worked examples (guidance only; never copy headlines or scenes verbatim):
+
+A. Smart factory story
+{"family":"factory_campaign","headline":"PRODUCTION, CONNECTED WITH PURPOSE","data_elements":[],"stage":"industrial_photo","composition":"split_editorial","energy":"precise_confidence","accent":"violet_gold","subject_scene":"A credible gold robotic cell operates inside a deep-indigo factory on the right while a broad architectural copy field occupies the left; safety barriers, conveyor geometry, and one distant technician remain physically plausible."}
+
+B. Supply-chain explainer
+{"family":"traceability_route","headline":"ONE ROUTE. EVERY HANDOFF.","data_elements":[{"value":"PORT","label":""},{"value":"RAIL","label":""},{"value":"FACTORY","label":""}],"stage":"logistics_world","composition":"panoramic_path","energy":"forward_motion","accent":"violet_gold","subject_scene":"A single elegant gold verification route moves from a realistic port through rail and warehouse infrastructure into one advanced factory, with each stage readable before the short labels."}
+
+C. Industrial learning
+{"family":"simulation_classroom","headline":"LEARNING THROUGH REAL SYSTEMS","data_elements":[],"stage":"training_studio","composition":"table_focus","energy":"accessible_learning","accent":"violet_gold","subject_scene":"Two generic adult learners study a tactile tabletop factory simulation in a bright premium training room while a clean indigo wall preserves the headline zone."}
+
+D. Sustainability
+{"family":"sustainable_campus","headline":"EFFICIENCY MEETS CLEANER INFRASTRUCTURE","data_elements":[],"stage":"blue_hour_campus","composition":"campus_horizon","energy":"measured_optimism","accent":"green_gold","subject_scene":"A credible blue-hour manufacturing campus combines solar roofs, one distant wind installation, efficient logistics, and planted land beneath a broad quiet sky."}
+
+E. Predictive system
+{"family":"predictive_machine","headline":"SEE THE SYSTEM MORE CLEARLY","data_elements":[],"stage":"graphite_studio","composition":"machine_portrait","energy":"technical_clarity","accent":"amber_violet","subject_scene":"One precision turbine is photographed against brushed graphite while a restrained abstract waveform follows its real geometry without numbers, alerts, or a dashboard."}
+
+F. Industrial collaboration
+{"family":"ranking_forum","headline":"SKILL MOVES INDUSTRY FORWARD","data_elements":[],"stage":"industrial_forum","composition":"ascending_forum","energy":"collaborative_momentum","accent":"violet_gold","subject_scene":"Ascending collaborative engineering stations fill a premium industrial forum while diverse generic adults solve distinct physical challenges beneath one restrained global light canopy."}
+""".strip()
     profile['frozen_style'].update({
         'format': 'premium portrait 4:5 Industrial Token editorial, composed for safe square cropping with one strong factual story',
         'headline_zone': 'reserve a broad uncluttered indigo or graphite region for one concise uppercase headline and keep the bottom-left corner open for the official lockup',
@@ -2397,9 +2718,9 @@ def _real_estate_profile():
             'global property network': 'credible property districts linked by restrained geographic light paths',
         },
         {
-            'family': 'concept_photo', 'headline': 'Property, made transparent', 'layout': 'art_only',
-            'data_elements': [], 'stage': 'photo_real', 'composition': 'left_type_block',
-            'energy': 'newsroom_neutral', 'accent': 'workspace_signal',
+            'family': 'architectural_twin', 'headline': 'Property, Clearly Connected', 'layout': 'art_only',
+            'data_elements': [], 'stage': 'twin_horizon', 'composition': 'precise_bisection',
+            'energy': 'future_clarity', 'accent': 'cyan_gold',
             'subject_scene': (
                 'A premium contemporary residence at blue hour transitions into an exact cyan architectural '
                 'digital twin while a broad quiet teal field remains for editorial copy. No coin, dashboard, '
@@ -2420,47 +2741,56 @@ def _real_estate_profile():
         'headline_uppercase': False,
         'meme_enabled': False,
         'mood_accent_default': 'workspace_signal',
+        'families_requiring_data': ['big_number', 'stat_card'],
         'approved_directions': {
-            '01 property growth / concept_photo': 'credible property progression with champagne-gold value forms and one restrained teal rising path',
-            '02 digital real estate economy / concept_photo': 'diverse property professionals studying one physical-and-digital city model',
-            '03 verified property ownership / concept_photo': 'real contemporary home with a transparent title-verification layer',
-            '04 physical digital twin / concept_photo': 'one residence transitioning precisely from warm architecture into a cyan digital twin',
-            '05 global fractional ownership / concept_photo': 'realistic property district connected through a refined global network sphere',
-            '06 accessible property participation / hero_object': 'pearl-white everyday still life with a precise modular home and approachable scale',
-            '07 verified property transaction / hero_object': 'premium phone, embossed property deed, verification shield, and restrained ledger path',
-            '08 decentralized property records / concept_photo': 'luminous architectural model above layered transparent title-history records',
-            '09 collective property participation / concept_photo': 'diverse adults assembling property modules into one sustainable development',
-            '10 sustainable tokenized city / concept_photo': 'realistic coastal eco-district at sunrise with subtle network paths integrated into streets',
+            '01 property growth / property_progression': 'credible property stages with champagne-gold progression forms on a pearl architectural field',
+            '02 digital real estate economy / digital_economy_room': 'diverse professionals studying one physical city model with restrained digital infrastructure',
+            '03 verified property ownership / title_verification': 'one real home precisely aligned with transparent chronological record layers',
+            '04 physical digital twin / architectural_twin': 'one residence transitioning exactly from warm architecture into its cyan digital counterpart',
+            '05 global fractional ownership / global_property_network': 'credible property districts connected through refined geographic arcs without listing claims',
+            '06 accessible property participation / access_still_life': 'pearl-white everyday still life with one precise modular home at an approachable scale',
+            '07 verified property transaction / verified_transaction': 'premium phone and abstract property record in a disciplined product composition',
+            '08 decentralized property records / property_record_stack': 'luminous architectural model above ordered transparent record-history layers',
+            '09 collective property participation / participation_table': 'diverse adults assembling property modules into one shared development model',
+            '10 sustainable tokenized city / sustainable_property_city': 'realistic coastal district at sunrise with subtle paths following real streets',
         },
         'approved_reference_assets': {
-            '01 property growth / concept_photo': 'brand_references/real-estate/approved/01-property-growth.png',
-            '02 digital real estate economy / concept_photo': 'brand_references/real-estate/approved/02-digital-real-estate-economy.png',
-            '03 verified property ownership / concept_photo': 'brand_references/real-estate/approved/03-verified-property-ownership.png',
-            '04 physical digital twin / concept_photo': 'brand_references/real-estate/approved/04-physical-digital-twin.png',
-            '05 global fractional ownership / concept_photo': 'brand_references/real-estate/approved/05-global-fractional-ownership.png',
-            '06 accessible property participation / hero_object': 'brand_references/real-estate/approved/06-accessible-property-participation.png',
-            '07 verified property transaction / hero_object': 'brand_references/real-estate/approved/07-verified-property-transaction.png',
-            '08 decentralized property records / concept_photo': 'brand_references/real-estate/approved/08-decentralized-property-records.png',
-            '09 collective property participation / concept_photo': 'brand_references/real-estate/approved/09-collective-property-participation.png',
-            '10 sustainable tokenized city / concept_photo': 'brand_references/real-estate/approved/10-sustainable-tokenized-city.png',
+            '01 property growth / property_progression': 'brand_references/real-estate/approved/01-property-growth.png',
+            '02 digital real estate economy / digital_economy_room': 'brand_references/real-estate/approved/02-digital-real-estate-economy.png',
+            '03 verified property ownership / title_verification': 'brand_references/real-estate/approved/03-verified-property-ownership.png',
+            '04 physical digital twin / architectural_twin': 'brand_references/real-estate/approved/04-physical-digital-twin.png',
+            '05 global fractional ownership / global_property_network': 'brand_references/real-estate/approved/05-global-fractional-ownership.png',
+            '06 accessible property participation / access_still_life': 'brand_references/real-estate/approved/06-accessible-property-participation.png',
+            '07 verified property transaction / verified_transaction': 'brand_references/real-estate/approved/07-verified-property-transaction.png',
+            '08 decentralized property records / property_record_stack': 'brand_references/real-estate/approved/08-decentralized-property-records.png',
+            '09 collective property participation / participation_table': 'brand_references/real-estate/approved/09-collective-property-participation.png',
+            '10 sustainable tokenized city / sustainable_property_city': 'brand_references/real-estate/approved/10-sustainable-tokenized-city.png',
         },
         'anti_repetition_rules': (
-            'Do not repeat the same approved direction or property setting within the last 5 posts. Rotate among '
-            'residences, urban districts, title records, professional participation, accessible still life, and '
-            'sustainable development. Avoid repeating a house angle, hologram, shield, city model, hands, or globe. '
-            'Use one credible property idea per image and preserve broad room for clean editorial copy.'
+            'Do not repeat the same family twice in a row or the same approved direction within 6 posts. '
+            'Across every 6 posts use at least one people-centered family, one architecture-led family, and one '
+            'record, product, or still-life family. Alternate pearl-light, architectural-photo, and deep-teal '
+            'stages. Avoid repeating a house angle, digital divide, record stack, phone pose, city model, hands, '
+            'network sphere, or coastal skyline within 5 posts. big_number and stat_card appear at most once each '
+            'in 6 posts. Preserve one credible property idea and a protected bottom-left logo zone.'
         ),
         'routing_table': """
 Story category -> Primary family (fallback):
-- Property ownership, participation, community, access -> concept_photo (fallback: hero_object)
-- Title records, verification, transparency, smart contracts -> concept_photo (fallback: flat_explainer)
-- Digital real estate, metaverse property, digital twins -> concept_photo (fallback: hero_object)
-- Sustainable development and city infrastructure -> concept_photo (fallback: hero_object)
+- Property development, progression, market access concepts -> property_progression (fallback: access_still_life)
+- Digital property economy, professional ecosystem, platform activity -> digital_economy_room (fallback: participation_table)
+- Title records, verification, transparency, ownership history -> title_verification (fallback: property_record_stack)
+- Smart contracts, transaction process, record exchange -> verified_transaction (fallback: flat_explainer)
+- Digital real estate, metaverse property, digital twins -> architectural_twin (fallback: digital_economy_room)
+- Global access, distributed participation, property networks -> global_property_network (fallback: participation_table)
+- Accessible participation, human-scale introduction, simple utility -> access_still_life (fallback: property_progression)
+- Decentralized records, immutable history, layered data -> property_record_stack (fallback: title_verification)
+- Community, collective participation, crowdfunding concepts -> participation_table (fallback: digital_economy_room)
+- Sustainable development, cities, green infrastructure -> sustainable_property_city (fallback: property_progression)
 - Token facts, verified supply, or one confirmed milestone -> big_number (fallback: stat_card)
 - Whitepaper utility explanation or dated roadmap phase -> flat_explainer (fallback: stat_card)
-- Official statement or concise evergreen message -> type_led (fallback: concept_photo)
-- Art-led evergreen identity without copy -> art_drop (fallback: hero_object)
-- Anything ambiguous -> concept_photo
+- Official statement or concise evergreen message -> type_led (fallback: property_progression)
+- Art-led evergreen identity without copy -> art_drop (fallback: access_still_life)
+- Anything ambiguous -> property_progression
 
 Hard routing rules:
 1. Use the workspace name Real Estate Token and the market symbol REALESTATE. It is a BEP-20 token, not a separate blockchain and not a property deed by itself.
@@ -2468,6 +2798,7 @@ Hard routing rules:
 3. Never claim legal ownership transfer, title registration, property availability, rental yield, investment returns, guaranteed appreciation, regulatory approval, partnerships, or platform availability without a current approved source.
 4. Never use an actual market chart, contract address, wallet, exchange interface, token price, or price movement inside a Multimedia image.
 5. Never draw the Real Estate Token symbol, wordmark, or footer. Keep the bottom-left corner naturally clear for the deterministic official lockup.
+6. Prefer a family not used in the last 3 posts and a reference direction not used in the last 6 posts.
 """.strip(),
         'text_rules': """
 1. Headline: seven words or fewer, clear, concrete, and factual. Prefer property, access, ownership records, community, design, and infrastructure over investment language.
@@ -2478,6 +2809,62 @@ Hard routing rules:
 6. Never invent the Real Estate Token emblem or wordmark. The official lockup is added after generation; leave its bottom-left safe area seamless.
 """.strip(),
     })
+    profile['families'].update(_real_estate_editorial_families())
+    profile['axes']['stage'].update({
+        'pearl_architecture': 'A luminous pearl architectural field uses pale limestone, fine shadows, and restrained champagne details.',
+        'presentation_suite': 'A credible premium property presentation room centers one physical model and natural professional collaboration.',
+        'residential_blue_hour': 'One believable contemporary residence is photographed at blue hour with warm interior light and a quiet sky.',
+        'twin_horizon': 'A single architectural scene moves from warm physical reality into a precise cyan digital counterpart on the same horizon.',
+        'deep_teal_world': 'A deep-teal geographic or spatial field holds credible property districts and restrained global connection paths.',
+        'pearl_studio': 'A clean pearl-white studio uses soft teal shadows, champagne metal, and one disciplined product or model group.',
+        'teal_record_room': 'A dark-teal stone environment supports ordered transparent record layers and one luminous architectural model.',
+        'sunrise_district': 'A believable urban or coastal property district sits in warm sunrise light with green infrastructure and clear atmosphere.',
+    })
+    profile['axes']['composition'].update({
+        'progression_steps': 'Arrange three architectural scales or stages in a clear progression while preserving a broad upper headline field.',
+        'model_table': 'Center one physical city or property model with people and restrained digital structure forming a natural ring around it.',
+        'record_overlay': 'Anchor the frame with one real building and align ordered transparent record layers precisely to its geometry.',
+        'precise_bisection': 'Divide one building into exact physical and digital halves without changing perspective or architectural form.',
+        'network_arc': 'Arrange several property districts along a restrained geographic arc joined by thin teal and gold paths.',
+        'object_dialogue': 'Pair one familiar object and one precise property model with generous pearl space and clear scale contrast.',
+        'product_diagonal': 'Build a clean diagonal relationship among one phone, one abstract record, and one verification object.',
+        'vertical_stack': 'Stack ordered record layers beneath one architectural model, leaving one side clear for the headline.',
+        'overhead_table': 'Use a natural overhead or high three-quarter view of people assembling one shared development model.',
+        'city_horizon': 'Place the district across a low horizon and reserve a broad clean sky for concise editorial copy.',
+    })
+    profile['axes']['energy'].update({
+        'measured_progress': 'The mood communicates careful progress and wider access without implying appreciation or financial returns.',
+        'institutional_clarity': 'The mood is professional, ordered, and credible, with architecture and process more important than technology effects.',
+        'institutional_trust': 'The mood communicates transparency through alignment, chronology, and restraint rather than seals or guarantees.',
+        'future_clarity': 'The mood is future-facing but architecturally exact, avoiding fantasy skylines and metaverse excess.',
+        'human_access': 'The mood is warm, approachable, and participatory without becoming casual, promotional, or investment-led.',
+    })
+    profile['axes']['accent'].update({
+        'teal_gold': 'Architectural teal defines the structure while champagne gold provides one warm material or directional accent.',
+        'cyan_gold': 'Verification cyan describes digital or record structure while champagne gold anchors the physical property world.',
+        'green_gold': 'Restrained landscape green supports the locked teal-and-gold identity only for sustainability and infrastructure stories.',
+    })
+    profile['brief_examples'] = """
+Worked examples (guidance only; never copy headlines or scenes verbatim):
+
+A. Property progression
+{"family":"property_progression","headline":"A More Accessible Property Journey","data_elements":[],"stage":"pearl_architecture","composition":"progression_steps","energy":"measured_progress","accent":"teal_gold","subject_scene":"Three credible property scales progress across a pale limestone field while one restrained champagne-gold architectural form guides the eye upward without suggesting price appreciation."}
+
+B. Transparent records
+{"family":"property_record_stack","headline":"Records Designed For Clarity","data_elements":[],"stage":"teal_record_room","composition":"vertical_stack","energy":"institutional_trust","accent":"cyan_gold","subject_scene":"A luminous contemporary building model rises above ordered transparent chronological layers on a dark-teal stone plinth while a broad side field remains clear for the title."}
+
+C. Physical and digital property
+{"family":"architectural_twin","headline":"One Property. Two Connected Realities.","data_elements":[],"stage":"twin_horizon","composition":"precise_bisection","energy":"future_clarity","accent":"cyan_gold","subject_scene":"One contemporary residence transitions at exact perspective from warm physical materials into its precise luminous cyan architectural twin, with both halves sharing the same structure and horizon."}
+
+D. Collective participation
+{"family":"participation_table","headline":"Built Through Shared Participation","data_elements":[],"stage":"presentation_suite","composition":"overhead_table","energy":"human_access","accent":"teal_gold","subject_scene":"Diverse generic adults place distinct architectural modules into one shared sustainable development model inside a bright premium presentation suite, with no handshake or sales imagery."}
+
+E. Verified transaction concept
+{"family":"verified_transaction","headline":"A Clearer Transaction Path","data_elements":[],"stage":"pearl_studio","composition":"product_diagonal","energy":"institutional_clarity","accent":"cyan_gold","subject_scene":"A premium phone with abstract geometry, one layered property record, and a restrained verification object form a clean diagonal composition without readable legal text, wallet balances, or buy controls."}
+
+F. Sustainable district
+{"family":"sustainable_property_city","headline":"Infrastructure For A Longer Horizon","data_elements":[],"stage":"sunrise_district","composition":"city_horizon","energy":"future_clarity","accent":"green_gold","subject_scene":"A credible coastal district at sunrise combines contemporary housing, transit, solar roofs, and green space while subtle teal paths follow real streets beneath a broad quiet sky."}
+""".strip()
     profile['frozen_style'].update({
         'format': 'premium portrait 4:5 Real Estate Token editorial, composed for safe square cropping with one strong factual property story',
         'headline_zone': 'reserve a broad uncluttered pearl, sky, teal, or dark-stone region for one concise headline and keep the bottom-left corner open for the official lockup',
