@@ -238,20 +238,20 @@ _ALLOWED_LIGHTING = {"quiet studio", "directional editorial", "cinematic atmosph
 _ALLOWED_DENSITY = {"minimal", "balanced", "information-rich"}
 
 
-def validate_style_only_sample_reference(reference: str) -> tuple[int, int]:
-    """Require Reference 1 to be a small PNG style map, never a readable sample."""
+def validate_full_quality_sample_reference(reference: str) -> tuple[int, int]:
+    """Require Reference 1 to be the original, useful-quality publishing sample."""
     prefix = "data:image/png;base64,"
     if not isinstance(reference, str) or not reference.startswith(prefix):
-        raise ValueError("Analytics Reference 1 must be a sanitized PNG style map.")
+        raise ValueError("Analytics Reference 1 must be the full-quality approved PNG publishing sample.")
     try:
         header = base64.b64decode(reference[len(prefix):], validate=True)[:24]
     except (binascii.Error, ValueError) as exc:
-        raise ValueError("Analytics Reference 1 is not a valid sanitized PNG style map.") from exc
+        raise ValueError("Analytics Reference 1 is not a valid full-quality approved PNG publishing sample.") from exc
     if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
-        raise ValueError("Analytics Reference 1 is not a valid sanitized PNG style map.")
+        raise ValueError("Analytics Reference 1 is not a valid full-quality approved PNG publishing sample.")
     width, height = struct.unpack(">II", header[16:24])
-    if width < 1 or height < 1 or max(width, height) > 128:
-        raise ValueError("Analytics Reference 1 must be raster-sanitized to 128 pixels or less.")
+    if min(width, height) < 256 or max(width, height) > 4096:
+        raise ValueError("Analytics Reference 1 must preserve the approved sample at 256-4096 pixel quality.")
     return width, height
 
 
@@ -263,19 +263,6 @@ _CHART_SCALE_RULES = {
     "separated": "All chart modules together must occupy about 32-42% of the total visual area. Keep each chart readable while reserving substantial space for the owner scene, asset facts, headline, and footer.",
     "combined": "The single approved chart panel must occupy about 38-48% of the total visual area and never exceed half of the canvas. The dramatic owner scene, headline, exact result summary, and footer must remain visibly substantial.",
 }
-
-_CHART_APERTURE_RULES = {
-    "phone": "Reserve a flat front-facing aperture anchored 24% from the left and 33% from the top, up to 52% of canvas width and 31% of canvas height.",
-    "laptop": "Reserve a flat front-facing aperture anchored 14% from the left and 31% from the top, up to 72% of canvas width and 34% of canvas height.",
-    "growth": "Reserve a flat front-facing aperture anchored 8% from the left and 39% from the top, up to 84% of canvas width and 37% of canvas height.",
-    "contrast": "Reserve a flat front-facing aperture anchored 8% from the left and 35% from the top, up to 84% of canvas width and 39% of canvas height.",
-    "separated": "Reserve a flat front-facing aperture anchored 8% from the left and 37% from the top, up to 84% of canvas width and 38% of canvas height.",
-    "combined": "Reserve a flat front-facing aperture anchored 8% from the left and 34% from the top, up to 84% of canvas width and 43% of canvas height.",
-}
-
-
-def _chart_aperture_rule(template) -> str:
-    return _CHART_APERTURE_RULES.get(template.get("categoryId"), _CHART_APERTURE_RULES["combined"])
 
 _LOGO_FOOTER_RULES = {
     "phone": "Reserve the lowest 10% of the canvas as a protected footer rail below the phone and all market facts.",
@@ -436,16 +423,16 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         f'You are the specialist Market Analytics Art Director for {theme_owner["name"]}. '
         'You do not invent market data and you do not write a short generic image prompt. You create a complete production '
         'brief for a deterministic prompt assembler, exactly as a senior campaign Art Director briefs an image-production team. '
-        'You are given a deliberately low-resolution, raster-sanitized version of the chosen permanent sample. It is a BINDING '
-        'style and template-family map, not a source of content and not a loose moodboard. Describe its real information architecture, module sizes, alignment, chart '
+        'You are given the original full-quality chosen permanent sample. It is a BINDING visual design and template-family map, '
+        'not a source of market facts and not a loose moodboard. Describe its real information architecture, module sizes, alignment, chart '
         'treatment, headline treatment, legend placement, device/card geometry, footer, materials, and finish. '
         'Never transcribe, reconstruct, infer, or reuse any ticker, asset name, price, percentage, date, chart line, legend, '
-        'logo, domain, headline, or claim from the sanitized sample. Every sample market fact is forbidden placeholder content. '
+        'logo, domain, headline, or claim from the sample. Every sample market fact and the entire sample chart are forbidden placeholder content. '
         'The final image must remain recognizably the same publishing design while all visible content comes only from the supplied '
         'headline, supporting copy, verified metadata, approved chart, owner registry, and deterministic footer-lockup specification. '
-        'The application will composite the exact approved PNG chart after image generation. Specify a clean, flat, front-facing '
-        'chart aperture in the sample\'s chart/device area, but instruct the image model to draw no chart, axes, dates, prices, '
-        'percentages, lines, markers, or legend anywhere. Never move a phone or laptop aperture outside its screen. '
+        'The image model must completely replace the chart visible in Reference 1 with the approved PNG chart in Reference 2, '
+        'integrating it naturally in the exact same chart panel or device screen. Reference 1 controls the location and styling '
+        'around the chart; Reference 2 exclusively controls every visible chart pixel and fact. '
         'There is NO captured composition reference. Your written production brief is therefore the complete construction '
         'specification for the final card. Do not rely on unstated visual assumptions. Describe the card from the canvas inward: '
         'major zones and approximate coverage, alignment grid, device or card silhouette, chart aperture, headline and supporting-copy '
@@ -463,7 +450,6 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         'black field, plain gradient, uncontrolled glow, generic dashboard, or decorative crypto wallpaper. Keep a quiet local '
         'area behind typography and the protected chart.\n'
         f'IMMUTABLE CHART SCALE RULE: {chart_scale}\n'
-        f'IMMUTABLE CHART APERTURE RULE: {_chart_aperture_rule(template)}\n'
         'This revised chart scale is a deliberate family constraint and overrides any looser interpretation that would let the '
         'chart dominate the poster. The chart remains fully readable and factual, but the owner scene and editorial story must '
         'have meaningful visual presence.\n'
@@ -474,18 +460,18 @@ def call_analytics_art_director(article, copy_text, theme_owner, profile, templa
         f'TEMPLATE FAMILY: {template["categoryName"]}\n'
         f'EXACT VARIANT: {template["variantId"]}\n'
         f'VARIANT CONTRACT: {json.dumps(template.get("contract") or {}, ensure_ascii=False)}\n\n'
-        'REFERENCE INTERPRETATION RULES: Sanitized sample geometry and hierarchy stay fixed, but every sample word, number, '
+        'REFERENCE INTERPRETATION RULES: The full-quality sample geometry and hierarchy stay fixed, but every sample word, number, '
         'ticker, chart shape, logo, and domain is non-authoritative and forbidden in the output. The selected brand owner changes only '
         'the palette, reserved footer-lockup geometry, approved motifs, materials and atmosphere. Market data changes only headline, '
         'supporting text, chart, legends, endpoint values and verified statistics. If the sample contains separate performance '
         'cards, keep series separate. If it contains one combined chart, keep them combined. If it contains a phone or laptop, '
-        'the clean chart aperture belongs inside the screen. Do not turn a family into another family. The approved PNG chart '
-        'already contains its selected legend and is inserted later by the application; do not recreate any part of it.\n\n'
+        'the approved chart belongs inside the screen. Do not turn a family into another family. The approved PNG chart '
+        'already contains its selected legend; preserve it and do not recreate any part from the sample chart.\n\n'
         'BRIEF DETAIL RULES: reference_analysis must explain the sample\'s visible construction. composition_map and layout_hierarchy '
         'must describe the canvas in reading order with relative proportions and alignment. device_strategy must specify silhouette, '
         'pose, crop, bezel or card boundaries, and screen/aperture behavior. typography_system must specify headline scale, line count, '
         'alignment, supporting-copy relationship, factual-label scale, and footer hierarchy. chart_integration and chart_strategy must '
-        'state exactly where the application will insert the approved PNG chart and how its clean aperture is clipped. data_hierarchy must list which supplied '
+        'state exactly how Reference 2 replaces the sample chart and how it is clipped naturally inside the original aperture. data_hierarchy must list which supplied '
         'facts appear and their order. Any factual module outside the approved chart must reproduce exact supplied metadata; if an '
         'exact value cannot be rendered, omit that optional module instead of using sample content. brand_translation, materials_and_finish, lighting, depth, negative_space, logo_footer_system, and '
         'quality_control must together make the brief executable without another layout image. logo_footer_system must repeat '
@@ -555,9 +541,9 @@ def validate_analytics_brief(raw_brief, template, theme_owner, series_metadata) 
     brief["depth"] = raw_brief.get("depth") if raw_brief.get("depth") in _ALLOWED_DEPTH else fallback["depth"]
     brief["density"] = raw_brief.get("density") if raw_brief.get("density") in _ALLOWED_DENSITY else fallback["density"]
     # These two clauses are non-negotiable even if the model omitted them.
-    brief["chart_strategy"] += "; reserve one clean flat aperture for the application's exact approved PNG chart and draw no chart content"
-    brief["chart_integration"] += "; the application inserts the supplied approved PNG after generation, preserving its complete factual content"
-    brief["chart_integration"] += "; do not render any chart, axes, dates, prices, percentages, lines, markers, title, or legend"
+    brief["chart_strategy"] += "; completely replace the sample chart with Reference 2 inside the sample's exact chart area"
+    brief["chart_integration"] += "; Reference 2 is the only permitted chart and its complete factual content must remain intact"
+    brief["chart_integration"] += "; never copy or reconstruct any chart element from Reference 1"
     brief["forbidden_changes"] = fallback["forbidden_changes"]
     brief["factual_protection"] = fallback["factual_protection"]
     return brief
@@ -576,18 +562,17 @@ def assemble_analytics_prompt(brief, template, theme_owner, profile, article, co
     contract = json.dumps(template.get("contract") or {}, ensure_ascii=False)
     return (
         f'Create one finished {width}x{height} premium financial social post from exactly TWO ordered references. '
-        'REFERENCE 1 is a deliberately low-resolution, raster-sanitized STYLE-ONLY PUBLISHING SAMPLE and is binding only for composition. Match its '
+        'REFERENCE 1 is the ORIGINAL FULL-QUALITY APPROVED PUBLISHING SAMPLE and is binding for visual design. Match its '
         'camera, crop, device/card silhouette, chart aperture, information hierarchy, spacing, visual rhythm, lighting '
         'quality, and premium finish. Do not reinterpret it as a different layout. It is NON-AUTHORITATIVE for content: never '
         'transcribe, reconstruct, infer, or reuse any sample ticker, asset name, price, percentage, date, chart line, legend, '
         'logo, domain, headline, or claim. Treat every sample market fact as forbidden placeholder content. '
-        'REFERENCE 2 is the AUTHORITATIVE APPROVED PNG CHART and defines the exact shape and aspect ratio of the protected chart '
-        'aperture. The application—not the image model—will composite this exact PNG into the final image after generation. '
-        'Build a clean, flat, front-facing aperture that uses the sample image\'s chart location nicely and naturally. For phone '
-        'and laptop families the aperture MUST be physically inside the device screen. For non-device families it must be inside '
-        'the sample\'s protected chart panel. Leave the entire aperture visually clean. DO NOT draw, trace, imitate, summarize, '
-        'redraw, or reproduce any chart, axes, grid, dates, prices, percentages, lines, markers, labels, title, tooltip, or legend '
-        'anywhere in the generated artwork. The exact approved PNG is the only chart that may appear in the final composited image. '
+        'REFERENCE 2 is the AUTHORITATIVE APPROVED PNG CHART. Completely remove and replace the chart visible in Reference 1 '
+        'with Reference 2 while preserving Reference 1\'s exact chart location, surrounding device or panel, scale, spacing, '
+        'depth, lighting, and premium composition. For phone and laptop families Reference 2 MUST be naturally integrated inside '
+        'the device screen. For non-device families it must occupy the sample\'s original protected chart panel. REFERENCE 2 is '
+        'the only permitted chart: preserve its lines, axes, grid, dates, prices, percentages, markers, labels, and legend. Never '
+        'copy, trace, imitate, retain, reconstruct, or expose any chart element from Reference 1. '
         f'TEMPLATE FAMILY: {template["categoryName"]}. EXACT VARIANT: {template["variantId"]}. '
         f'FULL IMMUTABLE FAMILY CONTRACT: {contract}. '
         f'FULL ART DIRECTOR PRODUCTION BRIEF: {json.dumps(brief, ensure_ascii=False)}. '
@@ -600,9 +585,6 @@ def assemble_analytics_prompt(brief, template, theme_owner, profile, article, co
         f'CHART PROTECTION STRATEGY: {brief["chart_strategy"]}. '
         f'CHART SCALE LIMIT: {brief["chart_scale"]}. This scale limit is mandatory even if Reference 1 could be interpreted '
         'more loosely; the chart must remain fully legible but must not dominate the full poster. '
-        f'EXACT EMPTY CHART APERTURE: {_chart_aperture_rule(template)} The approved PNG will be aspect-fit and composited '
-        'into this aperture by the application, so keep this full region clean, unobstructed, flat, and naturally integrated '
-        'with the selected sample image\'s composition. '
         f'SELECTED DRAMATIC OWNER BACKGROUND: {brief["background_scene"]}. Build this actual scene as the poster environment, '
         'preserving the reference\'s scene placement and negative-space behavior while translating the literal subject to the '
         'selected coin. The scene must be clearly visible around the smaller chart, not replaced by flat black, a plain gradient, '
@@ -626,15 +608,15 @@ def assemble_analytics_prompt(brief, template, theme_owner, profile, article, co
         'values, omit that module rather than substituting, approximating, or reusing sample content. '
         f'APPROVED CHART PRESENTATION: {json.dumps(chart_style, ensure_ascii=False, separators=(",", ":"))}. '
         'Preserve the approved background, series colors, line weight, markers, grid strength, legend position, and legend format '
-        'when sizing the empty aperture that will receive the exact approved PNG. Do not render these chart elements yourself. '
+        'when replacing the sample chart with the exact approved PNG. '
         'EXECUTION ORDER: first reproduce Reference 1 composition and major module proportions; second apply the brand-owner '
-        'theme; third replace the sample headline/supporting text with the supplied exact copy; fourth create one clean protected '
-        'aperture for Reference 2 without drawing chart content; fifth keep optional verified result labels outside the aperture '
-        'exact and never source them from the style sample; sixth '
+        'theme; third replace the sample headline/supporting text with the supplied exact copy; fourth completely replace the '
+        'sample chart with Reference 2 in the same chart area; fifth keep optional verified result labels outside the aperture '
+        'exact and never source them from the publishing sample; sixth '
         'reserve the protected footer rail while leaving its centered official-footer-lockup slot empty; finally apply premium lighting and finish. Major modules '
         'must cover the canvas with the same confidence as Reference 1. Do not create a large unintended empty region. The '
-        'approved PNG chart already contains its selected legend: the image model must add no chart title, detached legend, '
-        'tooltip, mini chart, or second chart. The application will place exactly one approved chart into the protected aperture. '
+        'approved PNG chart already contains its selected legend: add no detached legend, tooltip, mini chart, or second chart. '
+        'Show exactly one chart—the approved Reference 2 chart—in the protected sample chart area. '
         'Comparison assets may keep their own line/marker colors '
         'but may never control the background theme. '
         'Do not render any logo, wordmark, emblem, coin mark, or brand icon yourself. The application composites the exact '

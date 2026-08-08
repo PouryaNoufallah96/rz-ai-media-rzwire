@@ -18,7 +18,7 @@ from analytics_image_pipeline import (assemble_analytics_prompt,
                                       call_analytics_art_director,
                                       fallback_analytics_brief,
                                       resolve_analytics_template,
-                                      validate_style_only_sample_reference,
+                                      validate_full_quality_sample_reference,
                                       validate_analytics_brief)
 from _branddoc import _brand_doc
 
@@ -211,7 +211,7 @@ def handle_generate_image(body):
             raise ValueError('Analytics Art Director requires verified seriesMetadata.')
         if not theme_owner_token_id:
             raise ValueError('Analytics Art Director requires themeOwnerTokenId.')
-        validate_style_only_sample_reference(ref_images[0])
+        validate_full_quality_sample_reference(ref_images[0])
 
         theme_owner = get_analytics_brand(theme_owner_token_id)
         selected_primary_ids = {

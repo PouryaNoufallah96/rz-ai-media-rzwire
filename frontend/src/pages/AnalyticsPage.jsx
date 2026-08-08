@@ -20,8 +20,6 @@ import {
 import { TEMPLATE_CATEGORIES, TEMPLATE_VARIANTS, findTemplateVariant } from '../components/analytics/analyticsTemplates'
 import { generateCaptionsInBackground } from '../utils/captionJobs'
 import { applyOfficialAnalyticsLogo } from '../utils/analyticsBrandLogo'
-import { applyApprovedAnalyticsChart, approvedChartPlacementInstruction } from '../utils/analyticsChartComposite'
-import { createAnalyticsStyleReference } from '../utils/analyticsStyleReference'
 import '../components/analytics/AnalyticsCompositions.css'
 import './AnalyticsPage.css'
 
@@ -643,8 +641,7 @@ export default function AnalyticsPage() {
     setError('')
     try {
       const approvedChart = await chartToPngDataUrl(chartSvgRef.current)
-      const approvalSampleSource = await imageUrlToDataUrl(selectedTemplate.image)
-      const approvalSample = await createAnalyticsStyleReference(approvalSampleSource)
+      const approvalSample = await imageUrlToDataUrl(selectedTemplate.image)
       const approvedStyle = materializeCurrentSeriesColors(chartStyle, marketData, tokens)
       const approvedSeries = colorisedChartSeries(marketData, tokens, approvedStyle)
       const movement = marketData.series.reduce((total, item) => total + item.changePercent, 0) / marketData.series.length
@@ -659,7 +656,7 @@ export default function AnalyticsPage() {
             seriesMetadata:approvedSeries.map(item => ({id:item.id, tokenId:item.tokenId, symbol:item.symbol, name:item.name, role:item.role, color:item.color, startPrice:item.startPrice, endPrice:item.endPrice, changePercent:item.changePercent, coverageStart:item.coverageStart, coverageEnd:item.coverageEnd})),
             chartStyle:approvedStyle,
             referenceImages:[approvalSample, approvedChart],
-            imageDirection:`Treat the sanitized ${selectedTemplate.name} sample only as a style and composition map. Never use, infer, reconstruct, or copy any sample ticker, price, percentage, date, chart line, legend, logo, domain, or claim. ${approvedChartPlacementInstruction(selectedTemplate.categoryId)} The exact approved PNG chart will be composited there by the application after generation, so leave this aperture visually clean and never draw a chart anywhere in the generated artwork. The Art Director brief must fully specify the card's geometry, module proportions, hierarchy, typography, spacing, materials, lighting, centered logo/footer placement, and forbidden changes. ${direction}`,
+            imageDirection:`Use the original full-quality ${selectedTemplate.name} sample as the binding visual design. Preserve its composition, device or card geometry, typography hierarchy, spacing, materials, lighting, and chart location. The chart visible inside that sample is placeholder content and must be completely replaced by the approved PNG chart in Reference 2. Never use, infer, reconstruct, or copy any sample ticker, price, percentage, date, chart line, legend, logo, domain, or claim. Reference 2 is the only permitted chart and must be integrated naturally in the exact chart area shown by Reference 1. The Art Director brief must fully specify the card's geometry, module proportions, hierarchy, typography, spacing, materials, lighting, centered logo/footer placement, and forbidden changes. ${direction}`,
           })})
       const started = await response.json().catch(() => ({}))
       if (!response.ok || !started.jobId) throw new Error(started.error || 'The Analytics Art Director could not start the image job.')
@@ -681,11 +678,7 @@ export default function AnalyticsPage() {
       if (!data.imageB64) throw new Error(data.error || 'The Analytics Art Director did not return a finished post.')
       const finishedPost = data.imageB64.startsWith('data:') ? data.imageB64 : `data:image/png;base64,${data.imageB64}`
       await preloadImage(finishedPost)
-      const chartLockedPost = await applyApprovedAnalyticsChart(finishedPost, {
-        chartDataUrl:approvedChart,
-        categoryId:selectedTemplate.categoryId,
-      })
-      const brandedPost = await applyOfficialAnalyticsLogo(chartLockedPost, {
+      const brandedPost = await applyOfficialAnalyticsLogo(finishedPost, {
         logoUrl:themeOwner.footerLogo,
         categoryId:selectedTemplate.categoryId,
       })
@@ -1019,7 +1012,7 @@ export default function AnalyticsPage() {
         </aside>
         {chartApproved && themeOwnerValid && <section className="analytics-preview-column">
           <div className="analytics-preview-head"><div><p>Final composition preview</p><h2>{selectedTemplate.name}</h2><small>{themeOwner.name} visual system</small></div><span>{outputFormat.label}</span></div>
-          <div className="analytics-reference-sample"><div><strong>Exact approved concept {selectedTemplate.conceptLabel}</strong><span>This image supplies style and composition only. Before generation it is sanitized so none of its tickers, prices, percentages, dates, chart data, logos, or domains can be reused. The approved chart and verified metadata are the only factual sources.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact approval concept`} /></div>
+          <div className="analytics-reference-sample"><div><strong>Exact approved concept {selectedTemplate.conceptLabel}</strong><span>The original full-quality image is sent as Reference 1 for its complete design and composition. Its sample chart and market facts are placeholders: Reference 2, the approved chart, must replace that chart completely.</span></div><img src={selectedTemplate.image} alt={`${selectedTemplate.name} exact approval concept`} /></div>
           <div className="analytics-live-output-label"><span>{generatedPost ? 'Finished Art Director PNG' : 'Approved composition specification'}</span><small>The approved sample defines the visual family. The detailed Art Director brief defines the complete card, while the approved chart supplies its factual market content.</small></div>
           {generatedPost ? <div className="analytics-generated-result"><img className="analytics-generated-post" src={generatedPost} alt={`Generated ${selectedTemplate.name} RZWire analytics post`} /><button type="button" onClick={downloadGeneratedPost}><Download size={16} />Download PNG</button></div> : <CompositionPreview templateCategoryId={selectedTemplate.categoryId} templateVariantId={selectedTemplate.id} themeOwnerTokenId={themeOwnerTokenId} theme={brandTheme} marketData={marketData} tokens={tokens} period={period} scale={scale} format={format} headline={headline} chartText={chartText} chartStyle={chartStyle} />}
           <div className={`analytics-composition-approval ${selectedCompositionApproved ? 'approved' : ''}`}><div><strong>{selectedCompositionApproved ? 'Composition approved' : 'Approve this composition'}</strong><span>{selectedCompositionApproved ? 'Its exact state is ready for generation.' : 'Check hierarchy, palette, logo, footer, chart, and copy.'}</span></div><button type="button" onClick={() => { setCompositionApprovals(previous => ({...previous, [selectedTemplate.id]:selectedFingerprint})); setActiveWorkflowStep(5) }}>{selectedCompositionApproved ? <><CircleCheck size={17} />Approved</> : <><Check size={17} />Approve {selectedTemplate.name}</>}</button></div>

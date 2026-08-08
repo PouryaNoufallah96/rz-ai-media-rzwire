@@ -8,7 +8,7 @@ from config import OPENROUTER_IMAGE_MODELS
 from handlers.image import handle_generate_image
 
 
-def sanitized_style_reference(width=77, height=96):
+def full_quality_sample_reference(width=1080, height=1350):
     signature = b'\x89PNG\r\n\x1a\n'
     ihdr_data = struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0)
     ihdr = struct.pack('>I', len(ihdr_data)) + b'IHDR' + ihdr_data
@@ -101,7 +101,7 @@ class ImageModelAllowlistTests(unittest.TestCase):
             'lighting': 'cinematic atmospheric', 'depth': 'cinematic dimensional',
             'density': 'balanced',
         }
-        references = [sanitized_style_reference(), 'approved-chart']
+        references = [full_quality_sample_reference(), 'approved-chart']
         result = handle_generate_image({
             'model': 'openai/gpt-5.4-image-2',
             'compositionMode': 'analytics_art_directed',
@@ -121,7 +121,8 @@ class ImageModelAllowlistTests(unittest.TestCase):
         self.assertEqual(result['compositionMode'], 'analytics_art_directed')
         self.assertEqual(generate.call_args.kwargs['ref_images'], references)
         prompt = generate.call_args.args[0]
-        self.assertIn('binding only for composition', prompt)
+        self.assertIn('binding for visual design', prompt)
+        self.assertIn('Completely remove and replace the chart visible in Reference 1', prompt)
         self.assertIn('FACT SOURCE FIREWALL', prompt)
         self.assertIn('inside the device screen', prompt)
         self.assertIn('official-footer-lockup', prompt)
@@ -145,7 +146,7 @@ class ImageModelAllowlistTests(unittest.TestCase):
                 'templateVariantId': 'phone-centered',
                 'themeOwnerTokenId': 'oasis',
                 'seriesMetadata': [{'tokenId': 'mgc', 'symbol': 'MGC', 'role': 'primary'}],
-                'referenceImages': [sanitized_style_reference(), 'chart'],
+                'referenceImages': [full_quality_sample_reference(), 'chart'],
             })
 
     @patch('handlers.image.openrouter_image')

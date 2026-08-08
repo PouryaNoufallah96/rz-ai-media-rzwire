@@ -10,7 +10,7 @@ from analytics_image_pipeline import (
     call_analytics_art_director,
     fallback_analytics_brief,
     resolve_analytics_template,
-    validate_style_only_sample_reference,
+    validate_full_quality_sample_reference,
     validate_analytics_brief,
 )
 
@@ -53,12 +53,12 @@ def png_data_url(width, height):
 
 
 class AnalyticsImagePipelineTests(unittest.TestCase):
-    def test_style_reference_guard_accepts_only_sanitized_dimensions(self):
-        self.assertEqual(validate_style_only_sample_reference(png_data_url(77, 96)), (77, 96))
-        with self.assertRaisesRegex(ValueError, '128 pixels or less'):
-            validate_style_only_sample_reference(png_data_url(1080, 1350))
-        with self.assertRaisesRegex(ValueError, 'sanitized PNG style map'):
-            validate_style_only_sample_reference('data:image/png;base64,not-a-png')
+    def test_sample_reference_guard_requires_full_quality_dimensions(self):
+        self.assertEqual(validate_full_quality_sample_reference(png_data_url(1080, 1350)), (1080, 1350))
+        with self.assertRaisesRegex(ValueError, '256-4096 pixel quality'):
+            validate_full_quality_sample_reference(png_data_url(77, 96))
+        with self.assertRaisesRegex(ValueError, 'full-quality approved PNG'):
+            validate_full_quality_sample_reference('data:image/png;base64,not-a-png')
 
     def test_all_eighteen_registered_variants_resolve(self):
         required_contract_fields = {
@@ -118,22 +118,19 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertIn('#0072B2', prompt)
         self.assertIn('"lineWidth":6', prompt)
         self.assertIn('CHART SCALE LIMIT', prompt)
-        self.assertIn('EXACT EMPTY CHART APERTURE', prompt)
-        self.assertIn('24% from the left and 33% from the top', prompt)
         self.assertIn('SELECTED DRAMATIC OWNER BACKGROUND', prompt)
         self.assertIn(THEME_OWNER['backgroundScenes'][0], prompt)
-        self.assertIn('place exactly one approved chart', prompt)
+        self.assertIn('Show exactly one chart', prompt)
         self.assertIn('protected footer rail', prompt)
         self.assertIn('centered footer-lockup slot empty', prompt)
         self.assertIn('preserving its aspect ratio', prompt)
-        self.assertIn('STYLE-ONLY PUBLISHING SAMPLE', prompt)
+        self.assertIn('ORIGINAL FULL-QUALITY APPROVED PUBLISHING SAMPLE', prompt)
         self.assertIn('FACT SOURCE FIREWALL', prompt)
         self.assertIn('Never copy a market value from REFERENCE 1', prompt)
         self.assertIn('omit that module', prompt)
-        self.assertIn('application—not the image model—will composite this exact PNG', prompt)
-        self.assertIn('uses the sample image\'s chart location nicely and naturally', prompt)
-        self.assertIn('DO NOT draw, trace, imitate', prompt)
-        self.assertIn('only chart that may appear in the final composited image', prompt)
+        self.assertIn('Completely remove and replace the chart visible in Reference 1', prompt)
+        self.assertIn('only permitted chart', prompt)
+        self.assertIn('Never copy, trace, imitate, retain', prompt)
 
     @patch('analytics_image_pipeline.openrouter_chat')
     def test_art_director_receives_selected_sample_as_visual_reference(self, chat):
@@ -154,15 +151,14 @@ class AnalyticsImagePipelineTests(unittest.TestCase):
         self.assertEqual(messages[1]['content'][1]['image_url']['url'], sample)
         self.assertIn('BINDING', messages[0]['content'])
         self.assertIn('VARIANT CONTRACT', messages[0]['content'])
-        self.assertIn("chart/device area", messages[0]['content'])
-        self.assertIn('IMMUTABLE CHART APERTURE RULE', messages[0]['content'])
+        self.assertIn("exact same chart panel or device screen", messages[0]['content'])
         self.assertIn('NO captured composition reference', messages[0]['content'])
         self.assertIn('complete construction specification', messages[0]['content'])
-        self.assertIn('raster-sanitized', messages[0]['content'])
-        self.assertIn('Every sample market fact is forbidden', messages[0]['content'])
+        self.assertIn('original full-quality', messages[0]['content'])
+        self.assertIn('Every sample market fact and the entire sample chart are forbidden', messages[0]['content'])
         self.assertIn('APPROVED OWNER BACKGROUND SCENES', messages[0]['content'])
         self.assertIn('IMMUTABLE CHART SCALE RULE', messages[0]['content'])
-        self.assertIn('do not recreate any part of it', messages[0]['content'])
+        self.assertIn('do not recreate any part from the sample chart', messages[0]['content'])
         self.assertIn('Approved chart presentation', messages[1]['content'][0]['text'])
         self.assertIn('overlay-top-right', messages[1]['content'][0]['text'])
 
