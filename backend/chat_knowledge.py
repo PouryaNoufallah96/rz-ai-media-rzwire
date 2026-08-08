@@ -1,6 +1,6 @@
 """Reviewed knowledge corpus and local BM25 retrieval for the chat assistant.
 
-The corpus is built from the four current brand sources, the documented website
+The corpus is built from the configured brand sources, the documented website
 overview, and reviewed Markdown/DOCX/PDF files under ``brand_docs/chat``.  This
 module never calls an external service.  Semantic vectors are managed by
 ``chat_index`` so BM25 remains available when EmbeddingGemma is offline.
@@ -30,11 +30,14 @@ RZWire is an AI-powered, multi-brand social publishing workspace. It accepts a
 topic or source feed, routes material across four distinct projects, and prepares
 brand-aware copy and images for Telegram, X/Twitter, and Instagram drafts.
 
-The four brands are:
+The configured brands include:
 - MGC Coin: the reward and utility token of the RZ gaming ecosystem.
 - Ranking Platform: a competitive gaming platform, not a token.
 - Oasis Coin: the planned gaming and metaverse utility token for RZOASIS Galaxy.
 - Jewelry Coin: the proposed utility token for a digital-jewelry gaming platform.
+- Industrial Token: the proposed BEP-20 utility token for an ecosystem combining
+  gamified industrial marketing, industrial services, education, and
+  sustainability incentives.
 
 Workspace flow:
 1. In the sidebar, enter a topic or import RSS, choose platforms, media brands,
@@ -73,6 +76,10 @@ _BRAND_ALIASES = {
         'jewelry coin', 'jewellery coin', 'jewelry token', 'jewellery token',
         'jewelry game', 'jewellery game', 'jewellery.game', 'jewelry_token',
     ],
+    'Industrial Token': [
+        'industrial token', 'industrial.game', 'industrial game',
+        'industrial ecosystem', 'industrial_token', 'industrial',
+    ],
 }
 _DROPIN_BRANDS = {
     'mgc-coin': 'MGC Coin',
@@ -83,6 +90,8 @@ _DROPIN_BRANDS = {
     'oasis': 'Oasis Coin',
     'jewelry-coin': 'Jewelry Coin',
     'jewellery-coin': 'Jewelry Coin',
+    'industrial-token': 'Industrial Token',
+    'industrial': 'Industrial Token',
 }
 
 

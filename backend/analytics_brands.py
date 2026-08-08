@@ -106,6 +106,39 @@ ANALYTICS_BRANDS = {
             "poolName": "Jewelry / MGC", "tokenSide": "base",
         },
     },
+    "industrial": {
+        "id": "industrial",
+        "name": "Industrial Token",
+        "symbol": "INDUSTRIAL",
+        "enabled": True,
+        "logoUrl": "/brands/industrial-coin-logo.png",
+        "footerLogoUrl": "/brands/industrial-footer-logo.png",
+        "footer": "industrial.game",
+        "domain": "industrial.game",
+        "chartColor": "#b56ad9",
+        "theme": {
+            "background": "#10072d", "backgroundAlt": "#291050", "surface": "#191231",
+            "surfaceAlt": "#281a47", "text": "#f8f5ff", "muted": "#b9aed1",
+            "positive": "#41c98d", "negative": "#ef6c75", "accent": "#f4c224",
+            "accentAlt": "#7816d2", "border": "#6c42a1",
+        },
+        "motifs": ["precision gold robotics", "industrial violet horizon", "verified light paths", "real-economy infrastructure"],
+        "backgroundScenes": [
+            "A credible advanced manufacturing floor at deep indigo hour, with one precise gold robotic arm, graphite machinery, restrained violet light paths, cinematic depth, and broad quiet editorial space.",
+            "A monumental industrial logistics landscape connecting port cranes, rail, warehouse, and clean energy infrastructure with subtle gold verification paths, violet-blue twilight, realistic scale, and calm negative space.",
+            "A premium Industry 4.0 hall where one engineer observes a translucent factory-scale digital twin above real machinery, controlled purple atmosphere, warm metallic-gold accents, and uncluttered editorial hierarchy.",
+        ],
+        "artDirectorProfile": "Industrial Token",
+        "imagePrompt": "Premium Industrial Token market editorial with deep indigo, controlled ultraviolet, metallic gold industrial machinery, realistic infrastructure, cinematic depth, and clear factual hierarchy.",
+        "market": {
+            "provider": "geckoterminal", "network": "bsc",
+            "contract": "0x9e06e1203bdc3747ee3ab5fa9488619bcf2a2666",
+            "pool": "0xd5916c07de3ffbb728a07e118fa89b5452ea9602",
+            "poolName": "Industrial / MGC", "tokenSide": "base",
+            "coinMarketCapId": "35883",
+            "coinMarketCapUrl": "https://coinmarketcap.com/currencies/industrial/",
+        },
+    },
 }
 
 

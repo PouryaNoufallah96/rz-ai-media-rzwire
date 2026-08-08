@@ -1,4 +1,5 @@
 import copy
+from pathlib import Path
 import unittest
 
 from analytics_brands import (
@@ -12,15 +13,36 @@ from analytics_brands import (
 class AnalyticsBrandRegistryTests(unittest.TestCase):
     def test_current_enabled_registry_is_complete(self):
         validated = validate_analytics_brand_registry()
-        self.assertEqual(set(validated), {"mgc", "oasis", "jewelry"})
+        self.assertEqual(set(validated), {"mgc", "oasis", "jewelry", "industrial"})
         self.assertTrue(all(item["enabled"] for item in validated.values()))
         self.assertTrue(all(len(item["backgroundScenes"]) >= 3 for item in validated.values()))
 
     def test_public_registry_contains_theme_and_market_identity(self):
         brands = public_analytics_brands()
-        self.assertEqual([item["id"] for item in brands], ["mgc", "oasis", "jewelry"])
+        self.assertEqual([item["id"] for item in brands], ["mgc", "oasis", "jewelry", "industrial"])
         self.assertTrue(all(item["logoUrl"] and item["footerLogoUrl"] and item["theme"] and item["market"] for item in brands))
         self.assertTrue(all("artDirectorProfile" not in item for item in brands))
+
+    def test_industrial_has_a_complete_verified_market_identity(self):
+        industrial = get_analytics_brand("industrial")
+        self.assertEqual(industrial["name"], "Industrial Token")
+        self.assertEqual(industrial["symbol"], "INDUSTRIAL")
+        self.assertEqual(industrial["market"]["network"], "bsc")
+        self.assertEqual(industrial["market"]["contract"], "0x9e06e1203bdc3747ee3ab5fa9488619bcf2a2666")
+        self.assertEqual(industrial["market"]["pool"], "0xd5916c07de3ffbb728a07e118fa89b5452ea9602")
+        self.assertEqual(industrial["footer"], "industrial.game")
+        self.assertTrue(industrial["logoUrl"].endswith("industrial-coin-logo.png"))
+        self.assertTrue(industrial["footerLogoUrl"].endswith("industrial-footer-logo.png"))
+
+    def test_industrial_profile_has_ten_approved_visual_references(self):
+        from brand_profiles import BRAND_IMAGE_PROFILES
+
+        profile = BRAND_IMAGE_PROFILES["Industrial Token"]
+        assets = profile["approved_reference_assets"]
+        self.assertEqual(len(assets), 10)
+        backend_root = Path(__file__).resolve().parent
+        for relative_path in assets.values():
+            self.assertTrue((backend_root / relative_path).is_file(), relative_path)
 
     def test_duplicate_id_or_symbol_fails_closed(self):
         duplicate_id = [copy.deepcopy(ANALYTICS_BRANDS["mgc"]), copy.deepcopy(ANALYTICS_BRANDS["oasis"])]

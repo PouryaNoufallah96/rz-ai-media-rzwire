@@ -33,6 +33,12 @@ _BRAND_FILES = {
     'Ranking Platform': ('Ranking Platform.md', 'Ranking Social Channels.md'),
     'Oasis Coin': ('OASIS Token.pdf', 'OASIS Website.md', 'Oasis Social Channels.md'),
     'Jewelry Coin': ('Jewelry Coin.md', 'Jewelry Social Channels.md'),
+    'Industrial Token': (
+        'Industrial Token.md',
+        'Industrial Website.md',
+        'Industrial Social Channels.md',
+        'Industrial Market Listing.md',
+    ),
 }
 
 _cache: dict[str, str] = {}

@@ -34,7 +34,7 @@ PUBLISHING_ENABLED = _env_flag('RZWIRE_PUBLISHING_ENABLED', False)
 SHEETS_ENABLED     = _env_flag('RZWIRE_SHEETS_ENABLED', False)
 
 # Keep in sync with frontend/src/store/mmStore.js MEDIA_LIST
-MEDIA_LIST = ['MGC Coin', 'Ranking Platform', 'Oasis Coin', 'Jewelry Coin']
+MEDIA_LIST = ['MGC Coin', 'Ranking Platform', 'Oasis Coin', 'Jewelry Coin', 'Industrial Token']
 X_API_KEY       = os.environ.get('X_API_KEY', '')
 X_API_SECRET    = os.environ.get('X_API_SECRET', '')
 X_TOKEN         = os.environ.get('X_ACCESS_TOKEN', '')
@@ -244,6 +244,7 @@ BRAND_VISUAL_TONE = {
     'Ranking Platform': 'playful competitive gaming editorial, deep aubergine with hot pink, mint, orange, and white sticker graphics',
     'Oasis Coin':       'restrained monochrome cosmic editorial, absolute black, graphite, lunar silver, and source-verified emerald data',
     'Jewelry Coin':     'bright pearl-lavender crystal luxury, platinum jewelry, glass capsules, and creator-led digital-to-physical craft',
+    'Industrial Token': 'premium Industry 4.0 editorial, deep indigo and ultraviolet atmosphere, metallic gold machinery, realistic infrastructure, and clear factual hierarchy',
 }
 
 # ── Per-brand identity hashtag, always prepended to generated copy hashtags ──
@@ -252,6 +253,7 @@ BRAND_HASHTAGS = {
     'Ranking Platform': '#RankingGame',
     'Oasis Coin':       '#RZOasis',
     'Jewelry Coin':     '#JewelryToken',
+    'Industrial Token': '#IndustrialToken',
 }
 
 # Case- and space-insensitive index of BRAND_HASHTAGS. Built once at import.
@@ -304,6 +306,12 @@ BRAND_PROMO_PITCH = {
         "around virtual gem extraction, digital jewelry design, NFT minting, an in-game marketplace, "
         "and a planned path from eligible digital designs to physical jewelry."
     ),
+    'Industrial Token': (
+        "Industrial Token (INDUSTRIAL) is a BEP-20 ecosystem positioned around gamified industrial "
+        "marketing, global rankings, educational simulations, decentralized industrial services, and "
+        "sustainability incentives. Roadmap and whitepaper features must be framed as proposed unless "
+        "a current approved source confirms they are live."
+    ),
 }
 
 # ── OpenRouter image generation model modalities ──────────────────────────────
@@ -328,7 +336,7 @@ _CORE_AXES = ('environment', 'camera', 'energy', 'mood_accent')
 _BANNED_SUBJECT_TERMS = [
     'text', 'label', 'logo', 'watermark', 'rzwire', 'mgc coin', 'meta games coin',
     'ranking platform', 'ranking.game', 'oasis coin', 'rzoasis', 'jewelry coin',
-    'jewelry token',
+    'jewelry token', 'industrial token', 'industrial.game',
 ]
 _WALLET_ADDRESS_RE = re.compile(r'0x[a-fA-F0-9]{6,}')
 

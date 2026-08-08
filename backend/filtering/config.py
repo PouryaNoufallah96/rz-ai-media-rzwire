@@ -76,10 +76,23 @@ BRAND_CONFIGS = {
             'creator marketplace', 'BEP-20 utility token', 'Jewelry Token',
         ],
     },
+    'industrial_token': {
+        'name':       'Industrial Token',
+        'threshold':  DEFAULT_THRESHOLD,
+        'value_gate': False,
+        'source_bias': {'The Block', 'CoinDesk', 'Cointelegraph', 'Chainalysis Blog', 'DL News'},
+        'anchor_phrases': [
+            'industrial blockchain', 'industry 4.0', 'industrial automation', 'smart factory',
+            'digital twin', 'supply chain traceability', 'industrial logistics', 'manufacturing technology',
+            'industrial iot', 'clean energy manufacturing', 'sustainable industry', 'robotics',
+            'gamified industrial marketing', 'industrial simulation', 'BEP-20', 'BNB Smart Chain',
+            'Industrial Token', 'INDUSTRIAL token',
+        ],
+    },
 }
 
 # Ordered list used for consistent iteration
-BRAND_KEYS = ['mgc_coin', 'ranking_platform', 'oasis_coin', 'jewelry_coin']
+BRAND_KEYS = ['mgc_coin', 'ranking_platform', 'oasis_coin', 'jewelry_coin', 'industrial_token']
 
 # Brand display-name ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ key lookup (for incoming selectedMedia strings)
 BRAND_NAME_TO_KEY = {cfg['name']: key for key, cfg in BRAND_CONFIGS.items()}
@@ -146,8 +159,20 @@ BRAND_EDITORIAL_DESCS = {
         'REJECTS: Claims that proposed partnerships or features are already operational, invented '
         'token allocations or APY, guaranteed investment returns, and unrelated market news.'
     ),
+    'Industrial Token': (
+        'IDENTITY: Industrial Token (INDUSTRIAL) is a BEP-20 industrial ecosystem positioned around '
+        'gamified industrial marketing, educational simulations, global rankings, decentralized industrial '
+        'services, and sustainability incentives. Features described only in the whitepaper or roadmap '
+        'must be framed as proposed unless a current source confirms they are live.\n'
+        'AUDIENCE: Industrial operators, technology builders, gamers, learners, logistics and supply-chain '
+        'communities, and users interested in practical blockchain-enabled industry.\n'
+        'COVERS: Smart factories, industrial automation, digital twins, supply-chain transparency, logistics, '
+        'IoT, manufacturing technology, clean industrial energy, industrial education, gamified challenges, '
+        'and BNB Smart Chain utility.\n'
+        'REJECTS: General token-price speculation without industrial relevance, unsupported live-feature or '
+        'partner claims, investment guarantees, and unrelated market news.'
+    ),
 }
-
 
 
 

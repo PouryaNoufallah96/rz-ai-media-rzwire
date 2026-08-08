@@ -20,7 +20,7 @@ _FAQ_MATCH_STOPWORDS = {
     'Ø§Ø²', 'Ø§Ø³Øª', 'Ø§ÛŒÙ†', 'Ø¨Ø§', 'Ø¨Ø±Ø§ÛŒ', 'Ø¨Ù‡', 'Ú†Ù‡', 'Ú†Ú¯ÙˆÙ†Ù‡', 'Ú†ÛŒØ³Øª', 'Ø¯Ø±',
     'Ø±Ø§', 'Ø±ÙˆÛŒ', 'Ù…Ù†', 'Ù…ÛŒ', 'Ùˆ', 'ÛŒØ§', 'Ú©Ø¬Ø§', 'Ú©Ù‡',
 }
-_FAQ_CONTEXT_ONLY_PHRASES = {'mgc coin', 'ranking platform', 'oasis coin', 'jewelry coin'}
+_FAQ_CONTEXT_ONLY_PHRASES = {'mgc coin', 'ranking platform', 'oasis coin', 'jewelry coin', 'industrial token'}
 
 
 def _now_iso():
@@ -39,6 +39,7 @@ def normalize_question(value):
         'ranking.game': 'ranking platform',
         'jewellery coin': 'jewelry coin',
         'jewellery token': 'jewelry token',
+        'industrial.game': 'industrial token',
         'twitter': 'x',
     }
     for old, new in replacements.items():
@@ -391,5 +392,4 @@ def top_questions(limit=50):
         return [dict(row) for row in rows]
     finally:
         conn.close()
-
 

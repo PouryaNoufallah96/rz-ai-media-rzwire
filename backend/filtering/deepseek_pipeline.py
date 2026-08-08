@@ -93,7 +93,8 @@ Return ONLY this JSON (replace … with real data):
     "MGC Coin":         [{{"id":"a2","fit":87,"reason":"..."}}],
     "Ranking Platform": [...],
     "Oasis Coin":       [...],
-    "Jewelry Coin":     [...]
+    "Jewelry Coin":     [...],
+    "Industrial Token": [...]
   }}
 }}
 Omit any brand not in the PUBLICATIONS list above. If a brand has no suitable articles, set its value to [].

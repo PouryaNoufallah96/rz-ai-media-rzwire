@@ -6,6 +6,7 @@ import mgcLogo from '../../assets/brands/mgc-coin-logo.png'
 import rankingLogo from '../../assets/brands/ranking-platform-logo.png'
 import oasisLogo from '../../assets/brands/oasis-coin-logo.png'
 import jewelryLogo from '../../assets/brands/jewelry-coin-logo.png'
+const industrialLogo = '/brands/industrial-coin-logo.png'
 
 const CHECK_SVG = <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#171c26" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
 const CHECK_SVG_W = <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -38,6 +39,7 @@ const BRAND_ABBREVIATIONS = {
   'Ranking Platform':'RK',
   'Oasis Coin':'OAS',
   'Jewelry Coin':'JWL',
+  'Industrial Token':'IND',
 }
 
 function TelegramSourceChip({ label, channel, selected, onClick }) {
@@ -192,6 +194,7 @@ export default function Sidebar({ topics, setTopics, onAnalyze, width }) {
               {m:'Ranking Platform', color:'#7568F0',abbr:'RK', logo:rankingLogo, sub:tr('Competition · Profiles · Tournaments')},
               {m:'Oasis Coin',       color:'#18C7CF',abbr:'OAS',logo:oasisLogo,   sub:tr('Metaverse · Gaming · Future Utility')},
               {m:'Jewelry Coin',     color:'#A89CFF',abbr:'JWL',logo:jewelryLogo, sub:tr('Digital Jewelry · NFTs · Marketplace')},
+              {m:'Industrial Token', color:'#F4C224',abbr:'IND',logo:industrialLogo, sub:tr('Industry 4.0 · Supply Chains · Education')},
             ].map(({m,color,abbr,logo,sub}) => (
               <div key={m}>
                 <ToggleRow on={selectedMedia.includes(m)} color={color} label={m} sub={sub} abbr={abbr} logo={logo} onClick={()=>toggleMedia(m)} />

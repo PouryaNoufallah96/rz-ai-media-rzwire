@@ -2229,11 +2229,142 @@ F. Zero-copy identity artwork
     return profile
 
 
+def _industrial_profile():
+    """Industrial Token: premium purple-and-gold Industry 4.0 editorial system."""
+    profile = _rzwire_profile(
+        'Industrial Token',
+        (
+            'a BEP-20 industrial ecosystem that connects gamified industrial marketing, global rankings, '
+            'educational simulations, decentralized industrial services, and sustainability incentives'
+        ),
+        (
+            'deep indigo (#10072D), industrial violet (#3E127B), ultraviolet (#7816D2), '
+            'metallic gold (#F4C224), warm amber (#E69B2E), clean white (#F8F5FF), '
+            'and controlled graphite (#171427)'
+        ),
+        (
+            'machined steel, precision gold robotic arms, brushed graphite, tempered glass, subtle '
+            'holographic light paths, engineered concrete, and realistic factory surfaces'
+        ),
+        (
+            'cinematic premium industrial photography or physically plausible photoreal 3D with credible '
+            'machinery, controlled purple atmosphere, warm gold key light, strong depth, and clear hierarchy'
+        ),
+        (
+            'advanced factories, digital-twin halls, logistics ports, clean energy campuses, precision labs, '
+            'industrial convention spaces, and large quiet indigo fields for editorial typography'
+        ),
+        {
+            'gamified industrial marketing': 'two adult engineers completing one precise real-world industrial challenge',
+            'global rankings': 'a premium industrial challenge arena with collaborative stations and global light paths',
+            'industrial education': 'an adult learner interacting with a tabletop digital factory simulation',
+            'decentralized industrial services': 'real industrial infrastructure joined by discreet verified light paths',
+            'sustainability incentives': 'a clean energy and manufacturing campus with solar, wind, and efficient operations',
+            'supply-chain transparency': 'a port, rail, warehouse, and factory linked along one elegant traceability route',
+            'industrial intelligence': 'one turbine, robot, or production cell paired with restrained predictive geometry',
+        },
+        {
+            'family': 'concept_photo', 'headline': 'Industrial innovation', 'layout': 'art_only',
+            'data_elements': [], 'stage': 'photo_real', 'composition': 'left_type_block',
+            'energy': 'newsroom_neutral', 'accent': 'workspace_signal',
+            'subject_scene': (
+                'A realistic gold robotic arm works inside a deep-indigo advanced factory, while a broad '
+                'quiet editorial field remains on the left. No coin, dashboard, or invented brand mark appears.'
+            ),
+        },
+        ['industrial token', 'industrial.game', 'industrial'],
+    )
+
+    profile.update({
+        'brand_name': 'Industrial Token',
+        'brand_tagline': (
+            'Industrial Token (INDUSTRIAL), the BEP-20 industrial ecosystem described by the approved '
+            'whitepaper and official website'
+        ),
+        'brand_keywords': ['industrial token', 'industrial.game', 'industrial'],
+        'headline_max_words': 7,
+        'headline_uppercase': True,
+        'meme_enabled': False,
+        'mood_accent_default': 'workspace_signal',
+        'approved_directions': {
+            '01 smart factory / concept_photo': 'credible connected factory with gold robotics and a quiet indigo headline field',
+            '02 digital twin / concept_photo': 'engineer using a translucent factory-scale digital twin without a fake dashboard',
+            '03 traceable supply chains / concept_photo': 'port, warehouse, rail, and factory connected by one elegant traceability path',
+            '04 industrial challenges / concept_photo': 'adult engineers complete one precise factory challenge with restrained progress arcs',
+            '05 sustainable industry / concept_photo': 'clean manufacturing, solar, wind, and industrial infrastructure at violet-blue hour',
+            '06 predictive intelligence / concept_photo': 'one industrial machine paired with a refined abstract predictive-maintenance treatment',
+            '07 industrial education / concept_photo': 'adult learner explores a tabletop industrial simulation in a premium training space',
+            '08 decentralized services / concept_photo': 'industrial facilities joined by discreet verification paths and a line-built security form',
+            '09 global rankings / concept_photo': 'global industrial challenge gathering, collaboration stations, and networked light canopy',
+            '10 real-economy utility / concept_photo': 'construction, logistics, energy, and manufacturing joined in one credible industrial landscape',
+        },
+        'approved_reference_assets': {
+            '01 smart factory / concept_photo': 'brand_references/industrial/approved/01-smart-factory.png',
+            '02 digital twin / concept_photo': 'brand_references/industrial/approved/02-digital-twin.png',
+            '03 traceable supply chains / concept_photo': 'brand_references/industrial/approved/03-traceable-supply-chains.png',
+            '04 industrial challenges / concept_photo': 'brand_references/industrial/approved/04-industrial-challenges.png',
+            '05 sustainable industry / concept_photo': 'brand_references/industrial/approved/05-sustainable-industry.png',
+            '06 predictive intelligence / concept_photo': 'brand_references/industrial/approved/06-predictive-intelligence.png',
+            '07 industrial education / concept_photo': 'brand_references/industrial/approved/07-industrial-education.png',
+            '08 decentralized services / concept_photo': 'brand_references/industrial/approved/08-decentralized-services.png',
+            '09 global rankings / concept_photo': 'brand_references/industrial/approved/09-global-rankings.png',
+            '10 real-economy utility / concept_photo': 'brand_references/industrial/approved/10-real-economy-utility.png',
+        },
+        'anti_repetition_rules': (
+            'Do not repeat the same approved direction or industrial setting within the last 5 posts. '
+            'Rotate among factories, logistics, energy, education, services, and global-challenge scenes. '
+            'Avoid repeating a robot pose, worker pose, turbine, port angle, hologram, or gold-arm close-up. '
+            'Use one immediate, credible industrial idea per image and preserve broad room for clean editorial copy.'
+        ),
+        'routing_table': """
+Story category -> Primary family (fallback):
+- Industrial marketing, challenge participation, rankings -> concept_photo (fallback: hero_object)
+- Supply chain, services, transparency, infrastructure -> concept_photo (fallback: flat_explainer)
+- Education, simulation, industrial games -> concept_photo (fallback: flat_explainer)
+- Sustainability, energy, efficient operations -> concept_photo (fallback: hero_object)
+- Token facts, verified supply, or one confirmed milestone -> big_number (fallback: stat_card)
+- Whitepaper utility explanation or dated roadmap phase -> flat_explainer (fallback: stat_card)
+- Official statement or concise evergreen message -> type_led (fallback: concept_photo)
+- Art-led evergreen identity without copy -> art_drop (fallback: hero_object)
+- Anything ambiguous -> concept_photo
+
+Hard routing rules:
+1. Use the workspace name Industrial Token and the symbol INDUSTRIAL. It is a BEP-20 token, not a separate blockchain.
+2. Features described only in the whitepaper or roadmap must be described as proposed, designed, planned, or future-facing unless an approved newer source verifies their live status.
+3. Never claim investment returns, price appreciation, guaranteed rewards, guaranteed savings, audits, certifications, partnerships, exchange listings, or product availability without a current source in the article.
+4. Never use an actual market chart, contract address, wallet, exchange interface, token price, or price movement inside a Multimedia image.
+5. Never draw the Industrial symbol, wordmark, or footer. Keep the bottom-left corner naturally clear for the deterministic official lockup.
+""".strip(),
+        'text_rules': """
+1. Headline: seven words or fewer, uppercase, concrete, and factual. Prefer industry, systems, participation, learning, transparency, and sustainability over token-price language.
+2. All figures, dates, phases, percentages, prices, partner counts, and milestones must appear in the supplied approved source. Do not use remembered market data.
+3. Frame roadmap and whitepaper capabilities as proposed or planned unless current evidence proves they are live.
+4. Do not promise investment returns, passive income, savings, rewards, security, compliance, audits, or environmental impact.
+5. Do not put a contract address, QR code, buy button, market chart, exchange logo, wallet, or third-party dashboard in generated artwork.
+6. Never invent the Industrial Token emblem or wordmark. The official lockup is added after generation; leave its bottom-left safe area seamless.
+""".strip(),
+    })
+    profile['frozen_style'].update({
+        'format': 'premium portrait 4:5 Industrial Token editorial, composed for safe square cropping with one strong factual story',
+        'headline_zone': 'reserve a broad uncluttered indigo or graphite region for one concise uppercase headline and keep the bottom-left corner open for the official lockup',
+        'never': (
+            'generic cyberpunk clutter, fake coin emblems, floating token swarms, copied exchange screens, '
+            'illegible dashboards, impossible machinery, unsafe factory scenes, public figures, price predictions, '
+            'investment promises, logo inventions, or dense tiny type'
+        ),
+    })
+    profile['extra_banned_subject_terms'] = sorted(set(profile.get('extra_banned_subject_terms', []) + [
+        'industrial logo', 'industrial token logo', 'industrial token coin', 'coin pile', 'price chart',
+        'candlestick chart', 'trading dashboard', 'exchange listing', 'wallet screenshot', 'contract address',
+        'guaranteed savings', 'guaranteed rewards', 'audit certificate', 'verified partner', 'industrial.game',
+    ]))
+    return profile
+
+
 BRAND_IMAGE_PROFILES = {
     'MGC Coin': _mgc_profile(),
     'Ranking Platform': _ranking_profile(),
     'Oasis Coin': _oasis_profile(),
     'Jewelry Coin': _jewelry_profile(),
+    'Industrial Token': _industrial_profile(),
 }
-
-

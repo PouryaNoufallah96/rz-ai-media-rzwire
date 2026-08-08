@@ -7,7 +7,7 @@ from llm import openrouter_chat
 _TRANSLATION_MODEL_ID = 'google/gemini-2.5-flash-lite'
 _PROTECTED_NAMES = (
     'RZWire', 'MGC Coin', 'Meta Games Coin', 'Ranking Platform', 'Ranking.Game',
-    'Oasis Coin', 'OASIS', 'RZOASIS', 'Jewelry Coin', 'Jewelry Token', 'CoinMarketCap',
+    'Oasis Coin', 'OASIS', 'RZOASIS', 'Jewelry Coin', 'Jewelry Token', 'Industrial Token', 'INDUSTRIAL', 'CoinMarketCap',
     'Bitcoin', 'Ethereum', 'Tether', 'Solana', 'Cardano', 'Dogecoin', 'Polkadot',
     'Avalanche', 'Chainlink', 'Polygon', 'Litecoin', 'Arbitrum', 'Optimism',
     'Uniswap', 'MakerDAO', 'MetaMask', 'Telegram', 'Binance', 'Coinbase', 'Kraken',

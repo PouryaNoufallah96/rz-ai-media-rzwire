@@ -189,7 +189,7 @@ def call_art_director(article, copy_text, sentiment, platform, profile, recent, 
 _BANNED_SUBJECT_TERMS = [
     'text', 'label', 'logo', 'watermark', 'rzwire', 'mgc coin', 'meta games coin',
     'ranking platform', 'ranking.game', 'oasis coin', 'rzoasis', 'jewelry coin',
-    'jewelry token',
+    'jewelry token', 'industrial token', 'industrial.game',
 ]
 _WALLET_ADDRESS_RE = re.compile(r'0x[a-fA-F0-9]{6,}')
 
