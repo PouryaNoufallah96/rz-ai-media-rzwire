@@ -172,6 +172,39 @@ ANALYTICS_BRANDS = {
             "coinMarketCapUrl": "https://coinmarketcap.com/currencies/realestate/",
         },
     },
+    "trip": {
+        "id": "trip",
+        "name": "Trip Token",
+        "symbol": "TRIP",
+        "enabled": True,
+        "logoUrl": "/brands/trip-coin-logo.png",
+        "footerLogoUrl": "/brands/trip-footer-logo.png",
+        "footer": "trip.game",
+        "domain": "trip.game",
+        "chartColor": "#24c4d8",
+        "theme": {
+            "background": "#042b46", "backgroundAlt": "#075b7a", "surface": "#073a58",
+            "surfaceAlt": "#0b6d86", "text": "#f5fcfd", "muted": "#b9d7df",
+            "positive": "#45d09c", "negative": "#ef716f", "accent": "#24c4d8",
+            "accentAlt": "#75dae8", "border": "#25859d",
+        },
+        "motifs": ["connected journey path", "terminal architecture", "destination horizon", "transparent travel records"],
+        "backgroundScenes": [
+            "A premium contemporary airport terminal in deep journey navy and clear aqua daylight, with one traveler moving through credible architecture, restrained connected-journey guidance, cinematic depth, and broad quiet editorial space.",
+            "An authentic coastal destination at sunrise with ocean-blue atmosphere, natural hospitality details, a broad open horizon, subtle aqua travel continuity, and no logos, booking interfaces, prices, or landmark collage.",
+            "A refined pearl-white travel planning environment where diverse adults study one physical route beside ordered translucent journey layers, travel silver details, clear human collaboration, and uncluttered editorial hierarchy.",
+        ],
+        "artDirectorProfile": "Trip Token",
+        "imagePrompt": "Premium Trip Token market editorial with credible travel environments, deep journey navy, ocean blue, clear aqua, pearl white, cinematic destination light, and restrained connected-travel infrastructure.",
+        "market": {
+            "provider": "geckoterminal", "network": "bsc",
+            "contract": "0xc9bfb93d75645c4681bb63794abf1acad44725e7",
+            "pool": "0x5837e9c66666d8bcac3e3b0d38cd910225d9e0f2",
+            "poolName": "TRIP / WBNB", "tokenSide": "base",
+            "coinMarketCapId": "35555",
+            "coinMarketCapUrl": "https://coinmarketcap.com/currencies/trip/",
+        },
+    },
 }
 
 

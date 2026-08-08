@@ -2481,6 +2481,63 @@ def _real_estate_editorial_families():
     }
 
 
+def _trip_editorial_families():
+    """Trip's ten approved masters expressed as distinct editorial systems."""
+    specs = {
+        'smart_journey_terminal': (
+            'SMART JOURNEY TERMINAL',
+            'A premium airport terminal centers one traveler using a restrained translucent journey layer. Architecture and human movement remain credible; abstract guidance supports the journey without becoming a fake booking interface.',
+            'terminal_light', 'traveler_asymmetry', 'seamless_confidence', 'aqua_navy'),
+        'destination_discovery': (
+            'DESTINATION DISCOVERY',
+            'One cinematic destination landscape provides a strong horizon, authentic local atmosphere, and a clear editorial sky field. Travel discovery is communicated through place, light, and scale rather than floating icons or postcard collage.',
+            'destination_sunrise', 'destination_horizon', 'open_discovery', 'sky_sunrise'),
+        'travel_planning_table': (
+            'TRAVEL PLANNING TABLE',
+            'A small diverse group plans one believable journey around a physical map or destination model. Phones and documents remain secondary and unreadable; collaboration and route clarity drive the composition.',
+            'planning_studio', 'overhead_route_table', 'human_clarity', 'aqua_navy'),
+        'transparent_journey_records': (
+            'TRANSPARENT JOURNEY RECORDS',
+            'A passport-like travel object, ticket form, or luggage tag aligns with ordered translucent record layers. No personal data, QR code, wallet, booking number, guarantee badge, or fake certification is readable.',
+            'pearl_product_studio', 'record_diagonal', 'institutional_clarity', 'aqua_silver'),
+        'global_tourism_network': (
+            'GLOBAL TOURISM NETWORK',
+            'Several credible destinations occupy distinct arcs of one world-scale composition, joined by thin restrained travel paths. Never invent destinations, partners, passenger totals, availability, or route coverage.',
+            'deep_ocean_world', 'network_arc', 'connected_momentum', 'aqua_navy'),
+        'accommodation_discovery': (
+            'ACCOMMODATION DISCOVERY',
+            'One credible hotel, resort, or local stay is photographed as the hero with natural hospitality details and generous copy space. No star rating, price, availability, review count, partner badge, or booking control is invented.',
+            'hospitality_blue_hour', 'property_editorial', 'open_discovery', 'sky_sunrise'),
+        'seamless_mobility_journey': (
+            'SEAMLESS MOBILITY JOURNEY',
+            'A coherent travel sequence connects airport, rail, road, and destination through one elegant directional path. Each transport mode remains physically plausible; avoid logos, tickets, schedules, and impossible connections.',
+            'mobility_landscape', 'journey_path', 'connected_momentum', 'aqua_navy'),
+        'culture_nature_journey': (
+            'CULTURE AND NATURE JOURNEY',
+            'A respectful documentary travel scene centers one authentic cultural or natural experience. The composition avoids stereotypes, sacred misuse, tourist spectacle, flags, landmarks collages, and invented local claims.',
+            'documentary_daylight', 'human_environment', 'human_warmth', 'sky_sunrise'),
+        'integrated_travel_ecosystem': (
+            'INTEGRATED TRAVEL ECOSYSTEM',
+            'One elegant journey hub connects a small number of real travel moments around a central route. The scene communicates coordination through spatial relationships, never through a dense app dashboard or floating service-icon cloud.',
+            'deep_ocean_world', 'ecosystem_orbit', 'seamless_confidence', 'aqua_silver'),
+        'traveler_support_documentary': (
+            'TRAVELER SUPPORT DOCUMENTARY',
+            'A natural traveler-support moment unfolds in an airport, station, hotel, or destination setting. Human attention and environmental storytelling lead; no crisis dramatization, insurance payout, refund promise, or guaranteed assistance.',
+            'documentary_daylight', 'documentary_offset', 'human_warmth', 'aqua_navy'),
+    }
+    families = {}
+    for key, (name, skeleton, stage, composition, energy, accent) in specs.items():
+        families[key] = {
+            'name': name,
+            'skeleton': skeleton,
+            'text_policy': 'One concise source-supported headline; at most one short factual support line.',
+            'default_axes': {'stage': stage, 'composition': composition, 'energy': energy, 'accent': accent},
+            'data_budget': 1,
+            'headline_treatment': 'clear premium sans-serif type in a naturally quiet architectural, sky, or tonal field',
+        }
+    return families
+
+
 def _industrial_profile():
     """Industrial Token: premium purple-and-gold Industry 4.0 editorial system."""
     profile = _rzwire_profile(
@@ -2883,6 +2940,194 @@ F. Sustainable district
     return profile
 
 
+def _trip_profile():
+    """Trip Token: credible connected-travel editorial system."""
+    profile = _rzwire_profile(
+        'Trip Token',
+        (
+            'a BEP-20 travel and tourism ecosystem described around connected journeys, transparent '
+            'records, participation, loyalty concepts, and services for travelers and tourism businesses'
+        ),
+        (
+            'deep journey navy (#042B46), ocean blue (#075B7A), travel teal (#0B8FA7), '
+            'clear aqua (#24C4D8), sky cyan (#75DAE8), pearl white (#F5FCFD), '
+            'travel silver (#B9D7DF), and restrained sunrise gold (#EAB86C)'
+        ),
+        (
+            'architectural glass, brushed travel silver, woven luggage textiles, natural destination '
+            'materials, translucent record layers, pearl ceramic, water reflections, and restrained light paths'
+        ),
+        (
+            'premium travel photography or physically plausible photoreal 3D with credible destinations, '
+            'natural travelers, clean aqua-and-navy hierarchy, cinematic atmospheric depth, generous '
+            'negative space, and documentary respect'
+        ),
+        (
+            'airport terminals, destination horizons, travel planning tables, hospitality settings, '
+            'multimodal journeys, cultural and natural environments, and refined pearl product studios'
+        ),
+        {
+            'connected travel': 'one coherent journey path linking credible travel moments',
+            'tourism ecosystem': 'a small network of authentic destinations and hospitality settings',
+            'transparent records': 'ordered translucent journey layers aligned with a real travel object',
+            'traveler experience': 'one natural traveler moving confidently through a credible environment',
+            'travel participation': 'diverse adults planning one journey around a clear physical route',
+            'destination discovery': 'one cinematic place with authentic atmosphere and open horizon',
+        },
+        {
+            'family': 'smart_journey_terminal', 'headline': 'A More Connected Journey', 'layout': 'art_only',
+            'data_elements': [], 'stage': 'terminal_light', 'composition': 'traveler_asymmetry',
+            'energy': 'seamless_confidence', 'accent': 'aqua_navy',
+            'subject_scene': (
+                'A premium contemporary terminal centers one generic traveler moving through warm natural '
+                'light while a restrained translucent route follows the architecture. No logo, coin, ticket, '
+                'booking screen, price, wallet, chart, or invented service claim appears.'
+            ),
+        },
+        ['trip token', 'trip.game', 'trip_token1', 'trip travel token'],
+    )
+    profile.update({
+        'brand_name': 'Trip Token',
+        'brand_tagline': 'Trip Token (TRIP), the BEP-20 travel ecosystem described by the approved whitepaper and official website',
+        'brand_keywords': ['trip token', 'trip.game', 'trip_token1', 'trip travel token'],
+        'headline_max_words': 7,
+        'headline_uppercase': False,
+        'meme_enabled': False,
+        'mood_accent_default': 'workspace_signal',
+        'families_requiring_data': ['big_number', 'stat_card'],
+        'approved_directions': {
+            '01 smart journey terminal / smart_journey_terminal': 'premium terminal architecture with one traveler and restrained connected-journey guidance',
+            '02 destination discovery / destination_discovery': 'cinematic authentic destination horizon with strong place-led storytelling',
+            '03 travel planning table / travel_planning_table': 'diverse adults planning one coherent journey around a physical route',
+            '04 transparent journey records / transparent_journey_records': 'ordered translucent travel-record layers aligned with one real journey object',
+            '05 global tourism network / global_tourism_network': 'credible destinations linked by elegant restrained travel paths',
+            '06 accommodation discovery / accommodation_discovery': 'one believable hospitality property treated as the editorial hero',
+            '07 seamless mobility journey / seamless_mobility_journey': 'airport, rail, road, and destination connected through one plausible path',
+            '08 culture and nature / culture_nature_journey': 'respectful documentary travel experience rooted in authentic place',
+            '09 integrated ecosystem / integrated_travel_ecosystem': 'small coordinated travel ecosystem arranged around one clear journey',
+            '10 traveler support / traveler_support_documentary': 'natural human support moment in a credible travel environment',
+        },
+        'approved_reference_assets': {
+            '01 smart journey terminal / smart_journey_terminal': 'brand_references/trip/approved/01-smart-journey-terminal.png',
+            '02 destination discovery / destination_discovery': 'brand_references/trip/approved/02-destination-discovery.png',
+            '03 travel planning table / travel_planning_table': 'brand_references/trip/approved/03-travel-planning-table.png',
+            '04 transparent journey records / transparent_journey_records': 'brand_references/trip/approved/04-transparent-journey-records.png',
+            '05 global tourism network / global_tourism_network': 'brand_references/trip/approved/05-global-tourism-network.png',
+            '06 accommodation discovery / accommodation_discovery': 'brand_references/trip/approved/06-accommodation-discovery.png',
+            '07 seamless mobility journey / seamless_mobility_journey': 'brand_references/trip/approved/07-seamless-mobility-journey.png',
+            '08 culture and nature / culture_nature_journey': 'brand_references/trip/approved/08-culture-nature-journey.png',
+            '09 integrated ecosystem / integrated_travel_ecosystem': 'brand_references/trip/approved/09-integrated-travel-ecosystem.png',
+            '10 traveler support / traveler_support_documentary': 'brand_references/trip/approved/10-traveler-support-documentary.png',
+        },
+        'anti_repetition_rules': (
+            'Do not repeat the same family twice in a row or the same approved direction within 6 posts. '
+            'Across every 6 posts use at least one people-centered scene, one destination or hospitality '
+            'scene, and one record, planning, or ecosystem scene. Alternate pearl-light, photographic, and '
+            'deep-ocean stages. Avoid repeating the same airport pose, aircraft, suitcase, world arc, phone, '
+            'hotel angle, beach, map, or translucent panel within 5 posts. Preserve one clear travel story '
+            'and a naturally open bottom-left area for the official lockup.'
+        ),
+        'routing_table': """
+Story category -> Primary family (fallback):
+- Traveler experience, airport flow, connected journey -> smart_journey_terminal (fallback: traveler_support_documentary)
+- Destination inspiration, tourism, place discovery -> destination_discovery (fallback: culture_nature_journey)
+- Planning, participation, itinerary concepts -> travel_planning_table (fallback: integrated_travel_ecosystem)
+- Records, transparency, ticket history, verification -> transparent_journey_records (fallback: flat_explainer)
+- Global tourism, destination networks, reach -> global_tourism_network (fallback: destination_discovery)
+- Hotels, resorts, accommodation, hospitality -> accommodation_discovery (fallback: traveler_support_documentary)
+- Multimodal movement, airport-to-destination journey -> seamless_mobility_journey (fallback: smart_journey_terminal)
+- Local culture, nature, responsible tourism -> culture_nature_journey (fallback: destination_discovery)
+- Connected services, platform ecosystem concepts -> integrated_travel_ecosystem (fallback: travel_planning_table)
+- Assistance, traveler needs, service moments -> traveler_support_documentary (fallback: smart_journey_terminal)
+- Verified token facts or one confirmed milestone -> big_number (fallback: stat_card)
+- Whitepaper utility explanation or roadmap phase -> flat_explainer (fallback: stat_card)
+- Anything ambiguous -> smart_journey_terminal
+
+Hard routing rules:
+1. Use the workspace name Trip Token and the verified market symbol TRIP. It is a BEP-20 token on BNB Smart Chain, not a separate blockchain.
+2. Treat whitepaper and roadmap features as proposed, designed, or planned unless an approved current source proves they are live.
+3. Never claim live booking, ticketing, AI assistance, insurance, instant refunds, rewards, earnings, partnerships, route coverage, accommodation availability, or guaranteed security without current approved evidence.
+4. Never use an actual market chart, price, public-sale price, contract address, wallet, exchange UI, booking interface, or sample-image figure inside a Multimedia image.
+5. Never draw the Trip emblem, token face, wordmark, or footer. The official lockup is composited after generation; keep the bottom-left area naturally clear.
+6. Prefer a family not used in the last 3 posts and a reference direction not used in the last 6 posts.
+""".strip(),
+        'text_rules': """
+1. Headline: seven words or fewer, concrete, factual, and travel-led.
+2. Every figure, date, price, percentage, route, destination, partner, availability claim, and milestone must come from the supplied approved source.
+3. Frame whitepaper capabilities as proposed or planned unless current evidence confirms delivery.
+4. Do not promise investment returns, earnings, rewards, savings, instant refunds, insurance payouts, guaranteed safety, or frictionless service.
+5. Do not include a market chart, token price, sale price, contract, QR code, booking code, wallet, buy button, exchange logo, airline logo, hotel brand, passport data, or fake interface.
+6. Never invent the Trip emblem or wordmark. Leave the bottom-left safe area seamless for the deterministic official lockup.
+""".strip(),
+    })
+    profile['families'].update(_trip_editorial_families())
+    profile['axes']['stage'].update({
+        'terminal_light': 'Credible premium terminal architecture with daylight, travel silver, aqua guidance, and natural human movement.',
+        'destination_sunrise': 'One authentic destination in atmospheric sunrise or golden-hour light with a broad open horizon.',
+        'planning_studio': 'A bright calm planning space with one physical route, tactile maps, and believable collaboration.',
+        'pearl_product_studio': 'A pearl-white travel product studio with soft aqua shadow, silver detail, and one ordered object group.',
+        'deep_ocean_world': 'A deep navy and ocean-blue spatial field for restrained global connections and integrated journey structure.',
+        'hospitality_blue_hour': 'One credible accommodation environment at blue hour with warm human-scale hospitality light.',
+        'mobility_landscape': 'A believable transport landscape connects modes across real distance without impossible infrastructure.',
+        'documentary_daylight': 'Natural documentary daylight preserves authentic people, place, texture, and cultural respect.',
+    })
+    profile['axes']['composition'].update({
+        'traveler_asymmetry': 'Place one traveler off-center within strong terminal architecture and preserve a broad quiet copy field.',
+        'destination_horizon': 'Build the image around one decisive horizon with the destination below and clean atmosphere above.',
+        'overhead_route_table': 'Use a natural high three-quarter view of people planning around one readable physical route.',
+        'record_diagonal': 'Align one travel object and ordered translucent layers along a clean diagonal with no readable private data.',
+        'network_arc': 'Arrange a few credible destinations along one restrained global arc with thin travel paths.',
+        'property_editorial': 'Treat one hospitality property as the hero and reserve architecture or sky for concise copy.',
+        'journey_path': 'Connect transport modes through one continuous directional path while maintaining credible physical distance.',
+        'human_environment': 'Frame people as part of an authentic place, with environment and culture carrying equal visual weight.',
+        'ecosystem_orbit': 'Arrange a small number of travel moments around one central route without becoming an icon cloud.',
+        'documentary_offset': 'Offset one natural support interaction against a broad environmental field for calm editorial hierarchy.',
+    })
+    profile['axes']['energy'].update({
+        'seamless_confidence': 'Calm, capable motion suggests coordination without claiming guaranteed ease or delivery.',
+        'open_discovery': 'Expansive curiosity and sense of place lead without becoming luxury advertising or fantasy tourism.',
+        'human_clarity': 'Warm collaborative attention makes a complex journey understandable and approachable.',
+        'institutional_clarity': 'Order and alignment communicate transparency without seals, guarantees, or technical theater.',
+        'connected_momentum': 'Directional movement links real places and modes without speed claims or spectacle.',
+        'human_warmth': 'Documentary empathy and genuine interaction remain natural, respectful, and unscripted.',
+    })
+    profile['axes']['accent'].update({
+        'aqua_navy': 'Clear aqua supplies one route, reflection, or structural accent against deep journey navy.',
+        'aqua_silver': 'Aqua transparency and travel silver define records or product structure on pearl white.',
+        'sky_sunrise': 'Sky cyan supports authentic destination atmosphere while sunrise gold appears only as natural light.',
+    })
+    profile['brief_examples'] = """
+Worked examples (guidance only; never copy verbatim):
+
+A. Connected terminal
+{"family":"smart_journey_terminal","headline":"A More Connected Journey","data_elements":[],"stage":"terminal_light","composition":"traveler_asymmetry","energy":"seamless_confidence","accent":"aqua_navy","subject_scene":"One traveler moves through a premium daylight terminal while a restrained aqua route follows the real architecture and a broad glass field remains clear for the title."}
+
+B. Transparent records
+{"family":"transparent_journey_records","headline":"Journey Records, Clearly Aligned","data_elements":[],"stage":"pearl_product_studio","composition":"record_diagonal","energy":"institutional_clarity","accent":"aqua_silver","subject_scene":"One anonymous travel tag aligns with three ordered translucent journey layers on pearl ceramic without names, codes, wallet data, or booking controls."}
+
+C. Destination discovery
+{"family":"destination_discovery","headline":"See The Journey Differently","data_elements":[],"stage":"destination_sunrise","composition":"destination_horizon","energy":"open_discovery","accent":"sky_sunrise","subject_scene":"An authentic coastal destination at sunrise opens into a broad atmospheric horizon with natural local detail and no landmark collage or invented travel claim."}
+
+D. Integrated mobility
+{"family":"seamless_mobility_journey","headline":"One Journey, Better Connected","data_elements":[],"stage":"mobility_landscape","composition":"journey_path","energy":"connected_momentum","accent":"aqua_navy","subject_scene":"A credible route moves from rail platform to airport architecture and onward to one destination through a single restrained directional path."}
+""".strip()
+    profile['frozen_style'].update({
+        'format': 'premium portrait 4:5 Trip Token travel editorial, composed for safe square cropping with one credible journey story',
+        'headline_zone': 'reserve broad uncluttered sky, glass, pearl, or deep-ocean space for one concise headline and keep bottom-left open for the official lockup',
+        'never': (
+            'generic crypto neon, floating token swarms, copied booking screens, fake tickets, fake passports, '
+            'airline or hotel logos, landmark collage, impossible aircraft, distorted people, public figures, '
+            'price promises, reward promises, invented brand marks, or dense tiny text'
+        ),
+    })
+    profile['extra_banned_subject_terms'] = sorted(set(profile.get('extra_banned_subject_terms', []) + [
+        'trip logo', 'trip token logo', 'trip coin', 'coin pile', 'price chart', 'candlestick chart',
+        'booking dashboard', 'wallet screenshot', 'contract address', 'guaranteed rewards', 'instant refund',
+        'insurance payout', 'airline logo', 'hotel logo', 'passport number', 'trip.game',
+    ]))
+    return profile
+
+
 BRAND_IMAGE_PROFILES = {
     'MGC Coin': _mgc_profile(),
     'Ranking Platform': _ranking_profile(),
@@ -2890,4 +3135,5 @@ BRAND_IMAGE_PROFILES = {
     'Jewelry Coin': _jewelry_profile(),
     'Industrial Token': _industrial_profile(),
     'Real Estate Token': _real_estate_profile(),
+    'Trip Token': _trip_profile(),
 }

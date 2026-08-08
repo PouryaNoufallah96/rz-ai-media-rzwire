@@ -44,6 +44,7 @@ _BRAND_FILES = {
         'Real Estate Social Channels.md',
         'Real Estate Market Listing.md',
     ),
+    'Trip Token': ('TRIP Token.md', 'TRIP Social Channels.md', 'TRIP Market Listing.md'),
 }
 
 _cache: dict[str, str] = {}

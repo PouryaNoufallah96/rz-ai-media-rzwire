@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title desc">
+  <title id="title">TRIP Token emblem</title>
+  <desc id="desc">A turquoise-to-deep-teal hexagonal travel mark with a white upward route shape.</desc>
+  <defs>
+    <linearGradient id="trip-gradient" x1="0.22" y1="0.08" x2="0.76" y2="0.94">
+      <stop offset="0" stop-color="#4AC9D2"/>
+      <stop offset="0.48" stop-color="#2AA5B7"/>
+      <stop offset="1" stop-color="#07547B"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#trip-gradient)" d="M500 95 820 277v366L500 830 180 643V277Z"/>
+  <path fill="#FFFFFF" d="M500 99 184 638 500 478 816 638Z"/>
+</svg>

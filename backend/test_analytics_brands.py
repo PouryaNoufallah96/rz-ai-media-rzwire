@@ -13,13 +13,13 @@ from analytics_brands import (
 class AnalyticsBrandRegistryTests(unittest.TestCase):
     def test_current_enabled_registry_is_complete(self):
         validated = validate_analytics_brand_registry()
-        self.assertEqual(set(validated), {"mgc", "oasis", "jewelry", "industrial", "real-estate"})
+        self.assertEqual(set(validated), {"mgc", "oasis", "jewelry", "industrial", "real-estate", "trip"})
         self.assertTrue(all(item["enabled"] for item in validated.values()))
         self.assertTrue(all(len(item["backgroundScenes"]) >= 3 for item in validated.values()))
 
     def test_public_registry_contains_theme_and_market_identity(self):
         brands = public_analytics_brands()
-        self.assertEqual([item["id"] for item in brands], ["mgc", "oasis", "jewelry", "industrial", "real-estate"])
+        self.assertEqual([item["id"] for item in brands], ["mgc", "oasis", "jewelry", "industrial", "real-estate", "trip"])
         self.assertTrue(all(item["logoUrl"] and item["footerLogoUrl"] and item["theme"] and item["market"] for item in brands))
         self.assertTrue(all("artDirectorProfile" not in item for item in brands))
 
@@ -60,6 +60,40 @@ class AnalyticsBrandRegistryTests(unittest.TestCase):
         backend_root = Path(__file__).resolve().parent
         for relative_path in assets.values():
             self.assertTrue((backend_root / relative_path).is_file(), relative_path)
+
+    def test_trip_has_verified_market_identity_and_ten_visual_references(self):
+        from brand_profiles import BRAND_IMAGE_PROFILES
+
+        item = get_analytics_brand("trip")
+        self.assertEqual(item["name"], "Trip Token")
+        self.assertEqual(item["symbol"], "TRIP")
+        self.assertEqual(item["market"]["network"], "bsc")
+        self.assertEqual(item["market"]["contract"], "0xc9bfb93d75645c4681bb63794abf1acad44725e7")
+        self.assertEqual(item["market"]["pool"], "0x5837e9c66666d8bcac3e3b0d38cd910225d9e0f2")
+        self.assertEqual(item["market"]["tokenSide"], "base")
+        self.assertEqual(item["market"]["coinMarketCapId"], "35555")
+        assets = BRAND_IMAGE_PROFILES["Trip Token"]["approved_reference_assets"]
+        self.assertEqual(len(assets), 10)
+        backend_root = Path(__file__).resolve().parent
+        for relative_path in assets.values():
+            self.assertTrue((backend_root / relative_path).is_file(), relative_path)
+
+    def test_trip_references_use_ten_distinct_editorial_families(self):
+        from brand_profiles import BRAND_IMAGE_PROFILES
+
+        expected = {
+            "smart_journey_terminal", "destination_discovery", "travel_planning_table",
+            "transparent_journey_records", "global_tourism_network", "accommodation_discovery",
+            "seamless_mobility_journey", "culture_nature_journey",
+            "integrated_travel_ecosystem", "traveler_support_documentary",
+        }
+        profile = BRAND_IMAGE_PROFILES["Trip Token"]
+        reference_families = {key.rsplit(" / ", 1)[-1] for key in profile["approved_reference_assets"]}
+        self.assertEqual(reference_families, expected)
+        for family_name in expected:
+            family = profile["families"][family_name]
+            for axis, value in family["default_axes"].items():
+                self.assertIn(value, profile["axes"][axis], f"Trip Token: {family_name}/{axis}")
 
     def test_industrial_and_real_estate_references_use_distinct_editorial_families(self):
         from brand_profiles import BRAND_IMAGE_PROFILES

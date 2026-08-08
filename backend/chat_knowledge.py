@@ -27,7 +27,7 @@ _PERSIAN_RE = re.compile(r'[\u0600-\u06ff]')
 
 RZWIRE_PLATFORM_OVERVIEW = """\
 RZWire is an AI-powered, multi-brand social publishing workspace. It accepts a
-topic or source feed, routes material across six distinct projects, and prepares
+topic or source feed, routes material across seven distinct projects, and prepares
 brand-aware copy and images for Telegram, X/Twitter, and Instagram drafts.
 
 The configured brands include:
@@ -41,6 +41,8 @@ The configured brands include:
 - Real Estate Token: the proposed BEP-20 property ecosystem for real-world and
   digital property experiences, transparent ownership records, fractional
   participation, and community-led real estate activity.
+- Trip Token: the proposed BEP-20 travel ecosystem for connected journeys,
+  tourism participation, transparent records, and traveler-focused services.
 
 Workspace flow:
 1. In the sidebar, enter a topic or import RSS, choose platforms, media brands,
@@ -87,6 +89,10 @@ _BRAND_ALIASES = {
         'real estate token', 'realestate token', 'realestate', 'real-estate.game',
         'property tokenization', 'digital real estate', 'real_estate_token',
     ],
+    'Trip Token': [
+        'trip token', 'trip.game', 'trip travel token', 'trip_token1',
+        'travel blockchain', 'tourism token', 'connected travel',
+    ],
 }
 _DROPIN_BRANDS = {
     'mgc-coin': 'MGC Coin',
@@ -102,6 +108,8 @@ _DROPIN_BRANDS = {
     'real-estate-token': 'Real Estate Token',
     'real-estate': 'Real Estate Token',
     'realestate': 'Real Estate Token',
+    'trip-token': 'Trip Token',
+    'trip': 'Trip Token',
 }
 
 
